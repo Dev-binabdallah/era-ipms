@@ -69,13 +69,13 @@ roles.role_id
 
 ## 3.2 Users and Staff/Volunteers
 
-```text
 USERS 1 ───── 0..1 STAFF_VOLUNTEERS
-```
 
-A system user can be linked to one staff or volunteer record.
+A system user can be linked to at most one staff or volunteer record.
 
-A staff or volunteer may exist in the system without having a user login account.
+Each staff or volunteer record must be linked to exactly one system user.
+
+The `user_id` foreign key in `staff_volunteers` is required and unique.
 
 **Relationship:**
 
@@ -321,15 +321,13 @@ expenses.project_id
 
 ## 9.1 Projects and M&E Indicators
 
-```text
 PROJECTS 1 ─────< ME_INDICATORS
-```
 
 One project may have multiple monitoring and evaluation indicators.
 
-An organisational indicator may exist without being connected to a specific project.
+Each M&E indicator must be connected to one specific project.
 
-Therefore, `me_indicators.project_id` may be optional.
+Therefore, `me_indicators.project_id` is required in the database.
 
 **Foreign Key:**
 
