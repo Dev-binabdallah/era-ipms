@@ -1,29 +1,23 @@
-
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 
-# Virtual environments
-venv/
+# Virtual environment
 .venv/
+venv/
 env/
 
-# Environment variables and secrets
+# Django local database
+*.sqlite3
+
+# Environment variables
 .env
 .env.*
 
-# Django
-*.log
-db.sqlite3
-
-# IDE settings
+# IDE / editor files
 .vscode/
 .idea/
 
-# Operating system files
+# OS files
 .DS_Store
-Thumbs.db
-
-# Security files
-*.pem
-*.key
