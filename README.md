@@ -1,115 +1,377 @@
-# ERA Integrated Project Management System (ERA-IPMS)
+ERA Integrated Project Management System (ERA-IPMS)
 
-## What is ERA-IPMS?
+Project Overview
 
-ERA Integrated Project Management System (ERA-IPMS) is a web-based information management system being developed to support the management, monitoring, and reporting of organisational and project activities.
+ERA Integrated Project Management System (ERA-IPMS) is a web-based information and project management system being developed to support the management, monitoring, accountability, and reporting of organisational and project activities.
 
 The system is initially being designed around the operational needs of Emergency Response Aid (ERA), which serves as the initial pilot organisation and requirements-validation partner.
 
-ERA-IPMS will provide a centralised system for managing information related to disability activities, poultry farming, and a small vegetable farm that supports the poultry project.
+ERA-IPMS is intended to provide a centralised platform for managing authorised information related to disability services and beneficiary activities, projects and activities, poultry, a small farm, finance, staff and members, monitoring and evaluation, dashboards, and reporting.
 
-## Why is ERA-IPMS Being Developed?
+Project Baseline
 
-ERA-IPMS is being developed to improve how organisational and project information is recorded, organised, monitored, and reported.
+Item
 
-The system aims to reduce fragmented record keeping and provide a central platform where authorised users can access relevant information.
+Current baseline
 
-The project will support:
+Project
 
-* Improved record management.
-* Easier monitoring of project activities.
-* Poultry production tracking.
-* Small farm activity and harvest tracking.
-* Disability-related activity management.
-* Basic income and expense recording.
-* Monitoring and evaluation.
-* Management dashboards.
-* Routine reporting.
+ERA Integrated Project Management System (ERA-IPMS)
 
-## Who Is ERA-IPMS For?
+Project type
 
-The initial system is being developed for Emergency Response Aid (ERA) as the pilot organisation.
+Web-Based Information and Project Management System
 
-Potential system users include:
+Initial pilot organisation
 
-* System Administrator.
-* Programme Coordinator.
-* Field Officers.
-* Finance personnel.
-* Monitoring and Evaluation personnel.
-* ERA management.
+Emergency Response Aid (ERA)
 
-The system may later be adapted and licensed for use by other Community-Based Organisations (CBOs), Non-Governmental Organisations (NGOs), and organisations with similar project management and reporting requirements.
+System owner/developer
 
-## Technology Stack
+Abdullahi Abdi Mohamed
 
-ERA-IPMS is being developed using the following technologies:
+Version
 
-| Technology | Purpose                                                              |
-| ---------- | -------------------------------------------------------------------- |
-| HTML       | Creates the structure of web pages and forms                         |
-| CSS        | Controls the design and appearance of the user interface             |
-| Python     | Handles backend application logic                                    |
-| Django     | Python web framework used to build the web application               |
-| MySQL      | Stores and manages structured system data                            |
-| Java       | May be used only where specifically required by project requirements |
+1.1
 
-## Planned Modules
+Status
 
-The initial version of ERA-IPMS is planned to include:
+Documentation and Architecture Baseline
 
-1. User Authentication and Access Control.
-2. Project Management.
-3. Disability Activity and Beneficiary Management.
-4. Poultry Management.
-5. Small Vegetable Farm Management.
-6. Activity Management.
-7. Basic Financial Management.
-8. Monitoring and Evaluation.
-9. Management Dashboard.
-10. Reporting.
+Backend
 
-Additional features may be introduced in future versions based on validated organisational requirements.
+Python / Django
 
-## Development Status
+Database
 
-**Current Stage: Planning and Requirements Analysis**
+MariaDB / MySQL
 
-The current focus of the project includes:
+Source of truth
 
-* Project concept development.
-* Requirements gathering.
-* Needs assessment.
-* User and stakeholder identification.
-* User roles and permissions.
-* System workflow design.
-* Database planning.
+GitHub main branch
 
-Software development will proceed after the requirements and system design have been sufficiently defined.
+This baseline is being established before further application and database development. Documentation, requirements, workflows, permissions, data structures, and architecture are being aligned first so that implementation is based on an agreed system design.
 
-## Project Roadmap
+Why is ERA-IPMS Being Developed?
 
-```text
-Phase 1 — Planning and Requirements
-        ↓
-Phase 2 — Database Design and Development
-        ↓
-Phase 3 — Django Development
-        ↓
-Phase 4 — Authentication and Permissions
-        ↓
-Phase 5 — Core Modules
-        ↓
-Phase 6 — Dashboard, Finance and M&E
-        ↓
-Phase 7 — Reporting
-        ↓
-Phase 8 — Testing and Deployment
-```
+ERA currently requires practical ways to organise information associated with its organisational and project activities. ERA-IPMS is being developed to reduce fragmented record keeping and provide authorised users with relevant information through a central system.
 
-## Project Structure
+The system is intended to support:
 
-```text
+Improved record management.
+
+Beneficiary and disability-related activity management.
+
+Home visits, referrals, and follow-ups.
+
+Project and activity management.
+
+Poultry production tracking.
+
+Small farm activity and harvest tracking.
+
+Basic sales, income, and expense recording.
+
+Staff, volunteers, and member information.
+
+Monitoring and evaluation.
+
+Management dashboards.
+
+Routine and management reporting.
+
+Better accountability through controlled access and auditability.
+
+Who Is ERA-IPMS For?
+
+The initial system is being developed for Emergency Response Aid (ERA).
+
+The initial user titles are:
+
+Admin - System Administration
+
+Director - Programme Oversight and M&E
+
+Programme Coordinator - Programme and Project Coordination
+
+Finance - Sales, Expenses, and Financial Records
+
+Member - Assigned Programme Responsibilities
+
+These are titles, not fixed application roles with permanently bundled permissions.
+
+The system distinguishes three concepts:
+
+Title: the user's organisational or system title, such as Admin, Director, Programme Coordinator, Finance, or Member.
+
+Permission: the actions a user is authorised to perform, such as View, Add, Edit, Delete, Approve, Export, Manage, or Administer.
+
+Responsibility: the programme or operational area assigned to a user, such as disability services, assessments, referrals and follow-ups, poultry, farm activities, project coordination, or M&E.
+
+Administrators can create future/custom titles and assign permissions individually. Record-level access is also required so that users do not automatically receive unrestricted access to all organisational information.
+
+Initial Access and Governance Direction
+
+ERA-IPMS will use controlled authentication and authorisation.
+
+The approved authentication direction is:
+
+Users can sign in using username or email and password.
+
+Passwords must follow a strong security policy.
+
+Access is controlled by application permissions.
+
+Users should only access records and actions authorised for their title, permissions, responsibilities, and record-level scope.
+
+Beneficiary records are intended to be archived or made inactive rather than physically deleted.
+
+An audit log is part of the approved minimum viable system direction.
+
+The initial governance direction includes:
+
+Admin: system administration, user/title/permission management, and authorised project administration. Technical authority does not automatically grant programme decision authority.
+
+Director: programme oversight, M&E oversight, and authority relating to continuation of projects and activities.
+
+Programme Coordinator: programme and project coordination and operational oversight.
+
+Finance: financial records, sales, and expenses, including poultry and farm-related financial transactions.
+
+Member: assigned programme responsibilities and operational records within their authorised scope.
+
+Project creation is initially assigned to Admin and Director. Future titles may be created by Admin.
+
+Main System Modules
+
+The initial scope includes the following modules:
+
+Administration and Access Management
+
+Authentication.
+
+Users.
+
+Titles and permissions.
+
+Responsibility assignments.
+
+Access control.
+
+Audit logging.
+
+Beneficiary and Disability Management
+
+Beneficiary registration and search.
+
+Disability information and assessments.
+
+Home visits.
+
+Referrals.
+
+Referral follow-ups.
+
+Controlled beneficiary record access.
+
+Project and Activity Management
+
+Projects.
+
+Activities.
+
+Activity participants.
+
+Project assignment and coordination.
+
+Activity monitoring.
+
+Poultry Management
+
+Poultry stock transactions.
+
+Egg production.
+
+Feed records.
+
+Poultry health records.
+
+Poultry categories/groups.
+
+Poultry sales and related operational records.
+
+Small Farm Management
+
+Farm crops.
+
+Farm activities.
+
+Harvests.
+
+Farm-related operational records.
+
+Farm-to-poultry feed transfer tracking where applicable.
+
+Staff, Volunteers, and Members
+
+Staff and volunteer information.
+
+Member responsibilities and assignments.
+
+Controlled operational access.
+
+Finance
+
+Sales.
+
+Expenses.
+
+Basic financial records.
+
+Poultry and farm-related financial transactions.
+
+The initial scope is basic financial management, not full accounting.
+
+Monitoring and Evaluation
+
+M&E indicators.
+
+Project and activity monitoring.
+
+Management-level monitoring information.
+
+Dashboard and Reporting
+
+Management dashboards.
+
+Operational summaries.
+
+Routine reports.
+
+Authorised data exports where permitted.
+
+Poultry and Small Farm Relationship
+
+The poultry and small farm modules are related operationally.
+
+The farm may produce crops and other materials that can support poultry activities. Where farm produce is transferred for poultry feed, the system should provide a record of that transfer so that farm outputs and poultry inputs can be tracked consistently.
+
+Poultry records will support operational quantities such as stock, eggs, feed, health events, and sales. Financial transactions associated with these activities are handled through the finance module according to the user's authorised permissions.
+
+Information Access and Accountability
+
+ERA-IPMS is designed around least-privilege access.
+
+A user's title alone does not automatically provide unrestricted access. Permissions and responsibilities determine what actions and programme areas the user may access, while record-level controls further restrict access where required.
+
+Examples of the approved access direction include:
+
+Members access their own authorised operational records and own contribution totals per project.
+
+Members can access beneficiary records they personally registered, assessed, or visited, subject to the applicable permissions.
+
+Members can create and submit referrals, while approval is performed by an authorised person.
+
+Members maintain operational poultry records within their authorised scope.
+
+Admin and Programme Coordinator can review authorised poultry information.
+
+Finance manages authorised financial transactions.
+
+Director provides programme oversight and M&E oversight.
+
+These rules will be refined and formalised in the User Roles and Permissions and Software Requirements Specification documents.
+
+Technology Direction
+
+ERA-IPMS is being developed using:
+
+Technology
+
+Purpose
+
+Python
+
+Backend application logic
+
+Django
+
+Web application framework
+
+MariaDB / MySQL
+
+Relational database
+
+HTML
+
+Web page structure
+
+CSS
+
+User interface styling
+
+JavaScript
+
+Client-side interaction where required
+
+The current architecture direction is Django with MariaDB/MySQL. Java is not part of the current technology baseline.
+
+Development Approach
+
+Development follows a documentation-first and controlled implementation process.
+
+The current sequence is:
+
+Project Concept Note.
+
+README baseline.
+
+Needs Assessment.
+
+Stakeholder Analysis.
+
+Software Requirements Specification.
+
+User Roles and Permissions.
+
+System Workflows.
+
+Database Entity Design.
+
+ERD documentation.
+
+Database schema.
+
+Development Log.
+
+Application and database implementation after the documentation baseline is aligned.
+
+Each logical documentation step should be reviewed and committed before moving to the next step.
+
+The development environment is centred on VS Code, with its integrated terminal used for Django, Git, MariaDB/MySQL, and related development commands.
+
+Project Roadmap
+
+Phase 1  Documentation, Planning and Requirements
+              ↓
+Phase 2  Architecture and Database Baseline
+              ↓
+Phase 3  Django Application Foundation
+              ↓
+Phase 4  Authentication, Titles, Permissions and Access Control
+              ↓
+Phase 5  Core Programme and Beneficiary Modules
+              ↓
+Phase 6  Poultry, Farm and Finance Modules
+              ↓
+Phase 7  M&E, Dashboard and Reporting
+              ↓
+Phase 8  Testing, Security Review and Deployment
+
+The detailed implementation order may be adjusted after the documentation and architecture review.
+
+Repository Structure
+
 era-ipms/
 │
 ├── README.md
@@ -121,47 +383,88 @@ era-ipms/
 │   ├── requirements/
 │   ├── system-design/
 │   ├── database/
+│   │   └── erd/
 │   ├── testing/
-│   └── deployment/
+│   ├── deployment/
+│   └── development_log.md
 │
 ├── backend/
+│   ├── config/
+│   └── core/
+│
 ├── frontend/
 ├── database/
 └── tests/
-```
 
-## Data Protection
+The repository structure may evolve as implementation progresses, but changes should be documented and kept consistent with the approved architecture.
 
-ERA-IPMS may eventually manage organisational and potentially sensitive information.
+Data Protection and Security
 
-For this reason:
+ERA-IPMS may manage organisational information and potentially sensitive beneficiary information.
 
-* Real beneficiary information will not be used during development.
-* Fictional or anonymised data will be used for testing.
-* Passwords and credentials will not be stored in the repository.
-* Environment files containing secrets will be excluded using `.gitignore`.
-* Confidential organisational information will not be published in the repository.
+Development and deployment should therefore follow appropriate security and data-protection practices.
 
-## Intellectual Property
+The project baseline requires that:
 
-ERA-IPMS is currently developed and owned by **Abdullahi Abdi Mohamed**.
+Real beneficiary information is not used in development or testing.
+
+Fictional or anonymised data is used for testing.
+
+Passwords and credentials are not stored in the repository.
+
+Secrets are supplied through appropriate environment or deployment configuration.
+
+Confidential organisational information is not published in the repository.
+
+Access to beneficiary and operational information is controlled by permissions and record-level access.
+
+Security-sensitive configuration is reviewed before deployment.
+
+Documentation and Change Control
+
+GitHub is the project source of truth, with the main branch representing the current approved project state.
+
+Changes to requirements, permissions, workflows, database structures, or architecture should be documented before implementation where practical.
+
+Contradictions between project documents should be identified and resolved during the documentation baseline review rather than silently resolved in code.
+
+The README describes the current project baseline. Detailed requirements and technical definitions remain in the corresponding documents under docs/.
+
+Future Scope
+
+The initial release is intentionally focused on the agreed ERA pilot requirements.
+
+Future capabilities may include additional reporting, integrations, expanded organisational support, or other features identified through validated requirements and later project phases.
+
+Future scope should not be treated as part of the initial implementation unless it is formally added to the approved requirements.
+
+Project Status
+
+Current Status: Documentation and Architecture Baseline
+
+The Project Concept Note has been updated to version 1.1, and the README is being aligned with that baseline.
+
+The project is not yet at the stage where new application pages or database architecture changes should be introduced solely from assumptions. The remaining documentation baseline must first be reviewed for consistency before implementation proceeds.
+
+Intellectual Property
+
+ERA-IPMS is currently developed and owned by Abdullahi Abdi Mohamed.
 
 Emergency Response Aid (ERA) serves as the initial pilot organisation and requirements-validation partner.
 
 ERA organisational data, beneficiary information, confidential records, and other sensitive information are not included in this repository.
 
-## License
+License
 
 Copyright © 2026 Abdullahi Abdi Mohamed. All rights reserved.
 
 ERA-IPMS is proprietary software. Public access to this repository does not grant permission to copy, modify, redistribute, sublicense, or commercially use the software without prior written permission from the copyright holder.
 
-See the `LICENSE` file for further information.
+See the LICENSE file for further information.
 
-## Author
+Author
 
-**Abdullahi Abdi Mohamed**
+Abdullahi Abdi Mohamed
 
-## Project Status
-
-🚧 **Currently under planning and requirements analysis.**
+Documentation Baseline Version: 1.1
+Date: September 2026
