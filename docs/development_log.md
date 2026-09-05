@@ -430,3 +430,97 @@ No application code or database structure was changed during this step.
 ### Next Step
 
 Proceed to **Step 8: Database Entity Design** only after the Step 7 documentation has been committed and pushed to GitHub.
+
+## Step 8: Database Entity Design Baseline
+
+**Date:** September 2026
+**Status:** Draft for review
+
+### Work Completed
+
+Developed the initial v1.1 database entity design for ERA-IPMS based on the approved Software Requirements Specification, User Roles and Permissions, and System Workflows.
+
+The database design was aligned with the approved architecture and distinguishes:
+
+* Titles from permissions.
+* Permissions from responsibilities.
+* Operational records from financial transactions.
+* Activity assignments from activity participation.
+* Beneficiary records from beneficiary service activities.
+* Farm production from farm-to-poultry transfers.
+* Poultry groups from individual stock movements.
+
+### Main Entity Areas
+
+The proposed database design covers:
+
+* Users and authentication.
+* Dynamic titles.
+* Application permissions.
+* Title-permission assignments.
+* User responsibilities.
+* Staff/member information.
+* Project assignments.
+* Beneficiaries.
+* Disability assessments.
+* Home visits.
+* Referrals and referral follow-ups.
+* Projects and activities.
+* Activity assignments and participants.
+* Poultry groups and stock movements.
+* Egg production.
+* Poultry feed.
+* Poultry health records.
+* Poultry sales.
+* Farm crops and activities.
+* Harvests.
+* Farm-to-poultry transfers.
+* Basic financial transactions.
+* Monitoring and evaluation.
+* Audit events.
+
+### Important Design Decisions
+
+The entity design establishes the following principles:
+
+1. A user has a title, while permissions and responsibilities are represented separately.
+2. Titles can be expanded by authorised administrators.
+3. Permissions represent system actions such as View, Add, Edit, Delete, Approve, Export, Manage, and Administer.
+4. Responsibilities represent functional areas assigned to users.
+5. Beneficiary records should be archived rather than physically deleted.
+6. Record-level access must be supported by appropriate relationships.
+7. Project and activity access must be traceable to assignments.
+8. Poultry stock should be based on stock movements rather than manually maintained totals.
+9. Farm-to-poultry transfers must maintain traceability from harvest to poultry group.
+10. Operational quantities and financial transactions remain separate.
+11. Important system actions must be auditable.
+12. The final SQL schema must be derived from the approved entity design.
+
+### Validation Points
+
+The following items remain subject to final validation before SQL implementation:
+
+* Referral approval authority.
+* Project approval authority.
+* Financial approval rules.
+* Final status values.
+* M&E indicator definitions.
+* Reporting requirements.
+* Notification priorities.
+* Detailed assignment rules.
+* Post-submission correction rules.
+* Beneficiary archive and restoration authority.
+* Final poultry tracking requirements.
+* Financial categories and payment methods.
+
+### Implementation Impact
+
+No production database migration or final SQL implementation was performed during this step.
+
+The entity design will be used as the logical baseline for the next database-design stage, including the Entity Relationship Diagram and subsequent SQL schema.
+
+### Next Step
+
+**Step 9: Entity Relationship Diagram (ERD)**
+
+The ERD will visually represent the approved entities, primary keys, foreign keys, cardinalities, junction entities, access-control relationships, farm-to-poultry traceability, finance relationships, and audit relationships.
