@@ -4,7 +4,7 @@
 
 **Project:** ERA Integrated Project Management System (ERA-IPMS)
 **Document Type:** Needs Assessment
-**Version:** 1.0
+**Version:** 1.1
 **Date:** September 2026
 **Prepared By:** Abdullahi Abdi Mohamed
 
@@ -12,20 +12,24 @@
 
 This needs assessment identifies the current information management practices, operational challenges, and system needs of Emergency Response Aid (ERA).
 
-The assessment focuses on ERA's disability services, community activities, poultry project, small farm, organisational records, financial records, and reporting processes.
+The assessment focuses on ERA's disability services, community activities, beneficiary records, home visits, assessments, referrals and follow-ups, poultry project, small farm, organisational activities, financial records, staff and volunteers, and reporting processes.
 
-The findings will be used to define the requirements for the ERA Integrated Project Management System (ERA-IPMS).
+The findings provide the operational basis for defining the requirements of the ERA Integrated Project Management System (ERA-IPMS).
+
+The assessment is aligned with the approved ERA-IPMS Concept Note and README project baseline.
 
 # 2. Purpose of the Needs Assessment
 
 The purpose of this assessment is to:
 
-1. Understand how ERA currently manages information.
-2. Identify existing manual processes.
+1. Understand how ERA currently manages organisational and project information.
+2. Identify existing manual and paper-based processes.
 3. Identify gaps in current record management.
-4. Identify difficulties experienced when retrieving information.
-5. Identify the information required by management.
-6. Define the major functions required in ERA-IPMS.
+4. Identify difficulties experienced when retrieving and monitoring information.
+5. Identify information required by programme and organisational management.
+6. Identify operational information that should be digitised.
+7. Define the major system needs that will inform the Software Requirements Specification.
+8. Provide a basis for later workflow, database, access-control, and reporting design.
 
 # 3. Current Situation
 
@@ -34,6 +38,7 @@ ERA currently manages several organisational and project activities.
 These include:
 
 * Disability services.
+* Beneficiary support.
 * Home visits.
 * Assessments.
 * Referrals.
@@ -42,11 +47,17 @@ These include:
 * Community advocacy and awareness.
 * Poultry farming.
 * Small-scale farming.
-* Organisational and project activities.
+* Organisational activities.
+* Project activities.
+* Financial activities.
+* Staff and volunteer activities.
+* Reporting and management information.
 
 Much of the information related to these activities is currently managed using manual and paper-based documentation.
 
-# 4. Current Disability Information Management
+The current situation creates difficulties in maintaining consistent records, retrieving historical information, monitoring activities, following up beneficiaries, analysing project performance, and preparing reports.
+
+# 4. Current Disability and Beneficiary Information Management
 
 ERA supports persons with disabilities and vulnerable persons through activities such as home visits, assessments, referrals, follow-up, capacity building, advocacy, and awareness.
 
@@ -62,9 +73,22 @@ Referrals may currently involve:
 * Accompanying the person to a service provider.
 * Written referrals.
 
-Community volunteers may conduct follow-up after a referral.
+Community volunteers or other authorised personnel may conduct follow-up after a referral.
 
 The current process relies significantly on manual documentation.
+
+ERA therefore requires structured digital records for:
+
+* Beneficiary registration.
+* Disability assessments.
+* Home visits.
+* Referrals.
+* Referral follow-ups.
+* Service outcomes.
+* Assigned responsibilities.
+* Relevant beneficiary history.
+
+Access to beneficiary information must be controlled according to authorised permissions and record-level access.
 
 # 5. Current Poultry Project Management
 
@@ -72,24 +96,32 @@ ERA currently operates a small poultry project.
 
 The project currently has approximately 10 chickens, including local and Kienyeji chickens. ERA plans to purchase additional chicks and expand the project.
 
-The current primary purpose of the poultry project is egg production. In the future, ERA may expand into:
+The current primary purpose of the poultry project is egg production.
+
+Future operational expansion may include:
 
 * Egg production.
 * Meat production.
 * Breeding.
 
-Currently, poultry management is generally handled collectively. In the future, ERA intends to assign specific responsibilities to individuals.
+Poultry management is currently handled collectively. ERA intends to assign specific responsibilities to individuals as the project develops.
 
 Existing poultry information includes:
 
 * Number of chickens.
+* Poultry categories or groups.
+* Chicken and chick purchases.
 * Number of eggs.
 * Feed information.
 * Poultry deaths.
 * Poultry illnesses.
 * Poultry sales where applicable.
+* Poultry-related expenses.
+* Assigned operational responsibilities.
 
-These records are currently managed using paper forms.
+These records are currently managed using paper forms or other manual records.
+
+ERA requires structured poultry records that can support operational monitoring and management reporting.
 
 # 6. Current Small Farm Management
 
@@ -116,9 +148,19 @@ Currently, farm activities and harvest information are not formally recorded.
 
 Farm produce may be used to support the poultry project. Poultry feed may also be purchased locally.
 
-The farm has expenses such as seeds, tools, and other farm inputs, excluding water and labour.
+The farm has expenses such as:
+
+* Seeds.
+* Tools.
+* Other farm inputs.
+
+Current information indicates that water and labour are excluded from these identified farm expenses.
 
 At present, farm produce is not formally sold or recorded as income.
+
+ERA therefore requires structured farm records covering crops, activities, harvests, expenses, and transfers of farm produce used to support poultry operations.
+
+Future farm produce sales and related income may also be recorded.
 
 # 7. Current Records
 
@@ -141,17 +183,17 @@ ERA currently maintains the following records:
 | Beneficiary register        | Available                                  |
 | Project reports             | Available                                  |
 
-# 8. Identified Problems
+The existence of a paper or manual record does not necessarily mean that the information is structured, searchable, consistently maintained, or suitable for automated reporting.
 
-The current manual documentation process creates several challenges.
+# 8. Identified Problems
 
 ## 8.1 Difficulty Retrieving Records
 
-It can be difficult to find old beneficiary and activity records when required.
+It can be difficult to find historical beneficiary, service, project, and activity records when required.
 
 ## 8.2 Risk of Lost or Damaged Documents
 
-Paper documents may be lost, damaged, or duplicated.
+Paper documents may be lost, damaged, duplicated, or inconsistently stored.
 
 ## 8.3 Time-Consuming Report Preparation
 
@@ -163,20 +205,27 @@ It can be difficult to quickly determine:
 
 * The total number of beneficiaries served.
 * The number of home visits conducted.
+* The number of assessments completed.
 * The number of referrals made.
 * Whether referrals have been followed up.
 * Whether referred persons received the required service.
+* The history of services provided to an individual beneficiary.
 
 ## 8.5 Difficulty Monitoring Poultry Activities
 
 The current system makes it difficult to quickly monitor:
 
 * Current chicken numbers.
+* Poultry groups or categories.
+* Chicken and chick purchases.
 * Egg production.
 * Feed usage.
 * Purchased feed.
+* Feed received from farm produce.
 * Poultry illnesses.
 * Poultry deaths.
+* Poultry sales.
+* Poultry-related expenses.
 
 ## 8.6 Limited Farm Monitoring
 
@@ -185,50 +234,102 @@ Because farm activities and harvests are not formally recorded, it is difficult 
 * Crops planted.
 * Farm activities.
 * Harvest quantities.
-* Produce used to support poultry.
+* Produce transferred to support poultry.
 * Farm expenses.
+* Future produce sales and income.
 
-## 8.7 Reporting Quality Challenges
+## 8.7 Limited Project and Activity Visibility
 
-Manual and fragmented records make it difficult to consistently prepare high-quality reports.
+Manual records make it difficult to obtain a consolidated view of:
+
+* Projects.
+* Activities.
+* Completed activities.
+* Upcoming activities.
+* Pending activities.
+* Responsible personnel.
+* Activity participation.
+
+## 8.8 Limited Financial Consolidation
+
+Although financial and expense records exist, manual records make it difficult to consolidate and relate expenses to organisational, project, poultry, and farm activities.
+
+ERA therefore requires basic digital financial management rather than a full accounting system.
+
+## 8.9 Reporting Quality Challenges
+
+Manual and fragmented records make it difficult to consistently prepare accurate and timely management and project reports.
 
 # 9. Identified System Needs
 
-Based on the identified problems, ERA requires a centralised system that can improve the management of organisational and project information.
+Based on the identified problems, ERA requires a centralised information management system that improves the recording, organisation, retrieval, monitoring, and reporting of organisational and project information.
 
 The system should provide the following capabilities.
 
-## 9.1 Beneficiary and Disability Services
+## 9.1 User Authentication and Access Control
 
-The system should allow users to:
+The system should provide secure user authentication and controlled access to system functions.
+
+The approved initial titles are:
+
+1. Admin.
+2. Director.
+3. Programme Coordinator.
+4. Finance.
+5. Member.
+
+The system must distinguish between:
+
+* **Title:** The user's organisational/system title.
+* **Permission:** What the user is allowed to do within the system.
+* **Responsibility:** The programme, operational, or organisational area assigned to the user.
+
+Additional titles may be created by an authorised Admin when organisational requirements justify them.
+
+Permissions should be configurable for applicable titles and functions.
+
+Record-level access is required where information should only be accessible to authorised users based on the applicable access rules.
+
+## 9.2 Beneficiary and Disability Services
+
+The system should allow authorised users to:
 
 * Register beneficiaries.
 * Record disability assessments.
 * Record home visits.
-* Create and track referrals.
-* Assign staff or volunteers to follow-up activities.
+* Create referrals.
+* Track referrals.
+* Record referral follow-ups.
 * Record follow-up outcomes.
-* Search beneficiary records quickly.
+* Assign relevant responsibilities for follow-up.
+* Search beneficiary records.
+* Review relevant beneficiary history.
 
-## 9.2 Poultry Management
+Beneficiary records should support controlled access and should not be physically deleted merely to remove a beneficiary from active operational use. The detailed archive/inactivation rules will be defined during requirements and database design.
 
-The system should allow users to record:
+## 9.3 Poultry Management
 
-* Poultry or flock information.
-* Chicken numbers.
-* Chicken and chick purchases.
+The system should allow authorised operational users to record:
+
+* Poultry categories or groups.
+* Poultry stock information.
+* Chicken purchases.
+* Chick purchases.
 * Egg production.
 * Feed usage.
-* Feed received from the small farm.
 * Purchased feed.
+* Feed received from farm produce.
 * Poultry illnesses.
 * Poultry deaths.
-* Poultry expenses.
+* Poultry sales.
+* Poultry-related expenses.
 * Assigned responsibilities.
 
-## 9.3 Small Farm Management
+Poultry operational records should support monitoring of changes in poultry stock and production.
 
-The system should allow users to record:
+## 9.4 Small Farm Management
+
+The system should allow authorised operational users to record:
 
 * Crops.
 * Planting activities.
@@ -237,112 +338,157 @@ The system should allow users to record:
 * Harvests.
 * Farm expenses.
 * Produce transferred to support poultry.
-* Future produce sales and income.
+* Future produce sales.
+* Future produce income.
 
-## 9.4 Project and Activity Management
+The system should maintain the operational relationship between farm produce and poultry feed where such transfers occur.
 
-The system should allow users to:
+## 9.5 Project and Activity Management
+
+The system should allow authorised users to:
 
 * Register projects.
+* Update projects according to authorised permissions.
+* Assign relevant users and responsibilities.
 * Record organisational activities.
 * Record project activities.
 * Track completed activities.
 * Track upcoming activities.
 * Track pending activities.
+* Record relevant activity participants.
+* Monitor project and activity progress.
 
-## 9.5 Staff and Volunteer Management
+Project creation, updating, and other administrative actions must follow the approved permission model.
+
+## 9.6 Staff and Volunteer Management
 
 The system should allow authorised users to:
 
 * Maintain staff records.
 * Maintain volunteer records.
+* Associate applicable personnel with system users where appropriate.
 * Assign responsibilities.
-* Manage user access based on roles.
+* Support controlled system access.
+* Maintain relevant organisational information.
 
-## 9.6 Finance Management
+Staff and volunteer management must remain distinct from the title and permission system where the two concepts represent different information.
 
-The system should support the recording of:
+## 9.7 Basic Finance Management
+
+The system should support basic financial information management.
+
+This should include:
 
 * Organisational expenses.
 * Project expenses.
 * Poultry expenses.
 * Farm expenses.
-* Other relevant financial records.
+* Poultry sales.
+* Farm produce sales where applicable.
+* Other relevant basic income records.
+* Financial summaries and authorised financial reports.
 
-## 9.7 Dashboard and Management Information
+ERA-IPMS is not intended to implement full accounting functionality in the initial scope.
 
-Management should be able to view:
+Detailed accounting, budgeting, financial controls, and advanced financial reporting will only be introduced if later validated requirements justify them.
+
+## 9.8 Dashboard and Management Information
+
+Authorised management users should be able to view relevant summaries such as:
 
 * Total beneficiaries.
+* Number of assessments.
 * Number of home visits.
 * Number of referrals.
 * Referral follow-up and completion status.
-* Current number of chickens.
+* Current poultry stock.
 * Egg production.
 * Feed usage and purchases.
+* Feed received from farm produce.
 * Poultry illnesses and deaths.
 * Farm crops and harvests.
 * Farm expenses.
+* Poultry and farm sales where applicable.
 * Total organisational and project expenses.
 * Number of activities conducted.
-* Number of staff and volunteers.
+* Relevant staff and volunteer totals.
 * Upcoming activities.
 * Pending activities.
 
-## 9.8 Reporting
+Dashboard information must respect the user's permissions and record-level access.
 
-The system should support:
+## 9.9 Search and Information Retrieval
 
-* Organisational reports.
-* Project reports.
-* Activity reports.
-* Poultry reports.
-* Farm reports.
-* Beneficiary service reports.
-* Future export to PDF.
-* Future export to Excel.
+The system should provide practical search functionality for authorised users.
+
+Search should support retrieval of relevant records without requiring users to manually inspect paper files.
+
+The detailed search fields and filtering requirements will be defined during the Software Requirements Specification stage.
+
+## 9.10 Reporting
+
+The initial system should support basic reporting for:
+
+* Organisational activities.
+* Projects.
+* Activities.
+* Poultry.
+* Farm operations.
+* Beneficiary services.
+* Basic financial information.
+* Management information.
+
+PDF and Excel export are considered future enhancements unless later promoted into the approved initial requirements.
 
 # 10. Gap Analysis
 
-| Current Situation               | Identified Gap                           | ERA-IPMS Requirement             |
-| ------------------------------- | ---------------------------------------- | -------------------------------- |
-| Paper beneficiary records       | Difficult to retrieve information        | Digital beneficiary register     |
-| No structured assessment record | Inconsistent assessment management       | Digital assessment records       |
-| Manual home visit records       | Difficult to monitor visits              | Home visit tracking              |
-| Informal referral tracking      | Difficult to monitor outcomes            | Referral and follow-up tracking  |
-| Paper poultry records           | Difficult to analyse poultry performance | Poultry management module        |
-| No egg production record        | Production cannot be easily monitored    | Egg production records           |
-| No feed record                  | Feed usage cannot be analysed            | Feed management records          |
-| No formal farm records          | Limited farm monitoring                  | Farm management module           |
-| Manual expense records          | Difficult to consolidate expenses        | Digital expense records          |
-| Manual reporting                | Reports take significant time            | Reporting and dashboard features |
+| Current Situation                           | Identified Gap                               | ERA-IPMS Need                                                  |
+| ------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| Paper/manual beneficiary records            | Difficult to retrieve information            | Digital beneficiary records                                    |
+| No structured assessment record             | Inconsistent assessment management           | Digital assessment records                                     |
+| Manual home visit records                   | Difficult to monitor visits                  | Home visit tracking                                            |
+| Informal referral tracking                  | Difficult to monitor outcomes                | Referral and follow-up tracking                                |
+| Paper poultry records                       | Difficult to analyse poultry performance     | Poultry management                                             |
+| No structured egg production record         | Production cannot be easily monitored        | Egg production records                                         |
+| No structured feed record                   | Feed usage cannot be analysed                | Feed management records                                        |
+| No formal farm records                      | Limited farm monitoring                      | Farm management                                                |
+| Farm produce transfers not formally tracked | Poultry support from farm cannot be measured | Farm-to-poultry transfer records                               |
+| Manual expense records                      | Difficult to consolidate expenses            | Basic digital finance management                               |
+| Manual project/activity records             | Limited project visibility                   | Project and activity management                                |
+| Manual reporting                            | Reports take significant time                | Dashboard and reporting                                        |
+| Fixed or informal access practices          | Risk of inappropriate information access     | Titles, permissions, responsibilities, and record-level access |
+| Fragmented organisational records           | Limited management visibility                | Centralised information management                             |
 
 # 11. Priority System Needs
 
-The system should be developed incrementally.
+The system should be developed incrementally according to validated requirements.
 
-### High Priority
+## High Priority
 
 * User authentication.
-* User roles and permissions.
+* Titles, permissions, and access control.
 * Beneficiary management.
-* Home visit records.
 * Disability assessment records.
+* Home visit records.
 * Referral and follow-up tracking.
 * Poultry management.
 * Small farm management.
 * Project and activity management.
 * Search functionality.
 * Management dashboard.
+* Basic record-level access control.
 
-### Medium Priority
+## Medium Priority
 
-* Expense management.
+* Basic finance and expense management.
 * Staff and volunteer management.
 * Meeting minutes management.
 * Basic reporting.
+* Additional management information features.
 
-### Future Priority
+## Future Priority
+
+The following capabilities are outside the current initial baseline and may be considered in later phases:
 
 * PDF report export.
 * Excel report export.
@@ -350,7 +496,13 @@ The system should be developed incrementally.
 * Offline data collection.
 * Notifications.
 * Advanced monitoring and evaluation.
+* Advanced analytics.
+* Advanced financial management.
 * Multi-organisation support.
+* Expanded reporting capabilities.
+* Commercial or multi-organisation adaptation.
+
+Future priorities must not automatically become part of the initial implementation without documented approval.
 
 # 12. Expected Improvements
 
@@ -359,23 +511,61 @@ ERA-IPMS is expected to improve:
 * Record organisation.
 * Information retrieval.
 * Data consistency.
+* Beneficiary service monitoring.
 * Referral and follow-up tracking.
-* Beneficiary monitoring.
+* Project and activity monitoring.
 * Poultry monitoring.
 * Farm monitoring.
+* Farm-to-poultry resource tracking.
 * Expense monitoring.
 * Management visibility.
 * Reporting speed.
 * Reporting quality.
+* Controlled access to organisational information.
 
 The system will provide a foundation for moving selected ERA processes from manual documentation toward structured digital information management.
 
-# 13. Conclusion
+# 13. Requirements and Change-Control Note
 
-The needs assessment confirms that ERA currently experiences challenges associated with manual and paper-based information management.
+This needs assessment identifies operational needs and problems. It does not by itself define every detailed software requirement, database field, workflow, permission, or user-interface behaviour.
 
-Important organisational and project information can be difficult to retrieve, monitor, analyse, and report. Some operational areas, particularly farm management, egg production, feed usage, and referral tracking, also lack structured records.
+Those details will be defined and validated in subsequent project documents.
 
-ERA-IPMS is proposed as a phased solution that will centralise selected organisational information and introduce structured digital records for key disability, poultry, farm, project, and management activities.
+The following documents will build on this needs assessment:
 
-The findings of this needs assessment will be used as the basis for the next stages of requirements analysis, user role definition, system workflow design, database design, and software development.
+1. Stakeholder Analysis.
+2. Software Requirements Specification.
+3. User Roles and Permissions.
+4. System Workflows.
+5. Database Entity Design.
+6. ERD documentation.
+7. Database schema.
+
+Any contradiction discovered between these documents must be resolved explicitly during the documentation review process rather than silently implemented in code.
+
+# 14. Data Protection and Confidentiality
+
+ERA-IPMS may manage organisational information and potentially sensitive beneficiary information.
+
+During development:
+
+* Real beneficiary information will not be used for development or testing.
+* Fictional or anonymised data will be used for testing.
+* Passwords and credentials will not be committed to the repository.
+* Secrets will be supplied through appropriate environment or deployment configuration.
+* Confidential organisational information will not be publicly published.
+* Access to beneficiary and operational information will be controlled according to authorised permissions and record-level access.
+
+Security and data-protection requirements will be expanded during the Software Requirements Specification and later security review.
+
+# 15. Conclusion
+
+The needs assessment confirms that ERA currently relies significantly on manual and paper-based information management across important organisational and project activities.
+
+Key challenges include difficulty retrieving records, monitoring beneficiary services, tracking referrals and follow-ups, monitoring poultry production and health, recording farm activities, tracking farm-to-poultry resource transfers, consolidating expenses, and preparing management reports.
+
+ERA-IPMS is therefore required as a phased information management system that introduces structured digital records while maintaining controlled access to organisational and beneficiary information.
+
+The initial system will focus on the validated operational needs of ERA, including beneficiary and disability services, projects and activities, poultry, small farm management, basic finance, staff and volunteers, search, dashboard information, and basic reporting.
+
+The findings of this needs assessment will provide the operational foundation for the next stage of the project: **Stakeholder Analysis and requirements alignment**.

@@ -84,3 +84,57 @@ The project will continue with documentation review and alignment before new app
 * README terminology aligned with the current title, permission, and responsibility model.
 * Technology direction aligned with Django and MariaDB/MySQL.
 * Documentation-first development sequence recorded.
+
+
+## 2026-09-05 - Needs Assessment Documentation Baseline
+
+### Objective
+
+Review and align the ERA-IPMS Needs Assessment with the approved Concept Note and README documentation baseline before continuing to stakeholder analysis and detailed software requirements.
+
+### Work Completed
+
+* Reviewed the existing Needs Assessment.
+* Updated the document from version 1.0 to version 1.1.
+* Aligned the Needs Assessment with the approved five-title model:
+
+  * Admin
+  * Director
+  * Programme Coordinator
+  * Finance
+  * Member
+* Clarified the distinction between titles, permissions, and responsibilities.
+* Added the approved record-level access direction.
+* Aligned beneficiary and disability service requirements with the current project baseline.
+* Expanded poultry needs to include poultry groups, purchases, production, feed, health, deaths, sales, expenses, and responsibilities.
+* Aligned small farm requirements with the approved relationship between farm produce and poultry operations.
+* Added the need to record farm produce transferred to support poultry.
+* Aligned finance requirements with the approved basic finance direction, including income and sales where applicable.
+* Clarified that ERA-IPMS is not intended to provide full accounting functionality in the initial scope.
+* Added project and activity management requirements.
+* Clarified search, dashboard, reporting, and controlled-access needs.
+* Separated initial system needs from future capabilities.
+* Added a requirements and change-control note to prevent unsupported assumptions from being implemented during later stages.
+* Maintained the requirement that real beneficiary information must not be used for development or testing.
+
+### Documentation Decision
+
+The Needs Assessment now represents the current operational needs baseline and is aligned with the approved Concept Note and README.
+
+Detailed software requirements, permissions, workflows, and database structures will be defined in subsequent documentation and must remain consistent with this baseline.
+
+### Verification
+
+* Needs Assessment reviewed against the approved Concept Note.
+* Needs Assessment reviewed against the updated README.
+* Five-title model aligned.
+* Title, permission, and responsibility terminology aligned.
+* Finance scope aligned with basic finance management.
+* Poultry and small farm relationship aligned.
+* Record-level access requirement retained.
+* Future capabilities separated from initial requirements.
+* No application or database architecture changes introduced.
+
+### Next Step
+
+Review and update the **Stakeholder Analysis** as the next documentation-baseline step.
