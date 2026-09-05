@@ -268,3 +268,61 @@ Planned commit message:
 ### Next Step
 
 Review and update the **User Roles and Permissions** document as the next documentation-baseline step.
+
+## Step 6 - User Roles and Permissions Baseline
+
+**Date:** September 2026
+
+### Work Completed
+
+The ERA-IPMS User Roles and Permissions document was reviewed against the current Project Concept Note, README, Needs Assessment, Stakeholder Analysis, and Software Requirements Specification baseline.
+
+The previous seven-role model was replaced with the approved five-title model:
+
+1. Admin
+2. Director
+3. Programme Coordinator
+4. Finance
+5. Member
+
+The document now distinguishes:
+
+* Title
+* Permission
+* Responsibility
+
+The revised access model also formalises:
+
+* Least-privilege access.
+* Record-level access.
+* Responsibility-based access.
+* Project and activity assignment.
+* Technical administration versus programme authority.
+* Dynamic/custom titles.
+* Referral submission and approval separation.
+* Beneficiary archive/inactivation principles.
+* Financial access restrictions.
+* Member contribution and beneficiary access rules.
+* Audit and accountability requirements.
+
+The revised permission matrix provides the baseline for the later application access-control implementation.
+
+### Consistency Decisions
+
+The old fixed roles for Field Staff / Volunteer, Farm Personnel, and Monitoring & Evaluation Personnel are no longer treated as initial system titles.
+
+Those functions are represented through the Member title and assigned responsibilities where applicable, while Director, Programme Coordinator, and Finance retain their approved governance responsibilities.
+
+Admin and Director are initially authorised for project creation.
+
+The revised document is intended to remain consistent with the current SRS and README baseline.
+
+### Status
+
+Step 6 documentation is ready for review and commit.
+
+No application code, database schema, or production permissions were changed during this step.
+
+### Next Step
+
+Proceed to **Step 7: System Workflows** only after Step 6 has been committed and pushed to GitHub.

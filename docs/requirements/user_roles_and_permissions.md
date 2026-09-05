@@ -6,467 +6,715 @@
 
 **Project:** ERA Integrated Project Management System (ERA-IPMS)
 **Document Type:** User Roles and Permissions
-**Version:** 1.0
+**Version:** 1.1
 **Date:** September 2026
 **Prepared By:** Abdullahi Abdi Mohamed
 
 # 1. Introduction
 
-ERA-IPMS will be used by different people with different responsibilities within Emergency Response Aid (ERA).
+ERA-IPMS will be used by people with different organisational, programme, technical, financial, and operational responsibilities within Emergency Response Aid (ERA).
 
-Because the system will contain beneficiary, disability, project, poultry, farm, financial, staff, volunteer, and organisational information, users must not automatically have access to everything in the system.
+Because the system will contain beneficiary, disability, project, poultry, farm, financial, staff, volunteer, member, monitoring, and organisational information, users must not automatically have access to all information or functions.
 
-The system will use **role-based access control (RBAC)**. Each user will be assigned a role, and the role will determine which parts of the system the user can access and what actions they can perform.
+ERA-IPMS will therefore use controlled authentication and authorisation based on:
 
-ERA-IPMS will initially have seven user roles:
+1. User title.
+2. Assigned permissions.
+3. Assigned operational responsibilities.
+4. Project or activity assignments where applicable.
+5. Record-level access rules.
 
-1. System Administrator
-2. ERA Management
-3. Programme / Project Coordinator
-4. Field Staff / Volunteer
-5. Farm Personnel
-6. Finance Personnel
-7. Monitoring & Evaluation Personnel
+The system will follow the principle of least privilege. Users should receive only the access required to perform their authorised responsibilities.
 
 # 2. Purpose
 
 The purpose of this document is to:
 
-* Define the official ERA-IPMS user roles.
-* Define the responsibilities of each role.
-* Define what information each role can access.
-* Define what actions each role can perform.
-* Protect confidential information.
-* Prevent unauthorised access.
-* Provide a foundation for implementing authentication and permissions.
+* Define the initial ERA-IPMS user titles.
+* Distinguish titles from permissions and responsibilities.
+* Define the permission types used by the system.
+* Define the initial access direction for each title.
+* Define record-level access principles.
+* Define responsibility-based access.
+* Protect beneficiary, financial, and organisational information.
+* Provide a foundation for implementing application permissions and access control.
+* Support the design of authentication, database relationships, workflows, and application interfaces.
 
-# 3. Permission Types
+# 3. Title, Permission, and Responsibility Model
 
-ERA-IPMS will use the following basic permission types.
+ERA-IPMS shall distinguish three related but separate concepts.
 
-| Permission | Meaning                                           |
-| ---------- | ------------------------------------------------- |
-| View       | User can view authorised information              |
-| Add        | User can create new records                       |
-| Edit       | User can modify authorised records                |
-| Delete     | User can delete records where permitted           |
-| Approve    | User can approve authorised records or activities |
-| Export     | User can export authorised information            |
-| Manage     | User has broader control over a module            |
-| Administer | User can manage system-level functions            |
+## 3.1 Title
 
-Permissions will be assigned according to the user's role and responsibilities.
+A title identifies the user's organisational or system position.
 
-# 4. Role 1 - System Administrator
+The initial titles are:
 
-## 4.1 Purpose
+1. **Admin**
+2. **Director**
+3. **Programme Coordinator**
+4. **Finance**
+5. **Member**
 
-The System Administrator is responsible for the technical and administrative operation of ERA-IPMS.
+These titles are not intended to be permanent bundles of every possible permission.
 
-This role is primarily concerned with managing the system itself rather than managing individual programme activities.
+Future titles may be created by an authorised Admin when organisational requirements change.
 
-## 4.2 Main Responsibilities
+## 3.2 Permission
 
-The System Administrator may:
+A permission identifies an action a user is authorised to perform.
 
-* Manage user accounts.
-* Create user accounts.
-* Disable or activate user accounts.
-* Assign user roles.
-* Reset user passwords.
-* Manage system settings.
-* Maintain system configuration.
-* Monitor system operation.
-* Support troubleshooting.
-* Manage authorised technical functions.
-* Support backups and system maintenance.
-* Monitor system security.
+The initial permission types are:
 
-## 4.3 Access
+| Permission | Meaning                                                            |
+| ---------- | ------------------------------------------------------------------ |
+| View       | View authorised information                                        |
+| Add        | Create authorised records                                          |
+| Edit       | Modify authorised records                                          |
+| Delete     | Delete records where explicitly permitted                          |
+| Approve    | Approve authorised records, referrals, activities, or transactions |
+| Export     | Export authorised information                                      |
+| Manage     | Perform broader management functions within an authorised module   |
+| Administer | Perform system-level administration                                |
 
-The System Administrator has the highest technical access level.
+Permissions shall be enforced by the application backend and shall not depend only on hiding or showing interface elements.
 
-The System Administrator can:
+## 3.3 Responsibility
 
-* View system modules.
-* Manage users.
-* Manage roles and permissions.
-* Access system settings.
-* View system records where technically required.
-* Maintain the database and application.
+A responsibility identifies the programme or operational area assigned to a user.
 
-However, technical access must not be interpreted as unrestricted permission to use beneficiary or financial information for purposes outside ERA's authorised operations.
+Examples include:
 
-## 4.4 Main Permissions
+* Disability services
+* Beneficiary assessment
+* Home visits
+* Referral management
+* Referral follow-up
+* Community awareness
+* Project coordination
+* Activity implementation
+* Poultry operations
+* Small farm operations
+* Finance
+* Monitoring and evaluation
+* Reporting
 
-| Function           | Permission  |
-| ------------------ | ----------- |
-| Manage Users       | Manage      |
-| Manage Roles       | Manage      |
-| System Settings    | Manage      |
-| Beneficiaries      | Manage      |
-| Disability Records | Manage      |
-| Home Visits        | Manage      |
-| Referrals          | Manage      |
-| Follow-Ups         | Manage      |
-| Projects           | Manage      |
-| Activities         | Manage      |
-| Poultry            | Manage      |
-| Farm               | Manage      |
-| Finance            | Manage      |
-| Reports            | Manage      |
-| Dashboard          | Full Access |
+A Member may therefore have the **Member** title while being assigned one or more specific responsibilities.
 
-# 5. Role 2 - ERA Management
+# 4. Initial User Titles
 
-## 5.1 Purpose
+The initial ERA-IPMS titles are:
 
-ERA Management uses ERA-IPMS to monitor organisational performance, review activities, support decision-making, and access management information.
+| Title                 | Primary Responsibility                 |
+| --------------------- | -------------------------------------- |
+| Admin                 | System Administration                  |
+| Director              | Programme Oversight and M&E            |
+| Programme Coordinator | Programme and Project Coordination     |
+| Finance               | Sales, Expenses, and Financial Records |
+| Member                | Assigned Programme Responsibilities    |
 
-## 5.2 Main Responsibilities
+These titles form the initial governance baseline.
 
-Management should be able to:
+They may be expanded in future versions if validated organisational requirements require additional titles.
 
-* Monitor organisational activities.
-* Review beneficiary information and statistics.
-* Monitor disability services.
-* Review referrals and follow-ups.
-* Monitor poultry performance.
-* Monitor farm activities.
-* Review financial information.
-* Review staff and volunteer information.
-* Review project performance.
-* Review reports.
-* Monitor upcoming and pending activities.
+# 5. General Access Principles
 
-## 5.3 Dashboard Access
+All ERA-IPMS access shall follow these principles.
 
-Management should have access to a comprehensive dashboard showing:
+## 5.1 Authentication
 
-* Total beneficiaries.
-* Home visits.
-* Referrals.
-* Completed follow-ups.
-* Pending follow-ups.
-* Current chickens.
-* Egg production.
-* Feed information.
-* Poultry deaths and illnesses.
-* Farm crops.
-* Harvests.
-* Farm expenses.
-* Project expenses.
-* Organisational expenses.
-* Number of activities.
-* Staff and volunteer numbers.
-* Upcoming activities.
-* Pending activities.
+Users must authenticate before accessing protected system functions.
 
-## 5.4 Main Permissions
+The approved authentication direction is:
 
-| Function             | Permission                      |
-| -------------------- | ------------------------------- |
-| Dashboard            | Full View                       |
-| Beneficiaries        | View                            |
-| Disability Records   | View                            |
-| Home Visits          | View                            |
-| Referrals            | View                            |
-| Follow-Ups           | View                            |
-| Projects             | View                            |
-| Activities           | View / Approve where authorised |
-| Poultry              | View                            |
-| Farm                 | View                            |
-| Finance              | View / Approve where authorised |
-| Staff and Volunteers | View                            |
-| Reports              | View / Generate                 |
-| Export Reports       | Export                          |
-| User Management      | No                              |
-| System Settings      | No                              |
+* Username or email plus password.
+* Strong password security requirements.
+* Inactive users cannot access the system.
+* Secure session management.
+* Logout must invalidate the authenticated session.
 
-Management should generally review information rather than directly edit operational records.
+## 5.2 Least Privilege
 
-# 6. Role 3 - Programme / Project Coordinator
+Users shall receive only the permissions required for their authorised responsibilities.
+
+A title does not automatically provide unrestricted access to every system record.
+
+## 5.3 Responsibility-Based Access
+
+A user's access to programme functionality may depend on their assigned responsibility.
+
+For example, a Member assigned to disability services may receive access to beneficiary assessment and referral functions without automatically receiving access to finance.
+
+## 5.4 Record-Level Access
+
+Module-level permissions alone are not sufficient.
+
+The system shall also restrict which records a user can access.
+
+Examples include:
+
+* A Member may access beneficiaries they personally registered, assessed, or visited, subject to assigned permissions.
+* A Member may access their own authorised operational records.
+* A Member may access their own contribution totals within projects to which they are assigned.
+* Users may access project or activity records according to their assignment and permissions.
+* Financial records shall only be available to users authorised to access financial information.
+
+Record-level restrictions shall be enforced by the backend.
+
+## 5.5 Technical Access vs Programme Authority
+
+Technical administration and programme decision-making are separate concepts.
+
+An Admin may have technical authority to configure the system and manage users, titles, and permissions.
+
+This does not automatically mean that the Admin has programme decision-making authority.
+
+Programme authority shall remain subject to the permissions and governance rules assigned to the relevant users.
+
+# 6. Title 1 - Admin
 
 ## 6.1 Purpose
 
-The Programme / Project Coordinator manages ERA projects, activities, implementation processes, and programme information.
+The Admin title is responsible for system administration and authorised administrative functions.
+
+The Admin is responsible for maintaining the system's user access structure and supporting the technical operation of ERA-IPMS.
 
 ## 6.2 Main Responsibilities
 
-The Programme / Project Coordinator may:
+Admin may:
 
-* Create projects.
-* Update project information.
-* Plan activities.
-* Record activities.
-* Monitor activity implementation.
-* Assign activities to staff or volunteers.
-* Review beneficiary services.
-* Review home visits.
-* Monitor referrals.
-* Monitor follow-ups.
-* Prepare project reports.
-* Track project progress.
+* Create user accounts.
+* Update user accounts.
+* Activate user accounts.
+* Deactivate user accounts.
+* Reset user passwords through authorised procedures.
+* Assign titles.
+* Create future or custom titles.
+* Assign permissions to titles or users according to the approved access model.
+* Assign operational responsibilities.
+* Manage system-level configuration.
+* Support system maintenance.
+* Review audit information.
+* Perform authorised project administration.
+* Support system security and administration.
 
-## 6.3 Main Permissions
+## 6.3 Project Authority
 
-| Function             | Permission                       |
-| -------------------- | -------------------------------- |
-| Dashboard            | View                             |
-| Beneficiaries        | View / Add / Edit                |
-| Disability Records   | View / Add / Edit                |
-| Home Visits          | View / Add / Edit                |
-| Referrals            | View / Add / Edit                |
-| Follow-Ups           | View / Add / Edit                |
-| Projects             | Manage                           |
-| Activities           | Manage                           |
-| Poultry              | View                             |
-| Farm                 | View                             |
-| Finance              | View authorised project expenses |
-| Staff and Volunteers | View / Assign Activities         |
-| Reports              | Generate                         |
-| Export Reports       | Export                           |
-| User Management      | No                               |
-| System Settings      | No                               |
+Admin may create, update, and manage projects where authorised by the system governance model.
 
-# 7. Role 4 - Field Staff / Volunteer
+Project creation is initially assigned to:
+
+* Admin
+* Director
+
+Admin project authority does not automatically grant programme decision authority.
+
+## 6.4 Admin Access
+
+| Function                  | Initial Access                                       |
+| ------------------------- | ---------------------------------------------------- |
+| User Management           | Administer                                           |
+| Title Management          | Administer                                           |
+| Permission Management     | Administer                                           |
+| Responsibility Assignment | Manage                                               |
+| System Settings           | Administer                                           |
+| Audit Log                 | View / Manage where authorised                       |
+| Beneficiaries             | According to assigned administrative permission      |
+| Disability Records        | According to assigned administrative permission      |
+| Home Visits               | According to assigned administrative permission      |
+| Referrals                 | According to assigned administrative permission      |
+| Follow-Ups                | According to assigned administrative permission      |
+| Projects                  | Manage                                               |
+| Activities                | Manage where authorised                              |
+| Poultry                   | According to assigned permission                     |
+| Farm                      | According to assigned permission                     |
+| Finance                   | According to assigned permission                     |
+| Staff and Members         | Manage authorised administrative records             |
+| Dashboard                 | Administrative and authorised management information |
+| Reports                   | Generate / Export where authorised                   |
+
+Admin shall not automatically receive unrestricted programme access simply because the user has technical administration privileges.
+
+# 7. Title 2 - Director
 
 ## 7.1 Purpose
 
-Field Staff and Volunteers will have the **same system role and access level**.
+The Director provides programme oversight, management oversight, and monitoring and evaluation oversight.
 
-They support ERA's community and field activities.
-
-Their work may include beneficiary registration, assessments, home visits, referrals, follow-ups, community awareness, and other assigned activities.
+The Director uses ERA-IPMS to review organisational performance, project progress, programme information, and management information.
 
 ## 7.2 Main Responsibilities
 
-Field Staff / Volunteers may:
+The Director may:
 
-* Register beneficiaries.
-* Record disability assessments.
-* Record home visits.
-* Create referrals.
-* Follow up referrals.
-* Record follow-up outcomes.
-* Participate in community activities.
-* Record assigned activities.
-* Update authorised beneficiary information.
-* Report field information.
+* Provide programme oversight.
+* Review project performance.
+* Review activity implementation.
+* Review beneficiary service information.
+* Review disability service information.
+* Review referrals and follow-ups.
+* Review poultry and farm performance.
+* Review authorised financial information.
+* Review management reports.
+* Oversee monitoring and evaluation.
+* Review project and activity continuation.
+* Participate in project creation and management decisions.
+* Approve records or activities where specifically authorised.
 
-## 7.3 Access Principle
+## 7.3 Director Access
 
-Field Staff / Volunteers should have access to the information required to perform their assigned responsibilities.
+| Function              | Initial Access                    |
+| --------------------- | --------------------------------- |
+| User Management       | No                                |
+| Title Management      | No                                |
+| Permission Management | No                                |
+| System Settings       | No                                |
+| Dashboard             | Full management view              |
+| Beneficiaries         | View                              |
+| Disability Records    | View                              |
+| Home Visits           | View                              |
+| Referrals             | View / Approve where authorised   |
+| Follow-Ups            | View                              |
+| Projects              | Manage / Approve where authorised |
+| Activities            | View / Approve where authorised   |
+| Poultry               | View                              |
+| Farm                  | View                              |
+| Finance               | View / Approve where authorised   |
+| Staff and Members     | View                              |
+| M&E                   | Oversight                         |
+| Reports               | Generate                          |
+| Export                | Export authorised reports         |
 
-They should not automatically have access to:
+The Director should normally review and oversee operational information rather than directly modify routine field records unless explicitly authorised.
 
-* Financial records.
-* System administration.
-* All organisational records.
-* Unrelated project information.
-
-## 7.4 Main Permissions
-
-| Function             | Permission                           |
-| -------------------- | ------------------------------------ |
-| Dashboard            | Limited View                         |
-| Beneficiaries        | Add / View / Edit authorised records |
-| Disability Records   | Add / View / Edit                    |
-| Home Visits          | Add / View / Edit                    |
-| Referrals            | Add / View / Edit                    |
-| Follow-Ups           | Add / View / Edit                    |
-| Projects             | View assigned projects               |
-| Activities           | View / Update assigned activities    |
-| Poultry              | No                                   |
-| Farm                 | No                                   |
-| Finance              | No                                   |
-| Staff and Volunteers | No                                   |
-| Reports              | Limited View                         |
-| Export               | No                                   |
-| User Management      | No                                   |
-| System Settings      | No                                   |
-
-# 8. Role 5 - Farm Personnel
+# 8. Title 3 - Programme Coordinator
 
 ## 8.1 Purpose
 
-Farm Personnel manage and record ERA's small farm and poultry-related operational activities.
+The Programme Coordinator manages programme and project coordination and supports operational implementation.
 
-This role is designed for persons assigned responsibility for farming and poultry operations.
+The Programme Coordinator provides day-to-day coordination of projects, activities, and related programme information.
 
 ## 8.2 Main Responsibilities
 
-Farm Personnel may:
+The Programme Coordinator may:
 
-* Record crops.
-* Record planting.
-* Record watering.
-* Record weeding.
-* Record harvesting.
-* Record farm activities.
-* Record harvest quantities.
-* Record produce transferred to poultry.
-* Record poultry numbers.
-* Record chicken purchases.
-* Record egg production.
-* Record feed usage.
-* Record feed purchases.
-* Record poultry illnesses.
-* Record poultry deaths.
-* Record poultry-related activities.
+* Coordinate projects.
+* Manage project information.
+* Plan activities.
+* Record activities.
+* Monitor implementation.
+* Assign activities to Members.
+* Review beneficiary services.
+* Review disability assessments.
+* Review home visits.
+* Monitor referrals.
+* Monitor referral follow-ups.
+* Coordinate programme activities.
+* Track project progress.
+* Prepare project reports.
+* Review authorised poultry and farm information.
+* Coordinate with Finance on authorised project information.
 
-## 8.3 Farm Access
+## 8.3 Programme Coordinator Access
 
-Farm Personnel should be able to manage farm information but should not automatically access beneficiary or confidential disability records.
+| Function              | Initial Access                                |
+| --------------------- | --------------------------------------------- |
+| User Management       | No                                            |
+| Title Management      | No                                            |
+| Permission Management | No                                            |
+| System Settings       | No                                            |
+| Dashboard             | View                                          |
+| Beneficiaries         | View / Add / Edit according to responsibility |
+| Disability Records    | View / Add / Edit according to responsibility |
+| Home Visits           | View / Add / Edit                             |
+| Referrals             | View / Add / Edit                             |
+| Follow-Ups            | View / Add / Edit                             |
+| Projects              | Manage                                        |
+| Activities            | Manage                                        |
+| Poultry               | View                                          |
+| Farm                  | View                                          |
+| Finance               | View authorised project information           |
+| Staff and Members     | View / Assign Activities                      |
+| M&E                   | View authorised programme information         |
+| Reports               | Generate                                      |
+| Export                | Export authorised reports                     |
 
-## 8.4 Main Permissions
+The Programme Coordinator shall not manage system users, titles, permissions, or system settings unless separately assigned an authorised administrative permission.
 
-| Function             | Permission                                      |
-| -------------------- | ----------------------------------------------- |
-| Dashboard            | Farm / Poultry View                             |
-| Beneficiaries        | No                                              |
-| Disability Records   | No                                              |
-| Home Visits          | No                                              |
-| Referrals            | No                                              |
-| Follow-Ups           | No                                              |
-| Projects             | View relevant projects                          |
-| Activities           | View / Update assigned activities               |
-| Poultry              | Manage                                          |
-| Farm                 | Manage                                          |
-| Finance              | Add / View authorised farm and poultry expenses |
-| Staff and Volunteers | No                                              |
-| Reports              | Farm / Poultry Reports                          |
-| Export               | Authorised                                      |
-| User Management      | No                                              |
-| System Settings      | No                                              |
-
-# 9. Role 6 - Finance Personnel
+# 9. Title 4 - Finance
 
 ## 9.1 Purpose
 
-Finance Personnel manage authorised financial information within ERA-IPMS.
+The Finance title is responsible for authorised financial records.
+
+Finance focuses on financial transactions and financial information rather than beneficiary service delivery or operational programme records.
 
 ## 9.2 Main Responsibilities
 
-Finance Personnel may:
+Finance may:
 
+* Record sales.
+* Record income.
 * Record expenses.
 * Categorise expenses.
 * Record project expenses.
-* Record poultry expenses.
-* Record farm expenses.
-* Maintain financial records.
+* Record poultry-related financial transactions.
+* Record farm-related financial transactions.
 * Review financial transactions.
+* Maintain authorised financial records.
 * Prepare financial summaries.
 * Generate financial reports.
+* Export authorised financial reports.
 
-## 9.3 Main Permissions
+The initial finance scope is basic financial management.
 
-| Function             | Permission                          |
-| -------------------- | ----------------------------------- |
-| Dashboard            | Financial View                      |
-| Beneficiaries        | No                                  |
-| Disability Records   | No                                  |
-| Home Visits          | No                                  |
-| Referrals            | No                                  |
-| Follow-Ups           | No                                  |
-| Projects             | View relevant project information   |
-| Activities           | View relevant information           |
-| Poultry              | View authorised expense information |
-| Farm                 | View authorised expense information |
-| Finance              | Manage                              |
-| Staff and Volunteers | No                                  |
-| Reports              | Financial Reports                   |
-| Export               | Export authorised financial reports |
-| User Management      | No                                  |
-| System Settings      | No                                  |
+It is not intended to implement full accounting functionality in the initial version.
 
-Financial records should only be accessible to authorised personnel.
+## 9.3 Finance Access
 
-# 10. Role 7 - Monitoring & Evaluation Personnel
+| Function              | Initial Access                                     |
+| --------------------- | -------------------------------------------------- |
+| User Management       | No                                                 |
+| Title Management      | No                                                 |
+| Permission Management | No                                                 |
+| System Settings       | No                                                 |
+| Dashboard             | Financial view                                     |
+| Beneficiaries         | No                                                 |
+| Disability Records    | No                                                 |
+| Home Visits           | No                                                 |
+| Referrals             | No                                                 |
+| Follow-Ups            | No                                                 |
+| Projects              | View relevant project information                  |
+| Activities            | View relevant information                          |
+| Poultry               | View authorised financial information              |
+| Farm                  | View authorised financial information              |
+| Finance               | Manage                                             |
+| Staff and Members     | No, unless separately authorised                   |
+| M&E                   | View authorised financial summaries where required |
+| Reports               | Financial reports                                  |
+| Export                | Export authorised financial reports                |
+
+Finance shall not require detailed beneficiary or disability information to perform ordinary financial responsibilities.
+
+# 10. Title 5 - Member
 
 ## 10.1 Purpose
 
-Monitoring & Evaluation (M&E) Personnel use ERA-IPMS to monitor programme performance, analyse information, track indicators, and prepare reports.
+Member is the general operational title for users who perform assigned programme, community, field, poultry, farm, or other operational responsibilities.
 
-## 10.2 Main Responsibilities
+Member is intentionally a general title.
 
-M&E Personnel may:
+Members receive their actual operational access through assigned permissions and responsibilities.
 
-* Monitor beneficiary information.
-* Monitor disability services.
-* Monitor home visits.
-* Monitor referrals.
-* Monitor follow-ups.
-* Monitor project activities.
-* Monitor poultry information.
-* Monitor farm information.
-* Analyse programme information.
-* Track indicators.
-* Generate reports.
-* Export authorised reports.
-* Support management decision-making through evidence.
+## 10.2 Possible Member Responsibilities
 
-## 10.3 Main Permissions
+A Member may be assigned responsibilities such as:
 
-| Function             | Permission                          |
-| -------------------- | ----------------------------------- |
-| Dashboard            | Full Monitoring View                |
-| Beneficiaries        | View                                |
-| Disability Records   | View authorised information         |
-| Home Visits          | View                                |
-| Referrals            | View                                |
-| Follow-Ups           | View                                |
-| Projects             | View                                |
-| Activities           | View                                |
-| Poultry              | View                                |
-| Farm                 | View                                |
-| Finance              | View authorised summary information |
-| Staff and Volunteers | View summary                        |
-| Reports              | Generate                            |
-| Export Reports       | Export                              |
-| User Management      | No                                  |
-| System Settings      | No                                  |
+* Disability services.
+* Beneficiary registration.
+* Disability assessment.
+* Home visits.
+* Referral creation.
+* Referral follow-up.
+* Community awareness.
+* Project activities.
+* Poultry operations.
+* Farm operations.
+* Data collection.
+* Other validated programme responsibilities.
 
-M&E Personnel should normally analyse and report information rather than change the original operational records unless specifically authorised.
+## 10.3 Member Access Principle
 
-# 11. Final Permission Matrix
+A Member does not automatically receive access to every programme module.
 
-The following matrix provides the initial overall access model.
+Access depends on:
 
-| Function              | Admin  | Management   | Coordinator  | Field Staff / Volunteer | Farm Personnel | Finance      | M&E        |
-| --------------------- | ------ | ------------ | ------------ | ----------------------- | -------------- | ------------ | ---------- |
-| User Management       | Manage | No           | No           | No                      | No             | No           | No         |
-| System Settings       | Manage | No           | No           | No                      | No             | No           | No         |
-| Dashboard             | Full   | Full         | View         | Limited                 | Farm/Poultry   | Finance      | Monitoring |
-| Beneficiaries         | Manage | View         | Add/Edit     | Add/Edit                | No             | No           | View       |
-| Disability Assessment | Manage | View         | Add/Edit     | Add/Edit                | No             | No           | View       |
-| Home Visits           | Manage | View         | Add/Edit     | Add/Edit                | No             | No           | View       |
-| Referrals             | Manage | View         | Add/Edit     | Add/Edit                | No             | No           | View       |
-| Follow-Ups            | Manage | View         | Add/Edit     | Add/Edit                | No             | No           | View       |
-| Projects              | Manage | View         | Manage       | Assigned                | Relevant       | Relevant     | View       |
-| Activities            | Manage | View/Approve | Manage       | Assigned                | Assigned       | View         | View       |
-| Poultry               | Manage | View         | View         | No                      | Manage         | Expense View | View       |
-| Farm                  | Manage | View         | View         | No                      | Manage         | Expense View | View       |
-| Finance               | Manage | View/Approve | Project View | No                      | Limited        | Manage       | Summary    |
-| Staff/Volunteers      | Manage | View         | View/Assign  | No                      | No             | No           | View       |
-| Reports               | Manage | Generate     | Generate     | Limited                 | Farm/Poultry   | Financial    | Generate   |
-| PDF/Excel Export      | Yes    | Yes          | Yes          | No                      | Authorised     | Yes          | Yes        |
+1. Assigned permissions.
+2. Assigned responsibilities.
+3. Project assignments.
+4. Activity assignments.
+5. Record-level access rules.
 
-# 12. Role Assignment
+## 10.4 Beneficiary Access
 
-Each ERA-IPMS user should have one primary role.
+Where authorised, a Member may:
 
-Example:
+* Register beneficiaries.
+* View authorised beneficiary records.
+* Edit authorised beneficiary records.
+* Record disability assessments.
+* Record home visits.
+* Create referrals.
+* Submit referrals.
+* Record follow-up information.
+* View records connected to their authorised work.
+
+A Member should normally access beneficiary records they personally registered, assessed, or visited, subject to the permissions and responsibility assigned to them.
+
+## 10.5 Referral Access
+
+Members may create and submit referrals where their responsibilities permit.
+
+Referral approval shall be performed by an authorised person with the appropriate approval permission.
+
+Creating a referral does not automatically give the Member approval authority.
+
+## 10.6 Poultry and Farm Access
+
+Members assigned poultry or farm responsibilities may maintain authorised operational records.
+
+Examples include:
+
+* Poultry stock.
+* Poultry groups or categories.
+* Egg production.
+* Feed usage.
+* Poultry health events.
+* Poultry deaths.
+* Farm activities.
+* Crops.
+* Harvests.
+* Farm-to-poultry produce transfers.
+
+Operational quantity records and financial transactions are separate.
+
+Financial transactions are handled through the Finance module according to the user's authorised permissions.
+
+## 10.7 Member Contribution Access
+
+Members may view their own authorised contribution totals for projects to which they are assigned.
+
+This may include information such as:
+
+* Activities participated in.
+* Activities completed.
+* Beneficiary-related contributions.
+* Other authorised project contribution measures.
+
+A Member shall not automatically receive access to another Member's private contribution information.
+
+## 10.8 Member Access Summary
+
+| Function              | Initial Access                                |
+| --------------------- | --------------------------------------------- |
+| User Management       | No                                            |
+| Title Management      | No                                            |
+| Permission Management | No                                            |
+| System Settings       | No                                            |
+| Dashboard             | Limited authorised view                       |
+| Beneficiaries         | Responsibility-based                          |
+| Disability Records    | Responsibility-based                          |
+| Home Visits           | Responsibility-based                          |
+| Referrals             | Add / View / Edit according to responsibility |
+| Follow-Ups            | Responsibility-based                          |
+| Projects              | View assigned projects                        |
+| Activities            | View / Update assigned activities             |
+| Poultry               | Responsibility-based                          |
+| Farm                  | Responsibility-based                          |
+| Finance               | No, unless separately authorised              |
+| Staff and Members     | No, unless separately authorised              |
+| M&E                   | Limited authorised operational information    |
+| Reports               | Limited authorised reports                    |
+| Export                | Only where explicitly authorised              |
+
+# 11. Future and Custom Titles
+
+The system shall support future titles.
+
+An Admin may create a new title when there is a validated organisational requirement.
+
+A future title should be configured by assigning:
+
+1. Title name.
+2. Permissions.
+3. Operational responsibilities.
+4. Project or activity scope where applicable.
+5. Record-level access rules.
+
+Examples of possible future titles may include specialised programme, technical, monitoring, or operational positions.
+
+These examples do not form part of the initial five-title baseline unless formally approved.
+
+# 12. Permission Matrix
+
+The following matrix represents the initial access direction.
+
+| Module / Function         | Admin             | Director                        | Programme Coordinator       | Finance                       | Member                           |
+| ------------------------- | ----------------- | ------------------------------- | --------------------------- | ----------------------------- | -------------------------------- |
+| User Management           | Administer        | No                              | No                          | No                            | No                               |
+| Title Management          | Administer        | No                              | No                          | No                            | No                               |
+| Permission Management     | Administer        | No                              | No                          | No                            | No                               |
+| Responsibility Assignment | Manage            | No                              | No                          | No                            | No                               |
+| System Settings           | Administer        | No                              | No                          | No                            | No                               |
+| Audit Log                 | Authorised        | View                            | View authorised             | View authorised               | Own/authorised events            |
+| Dashboard                 | Admin             | Full View                       | View                        | Financial View                | Limited View                     |
+| Beneficiaries             | Authorised        | View                            | View/Add/Edit               | No                            | Responsibility-based             |
+| Disability Records        | Authorised        | View                            | View/Add/Edit               | No                            | Responsibility-based             |
+| Home Visits               | Authorised        | View                            | View/Add/Edit               | No                            | Responsibility-based             |
+| Referrals                 | Authorised        | View/Approve where authorised   | View/Add/Edit               | No                            | Add/View/Edit where authorised   |
+| Follow-Ups                | Authorised        | View                            | View/Add/Edit               | No                            | Responsibility-based             |
+| Projects                  | Manage            | Manage/Approve where authorised | Manage                      | View relevant                 | Assigned projects                |
+| Activities                | Manage            | View/Approve                    | Manage                      | View relevant                 | Assigned activities              |
+| Poultry                   | Authorised        | View                            | View                        | Financial view                | Responsibility-based             |
+| Farm                      | Authorised        | View                            | View                        | Financial view                | Responsibility-based             |
+| Finance                   | Authorised        | View/Approve where authorised   | View authorised information | Manage                        | No unless separately authorised  |
+| Staff/Members             | Manage authorised | View                            | View/Assign Activities      | No                            | No unless separately authorised  |
+| M&E                       | Authorised        | Oversight                       | Programme view              | Financial view where required | Assigned operational information |
+| Reports                   | Manage            | Generate                        | Generate                    | Financial Reports             | Limited authorised reports       |
+| Export                    | Authorised        | Authorised                      | Authorised                  | Authorised financial          | Only explicitly authorised       |
+
+The matrix represents the baseline direction. Detailed permissions may be assigned more precisely during implementation.
+
+# 13. Record-Level Access Rules
+
+Record-level access is a mandatory part of the access-control design.
+
+## 13.1 Beneficiary Records
+
+Beneficiary information may contain personal and sensitive information.
+
+Access shall therefore consider:
+
+* User permissions.
+* Assigned responsibility.
+* User-created records.
+* User-assessed records.
+* User-visited records.
+* Project assignment.
+* Programme assignment.
+
+A user with general beneficiary View permission does not necessarily have access to every beneficiary record.
+
+## 13.2 Project Records
+
+Project access may depend on:
+
+* User title.
+* Project assignment.
+* Permission.
+* Responsibility.
+
+Admin and Director are initially authorised for project creation.
+
+Programme Coordinators manage projects and activities within their authorised programme scope.
+
+Members generally access projects and activities to which they are assigned.
+
+## 13.3 Financial Records
+
+Financial information shall be restricted to authorised users.
+
+Finance has primary financial management responsibility.
+
+Director may review or approve authorised financial information where required.
+
+Programme Coordinator may view authorised project financial information required for programme coordination.
+
+Members do not receive financial access by default.
+
+## 13.4 Poultry and Farm Records
+
+Operational poultry and farm information may be accessed according to assigned responsibilities.
+
+Members assigned operational responsibilities may create and update relevant records.
+
+Programme Coordinator and Director may review authorised operational information.
+
+Finance handles the financial side of poultry and farm transactions.
+
+# 14. Approval Rules
+
+Approval is a separate permission from Add or Edit.
+
+A user who creates a record does not automatically have permission to approve it.
+
+Examples:
+
+* A Member may create and submit a referral.
+* An authorised person may approve the referral.
+* A user may record an activity without automatically being authorised to approve it.
+* Financial approval shall require explicit authorisation.
+* Project and activity approval shall follow the assigned governance permissions.
+
+Approval workflows will be defined in greater detail in the System Workflows document.
+
+# 15. Delete and Archive Rules
+
+Delete permission shall not imply that every record may be physically deleted.
+
+In particular:
+
+* Beneficiary records should normally be archived or made inactive rather than physically deleted.
+* Important operational and financial records should have appropriate retention and audit considerations.
+* Delete permissions shall be assigned only where justified by the record type and workflow.
+
+The detailed database behaviour for deletion, archiving, and record retention will be defined during database design.
+
+# 16. Audit and Accountability
+
+Important system actions should be recorded in the audit log.
+
+Audit information should include, where applicable:
+
+* User who performed the action.
+* Action performed.
+* Record affected.
+* Date and time.
+* Previous value where appropriate.
+* New value where appropriate.
+* Relevant project or module context.
+
+The audit trail supports accountability and helps identify unauthorised or incorrect changes.
+
+# 17. Confidentiality and Data Protection
+
+ERA-IPMS may contain personal, beneficiary, disability, financial, and organisational information.
+
+The system shall therefore follow these principles:
+
+* Authentication is required for protected functions.
+* Access is permission-controlled.
+* Record-level restrictions are enforced.
+* Passwords are never stored in plain text.
+* Real beneficiary information must not be used in development or testing.
+* Fictional or anonymised data should be used during development and testing.
+* Credentials and secrets must not be committed to the public repository.
+* Confidential organisational information must not be publicly published.
+* Audit information should be retained for important system actions.
+
+# 18. Relationship to Other Documents
+
+This document shall remain consistent with:
+
+* Project Concept Note.
+* README.
+* Needs Assessment.
+* Stakeholder Analysis.
+* Software Requirements Specification.
+* System Workflows.
+* Database Entity Design.
+* ERD documentation.
+* Database schema.
+
+If a conflict is identified between documents, the conflict shall be documented and resolved before implementation rather than silently resolved in code.
+
+# 19. Implementation Guidance
+
+The access-control implementation should follow this conceptual model:
 
 ```text
 User
   ↓
-Assigned Role
+Title
   ↓
-Role Permissions
+Permissions
   ↓
-Authorised Modules
+Responsibilities
+  ↓
+Project / Activity Assignment
+  ↓
+Record-Level Access
   ↓
 Allowed Actions
 ```
@@ -474,103 +722,99 @@ Allowed Actions
 For example:
 
 ```text
-Field Staff / Volunteer
-        ↓
-Beneficiary Module
-        ↓
-Add Beneficiary
-Record Assessment
-Record Home Visit
-Create Referral
-Record Follow-Up
+Member
+  ↓
+Disability Services Responsibility
+  ↓
+Beneficiary + Assessment + Referral Permissions
+  ↓
+Assigned Programme / Project
+  ↓
+Authorised Beneficiary Records
+  ↓
+Register / View / Edit / Submit Referral
 ```
 
 Another example:
 
 ```text
-Farm Personnel
-        ↓
-Farm & Poultry Modules
-        ↓
-Record Crop
-Record Harvest
-Record Chicken
-Record Eggs
-Record Feed
-Record Illness
-Record Death
+Finance
+  ↓
+Finance Permissions
+  ↓
+Authorised Financial Records
+  ↓
+Project / Poultry / Farm Transactions
+  ↓
+View / Add / Edit / Manage / Report
 ```
 
-# 13. Data Access Principle
+# 20. Initial Governance Summary
 
-ERA-IPMS should follow the principle of **least privilege**.
+The initial governance model is:
 
-This means users should receive only the access necessary to perform their responsibilities.
+### Admin
 
-For example, a Field Staff / Volunteer user working on beneficiary follow-up should not be able to view ERA's financial records.
+System administration, user management, title and permission management, responsibility assignment, system configuration, and authorised project administration.
 
-Similarly, Finance Personnel should not need access to detailed disability information to perform financial responsibilities.
+### Director
 
-# 14. Confidentiality
+Programme oversight, M&E oversight, management review, and authority relating to project and activity continuation.
 
-ERA-IPMS may contain personal and potentially sensitive information about persons receiving ERA services.
+### Programme Coordinator
 
-Therefore:
+Programme and project coordination, activity management, implementation monitoring, and operational oversight.
 
-* Users must authenticate before accessing the system.
-* Access must be controlled by role.
-* Users should only access authorised records.
-* Passwords must not be stored as plain text.
-* Confidential information must not be included in the public GitHub repository.
-* Test data should be fictional or appropriately anonymised.
-* System activity should be recorded where appropriate.
+### Finance
 
-# 15. Audit Trail
+Sales, income, expenses, financial records, and authorised financial reporting.
 
-For important records, ERA-IPMS should eventually record:
+### Member
 
-* User who created the record.
-* Date and time the record was created.
-* User who last modified the record.
-* Date and time of the last modification.
-* Important changes made to the record.
+Assigned programme responsibilities and operational records within authorised scope.
 
-This will improve accountability and help identify errors or unauthorised changes.
+The model intentionally avoids creating a separate fixed system title for every operational function.
 
-# 16. Future Permission Improvements
+# 21. Future Permission Expansion
 
-The initial seven roles provide a practical starting point for ERA.
+The permission framework may later be expanded with more granular permissions if validated requirements require them.
 
-As ERA-IPMS develops, more detailed permissions may be introduced.
+Possible future permissions may include:
 
-For example:
-
-* View only.
-* Add only.
-* Add and edit.
+* View own records.
+* View assigned records.
+* View project records.
+* Add own records.
+* Edit own records.
 * Approve.
+* Reject.
+* Submit.
+* Assign.
+* Archive.
+* Restore.
+* Import.
 * Export.
-* Delete.
-* Module-specific permissions.
-* Project-specific permissions.
-* Assignment-based access.
+* Manage.
+* Administer.
 
-The system should be designed so that permissions can be expanded without requiring a complete redesign.
+Such permissions should be introduced through documented change control.
 
-# 17. Conclusion
+# 22. Conclusion
 
-ERA-IPMS will use seven initial user roles:
+ERA-IPMS will initially use five user titles:
 
-1. **System Administrator**
-2. **ERA Management**
-3. **Programme / Project Coordinator**
-4. **Field Staff / Volunteer**
-5. **Farm Personnel**
-6. **Finance Personnel**
-7. **Monitoring & Evaluation Personnel**
+1. **Admin**
+2. **Director**
+3. **Programme Coordinator**
+4. **Finance**
+5. **Member**
 
-Field Staff and Volunteers will intentionally use the same role and permissions because their current responsibilities and required system access are the same.
+These titles are separate from permissions and responsibilities.
 
-The role-based access model will help ERA organise responsibilities, protect confidential information, reduce unauthorised access, and ensure that each user can perform the functions required for their work.
+The system will use least-privilege access, responsibility-based access, project and activity assignment, and record-level access controls.
 
-This document will be used as a foundation for designing the authentication system, database user relationships, application permissions, and system workflows.
+Admin will manage the system's access structure and authorised administrative functions. Director will provide programme and M&E oversight. Programme Coordinator will manage programme and project operations. Finance will manage authorised financial information. Members will perform assigned operational responsibilities.
+
+The model is designed to support future organisational growth without requiring a complete redesign of the permission system.
+
+This document provides the approved baseline for the next documentation stage: **System Workflows**.
