@@ -6,798 +6,1205 @@
 
 **Project:** ERA Integrated Project Management System (ERA-IPMS)
 **Document Type:** Software Requirements Specification
-**Version:** 1.0
+**Version:** 1.1
 **Date:** September 2026
-**Status:** Draft
+**Status:** Documentation Baseline
 **Prepared By:** Abdullahi Abdi Mohamed
+
+---
 
 # 1. Introduction
 
 ## 1.1 Purpose
 
-The ERA Integrated Project Management System (ERA-IPMS) is a web-based information management system proposed for Emergency Response Aid (ERA).
+The ERA Integrated Project Management System (ERA-IPMS) is a web-based information management system for Emergency Response Aid (ERA).
 
-The system will help ERA move from mainly manual and paper-based documentation toward structured digital information management.
+The system is intended to move important organisational records from mainly manual and paper-based processes toward structured digital information management.
 
-ERA-IPMS will bring together information relating to:
+ERA-IPMS will provide authorised users with a central system for recording, managing, searching, monitoring, and reporting organisational information.
 
-* Disability services.
-* Beneficiaries.
-* Home visits.
-* Referrals and follow-ups.
-* Projects.
-* Activities.
-* Poultry.
-* Small-scale farming.
-* Finance.
-* Staff and volunteers.
-* Monitoring and evaluation.
-* Reporting.
+The system will initially support:
 
-The system will provide authorised users with a central location for recording, managing, searching, monitoring, and reporting organisational information.
+* User authentication and access control
+* Beneficiary management
+* Disability services
+* Home visits
+* Referrals and follow-ups
+* Projects and activities
+* Poultry operations
+* Small-scale farming
+* Basic financial management
+* Staff and volunteer information
+* Monitoring and evaluation
+* Dashboards
+* Basic reporting
+
+## 1.2 Relationship to Other Project Documents
+
+This SRS is derived from and must remain consistent with the approved project documentation baseline, including:
+
+* Project Concept Note
+* README
+* Needs Assessment
+* Stakeholder Analysis
+* User Roles and Permissions
+* System Workflows
+* Database Entity Design
+* ERD documentation
+
+Where a later approved requirements document provides more detailed rules, the detailed document shall be used to define implementation behaviour.
+
+Changes to approved requirements must be documented and reviewed before implementation.
 
 # 2. Background
 
 ERA is a community-based organisation working in areas including disability services, community advocacy and awareness, poultry farming, and small-scale agriculture.
 
-ERA's disability activities include:
+Its activities include:
 
-* Home visits.
-* Assessments.
-* Referrals.
-* Follow-up.
-* Capacity building.
-* Advocacy.
-* Awareness activities for persons with disabilities and vulnerable persons.
+* Disability assessments
+* Home visits
+* Referrals
+* Referral follow-ups
+* Advocacy
+* Awareness activities
+* Capacity building
+* Poultry operations
+* Small-scale farming
+* Project and community activities
 
-ERA also operates a small poultry project and a small vegetable farm.
-
-The poultry project currently has approximately 10 local and Kienyeji chickens. Its main purpose is currently egg production, with plans for future expansion into meat production and breeding.
-
-ERA's small farm grows crops including bananas, natural vegetables, and sukuma wiki. The farm supports the poultry project through farm produce that may be used as chicken feed. Local feeds are also purchased when necessary.
-
-Much of ERA's information is currently maintained using paper forms and manual records.
+ERA-IPMS is intended to improve the management of information generated through these activities.
 
 # 3. Problem Statement
 
-ERA currently faces several information management challenges.
+The current information-management environment creates challenges including:
 
-These include:
+* Difficulty locating historical beneficiary information
+* Risk of loss or damage to paper records
+* Duplicate records
+* Time-consuming report preparation
+* Difficulty determining beneficiaries served
+* Difficulty tracking referrals and follow-ups
+* Difficulty monitoring poultry numbers
+* Difficulty monitoring egg production
+* Limited structured feed records
+* Difficulty monitoring poultry illness and deaths
+* Limited structured farm records
+* Difficulty consolidating farm expenses
+* Difficulty consolidating project and organisational information
+* Difficulty producing reliable management and project reports
 
-* Difficulty finding old beneficiary records.
-* Risk of losing or damaging paper records.
-* Duplicate records.
-* Time-consuming report preparation.
-* Difficulty determining the total number of beneficiaries served.
-* Difficulty tracking referrals and follow-ups.
-* Difficulty monitoring poultry numbers.
-* Difficulty monitoring egg production.
-* Lack of structured feed records.
-* Difficulty monitoring poultry illness and deaths.
-* Lack of formal farm production records.
-* Lack of formal harvest records.
-* Difficulty consolidating farm expenses.
-* Difficulty producing high-quality organisational and project reports.
-
-ERA-IPMS is intended to address these problems through a structured digital information management system.
+ERA-IPMS shall address these problems through structured digital information management.
 
 # 4. System Objectives
 
-The main objectives of ERA-IPMS are to:
+ERA-IPMS shall aim to:
 
 1. Digitise important ERA records.
 2. Centralise organisational and project information.
 3. Improve beneficiary information management.
-4. Improve disability service tracking.
-5. Improve referral and follow-up tracking.
-6. Improve poultry monitoring.
-7. Introduce structured farm records.
-8. Improve financial record management.
-9. Improve project and activity monitoring.
-10. Provide useful management dashboards.
-11. Improve report preparation.
-12. Improve information retrieval.
-13. Support evidence-based decision-making.
+4. Improve disability-service tracking.
+5. Improve home-visit tracking.
+6. Improve referral and follow-up tracking.
+7. Improve poultry monitoring.
+8. Introduce structured farm records.
+9. Improve basic financial record management.
+10. Improve project and activity monitoring.
+11. Provide useful management dashboards.
+12. Improve report preparation.
+13. Improve information retrieval.
+14. Support evidence-based organisational decision-making.
+15. Protect beneficiary and organisational information through controlled access.
 
-# 5. Scope of the System
+# 5. System Scope
 
-## 5.1 In Scope
+## 5.1 Initial Scope
 
-The initial ERA-IPMS will include:
+The initial ERA-IPMS shall include:
 
-* User authentication.
-* User roles and permissions.
-* Beneficiary management.
-* Disability assessment records.
-* Home visit records.
-* Referral management.
-* Referral follow-up.
-* Project management.
-* Activity management.
-* Poultry management.
-* Small farm management.
-* Expense management.
-* Staff and volunteer records.
-* Dashboard.
-* Monitoring and evaluation information.
-* Basic reporting.
+* Authentication
+* User management
+* Dynamic titles and permissions
+* Record-level access control
+* Beneficiary management
+* Disability assessment
+* Home visits
+* Referrals
+* Referral follow-ups
+* Project management
+* Activity management
+* Poultry management
+* Small farm management
+* Basic finance management
+* Staff and volunteer records
+* Dashboard
+* Monitoring and evaluation information
+* Basic reports
+* Search and filtering
+* Audit information for important system actions
 
 ## 5.2 Future Scope
 
-The following features may be considered in later versions:
+The following capabilities may be considered after the initial implementation:
 
-* PDF exports.
-* Excel exports.
-* Mobile application.
-* Offline data collection.
-* SMS notifications.
-* WhatsApp notifications.
-* Advanced M&E indicators.
-* Multi-organisation SaaS functionality.
-* External partner access.
-* Integration with KoboToolbox.
-* Import from Excel.
+* PDF report exports
+* Excel report exports
+* Mobile application
+* Offline data collection
+* SMS notifications
+* WhatsApp notifications
+* Advanced M&E functionality
+* KoboToolbox integration
+* Excel import
+* External partner access
+* Multi-organisation support
+* SaaS functionality
 
-These features are not required for the first MVP.
+These features are not required for the initial MVP unless separately approved.
 
-# 6. Target Users
+# 6. User and Access Model
 
-ERA-IPMS will initially support seven user roles:
+## 6.1 Initial System Titles
 
-1. System Administrator.
-2. ERA Management.
-3. Programme / Project Coordinator.
-4. Field Staff / Volunteer.
-5. Farm Personnel.
-6. Finance Personnel.
-7. Monitoring & Evaluation Personnel.
+ERA-IPMS shall initially support five approved titles:
 
-Each role will have different permissions according to its responsibilities.
+1. **Admin**
+2. **Director**
+3. **Programme Coordinator**
+4. **Finance**
+5. **Member**
+
+The title model is intentionally limited to these initial titles.
+
+Administrators may create additional titles in the future where organisational requirements justify them.
+
+## 6.2 Title, Permission, and Responsibility
+
+ERA-IPMS shall distinguish between three separate concepts.
+
+### Title
+
+A title identifies a user's organisational or system position.
+
+Examples:
+
+* Admin
+* Director
+* Programme Coordinator
+* Finance
+* Member
+
+### Permission
+
+A permission defines an operation a user may perform.
+
+Examples:
+
+* View
+* Add
+* Edit
+* Delete
+* Approve
+* Export
+* Manage
+* Administer
+
+### Responsibility
+
+A responsibility defines the operational area in which a user works.
+
+Examples:
+
+* Disability services
+* Beneficiary registration
+* Home visits
+* Referrals
+* Follow-ups
+* Project coordination
+* Poultry
+* Farm
+* Monitoring and evaluation
+* Community awareness
+
+Responsibilities shall not automatically become separate system titles.
+
+## 6.3 Dynamic Titles
+
+The system shall allow authorised administrators to:
+
+* Create titles
+* Modify titles
+* Assign permissions to titles
+* Remove permissions from titles
+* Assign titles to users
+* Change a user's title where authorised
+
+The initial five titles remain the baseline titles.
+
+## 6.4 Record-Level Access
+
+Access shall not depend only on the user's title.
+
+Where required, the system shall apply record-level restrictions so that users only access records for which they have appropriate authority.
+
+For example, a Member may be restricted to records that the Member personally registered, assessed, visited, or otherwise created, according to the approved permission and responsibility rules.
+
+## 6.5 Technical and Programme Authority
+
+System administration authority shall not automatically grant programme decision-making authority.
+
+The Admin title is primarily responsible for system administration and authorised system-level management.
+
+Programme decisions remain subject to the appropriate organisational authority.
 
 # 7. Functional Requirements
 
-Functional requirements describe what the system must be able to do.
+## FR-001: Authentication
 
-## FR-001: User Authentication
+The system shall:
 
-The system shall allow authorised users to log in using a username or email and password.
-
-The system shall reject invalid login credentials.
-
-The system shall allow authorised users to log out.
+* Allow authorised users to log in.
+* Accept username or email with password.
+* Reject invalid credentials.
+* Prevent inactive users from accessing the system.
+* Allow authenticated users to log out.
+* Maintain authenticated sessions securely.
 
 ## FR-002: User Management
 
-The System Administrator shall be able to:
+Authorised Admin users shall be able to:
 
 * Create user accounts.
 * Update user accounts.
 * Activate user accounts.
 * Deactivate user accounts.
-* Assign user roles.
+* Assign titles.
+* Change titles.
 * Reset user passwords.
+* Manage authorised user access.
 
-## FR-003: Role-Based Access Control
+The system shall not require the creation of a separate system role for every operational responsibility.
 
-The system shall restrict access according to the user's assigned role.
+## FR-003: Permission Management
 
-For example:
+Authorised administrators shall be able to assign permissions to titles.
 
-* Finance Personnel shall access authorised financial information.
-* Farm Personnel shall access farm and poultry information.
-* Field Staff / Volunteers shall access authorised beneficiary and field information.
-* System Administrators shall manage system-level functions.
+Permissions shall support operations such as:
+
+* View
+* Add
+* Edit
+* Delete
+* Approve
+* Export
+* Manage
+* Administer
+
+The final permission matrix shall be documented in the User Roles and Permissions document.
+
+## FR-004: Record-Level Authorisation
+
+The system shall enforce record-level access where required.
+
+A user may have permission to access a module while still being restricted from records outside the user's authorised scope.
+
+Access restrictions shall be enforced by the backend and shall not rely only on hiding interface elements.
+
+## FR-005: Audit Information
+
+The system shall maintain audit information for important actions where required.
+
+Audit information may include:
+
+* User
+* Action
+* Record affected
+* Date and time
+* Relevant change information
+
+Audit requirements shall be refined during database and workflow design.
 
 # 8. Beneficiary Management
 
-## FR-004: Beneficiary Registration
+## FR-006: Beneficiary Registration
 
 Authorised users shall be able to register beneficiaries.
 
-The system should capture appropriate information such as:
+The system may capture:
 
-* Beneficiary identification number.
-* Name.
-* Age.
-* Sex.
-* Location.
-* Contact information where appropriate.
-* Disability information where applicable.
-* Date of registration.
-* Service needs.
-* Other relevant information.
+* Beneficiary identifier
+* Name
+* Age or date of birth where appropriate
+* Sex
+* Location
+* Contact information where appropriate
+* Disability information where applicable
+* Registration date
+* Service needs
+* Relevant organisational information
 
-Only necessary information should be collected.
+Only necessary information shall be collected.
 
-## FR-005: Beneficiary Search
+## FR-007: Beneficiary Search
 
-Authorised users shall be able to search for beneficiaries.
+Authorised users shall be able to search beneficiaries.
 
-The system should support searches using appropriate fields such as:
+Search criteria may include:
 
-* Beneficiary ID.
-* Name.
-* Location.
-* Service status.
+* Beneficiary identifier
+* Name
+* Location
+* Service status
+* Other authorised fields
 
-## FR-006: Beneficiary Update
+## FR-008: Beneficiary Update
 
-Authorised users shall be able to update beneficiary information where they have permission.
+Authorised users with appropriate permission shall be able to update beneficiary information.
 
-The system should record when important information was updated.
+Important changes should retain appropriate audit information.
+
+## FR-009: Beneficiary Archiving
+
+Beneficiary records shall not normally be physically deleted where doing so would compromise organisational history or reporting.
+
+The system shall support an inactive or archived status where appropriate.
+
+The final archive rules shall be defined during workflow and database design.
 
 # 9. Disability Services
 
-## FR-007: Disability Assessment
+## FR-010: Disability Assessment
 
-Authorised Field Staff / Volunteers and Programme Coordinators shall be able to record disability assessment information.
+Authorised users with the appropriate disability-service responsibility shall be able to record disability assessments.
 
-The assessment record should capture relevant needs and service information.
+Assessment information shall capture relevant needs and service information.
 
-## FR-008: Home Visits
+## FR-011: Home Visits
 
 Authorised users shall be able to record home visits.
 
-A home visit record should include information such as:
+A home-visit record may include:
 
-* Beneficiary.
-* Date of visit.
-* Person conducting the visit.
-* Purpose of visit.
-* Key observations.
-* Support provided.
-* Follow-up required.
-* Next action.
+* Beneficiary
+* Visit date
+* Person conducting the visit
+* Purpose
+* Observations
+* Support provided
+* Follow-up required
+* Next action
+
+## FR-012: Disability Service Tracking
+
+The system shall allow authorised users to review relevant disability-service records according to their permissions and record-level access.
 
 # 10. Referral Management
 
-## FR-009: Create Referral
+## FR-013: Referral Creation
 
 Authorised users shall be able to create referral records.
 
-A referral should include:
+A referral may include:
 
-* Beneficiary.
-* Referral date.
-* Referral destination or service.
-* Reason for referral.
-* Person making the referral.
-* Referral status.
+* Beneficiary
+* Referral date
+* Referral destination or service
+* Reason
+* Person making the referral
+* Referral status
 
-## FR-010: Referral Status
+## FR-014: Referral Submission and Approval
 
-The system shall support referral statuses such as:
+Where approval is required:
 
-* Pending.
-* Follow-up required.
-* Completed.
-* Not completed.
-* Cancelled.
+* An authorised Member may create and submit a referral.
+* An authorised person shall review and approve the referral.
+* The system shall record the relevant status and action.
 
-## FR-011: Referral Follow-Up
+The exact approval authority shall be defined in the User Roles and Permissions and System Workflows documents.
 
-Authorised Field Staff / Volunteers shall be able to record follow-up activities.
+## FR-015: Referral Status
 
-The system should record:
+The system shall support appropriate referral statuses, including:
 
-* Follow-up date.
-* Person conducting follow-up.
-* Outcome.
-* Service received.
-* Remaining needs.
-* Next action.
+* Pending
+* Submitted
+* Approved
+* Follow-up required
+* Completed
+* Not completed
+* Cancelled
+
+Final status transitions shall be defined in the workflow documentation.
+
+## FR-016: Referral Follow-Up
+
+Authorised users shall be able to record referral follow-ups.
+
+A follow-up may include:
+
+* Follow-up date
+* Person conducting follow-up
+* Outcome
+* Service received
+* Remaining needs
+* Next action
 
 # 11. Project Management
 
-## FR-012: Project Registration
+## FR-017: Project Registration
 
-Authorised Programme / Project Coordinators shall be able to create projects.
+Authorised Admin and Director users shall be able to create projects according to the approved governance model.
 
-A project should contain:
+Project information may include:
 
-* Project name.
-* Description.
-* Start date.
-* End date.
-* Objectives.
-* Project status.
-* Responsible person.
+* Project name
+* Description
+* Objectives
+* Start date
+* End date
+* Status
+* Responsible person
+* Other approved project information
 
-## FR-013: Activity Management
+## FR-018: Project Management
+
+Authorised users shall be able to manage project information according to their permissions.
+
+The system shall support project status and project-level information.
+
+## FR-019: Activity Management
 
 Authorised users shall be able to record project and organisational activities.
 
-Activity information should include:
+Activity information may include:
 
-* Activity name.
-* Project.
-* Date.
-* Location.
-* Responsible person.
-* Participants.
-* Description.
-* Status.
-* Results or outcomes.
+* Activity name
+* Project
+* Date
+* Location
+* Responsible person
+* Participants
+* Description
+* Status
+* Results or outcomes
 
-## FR-014: Activity Status
+## FR-020: Activity Status
 
-The system should support statuses such as:
+The system shall support appropriate activity statuses, such as:
 
-* Planned.
-* Ongoing.
-* Completed.
-* Pending.
-* Cancelled.
+* Planned
+* Ongoing
+* Completed
+* Pending
+* Cancelled
+
+## FR-021: Activity Assignment
+
+Authorised users shall be able to assign activities or responsibilities to users where permitted.
+
+Members shall be able to see activities relevant to their assigned responsibilities and access rights.
 
 # 12. Poultry Management
 
-## FR-015: Poultry Records
+## FR-022: Poultry Groups and Categories
 
-Authorised Farm Personnel shall be able to record poultry information.
+The system shall support poultry categories or groups to allow operational records to be organised appropriately.
 
-The system should support:
+The exact category structure shall be finalised during database design.
 
-* Current chicken numbers.
-* Chicken purchases.
-* Chicken type.
-* Egg production.
-* Feed information.
-* Poultry illness.
-* Poultry deaths.
-* Poultry sales.
-* Other poultry activities.
+## FR-023: Poultry Records
 
-## FR-016: Poultry Numbers
+Authorised users with poultry responsibilities shall be able to record:
 
-The system should allow authorised users to record changes in poultry numbers.
+* Poultry groups
+* Poultry type
+* Purchases
+* Current quantities
+* Production
+* Feed
+* Health information
+* Deaths
+* Sales
+* Other authorised poultry activities
 
-For example:
+## FR-024: Poultry Quantity Tracking
 
-```text
-Opening chickens: 10
-New chicks purchased: 20
-Deaths: 2
-Sold: 3
+The system shall maintain accurate poultry quantity changes.
 
-Current chickens = 10 + 20 - 2 - 3
-Current chickens = 25
-```
+Quantity changes may result from:
 
-The system should support accurate tracking of these changes.
+* Opening stock
+* Purchases
+* New production where applicable
+* Deaths
+* Sales
+* Other approved movements
 
-## FR-017: Egg Production
+The system shall support calculation or reconciliation of current quantities from recorded movements.
 
-The system shall allow Farm Personnel to record egg production.
+## FR-025: Egg Production
 
-Egg records should include:
-
-* Date.
-* Number of eggs produced.
-* Eggs used.
-* Eggs sold.
-* Eggs remaining.
-
-## FR-018: Feed Management
-
-The system should allow authorised users to record:
-
-* Feed purchased.
-* Feed received from the farm.
-* Feed used.
-* Feed quantity.
-* Feed cost where applicable.
-
-## FR-019: Poultry Health
-
-The system should allow authorised users to record:
-
-* Illness.
-* Date identified.
-* Number affected.
-* Action taken.
-* Outcome.
-
-Poultry deaths should also be recorded.
-
-# 13. Small Farm Management
-
-## FR-020: Crop Management
-
-The system shall allow Farm Personnel to record crops grown by ERA.
-
-Initial crops may include:
-
-* Bananas.
-* Natural/local vegetables.
-* Sukuma wiki.
-
-## FR-021: Farm Activities
-
-The system should allow users to record:
-
-* Planting.
-* Watering.
-* Weeding.
-* Harvesting.
-* Other farm activities.
-
-## FR-022: Harvest Records
-
-The system shall allow Farm Personnel to record harvests.
-
-A harvest record should include:
-
-* Crop.
-* Date.
-* Quantity.
-* Unit.
-* Use of produce.
-
-Produce use may include:
-
-* Used for poultry.
-* Used by ERA.
-* Sold in the future.
-* Other authorised use.
-
-## FR-023: Farm Expenses
-
-The system shall allow authorised users to record farm expenses.
-
-Examples include:
-
-* Seeds.
-* Tools.
-* Farm inputs.
-* Transport.
-* Other relevant expenses.
-
-# 14. Finance Management
-
-## FR-024: Expense Recording
-
-Authorised Finance Personnel shall be able to record organisational and project expenses.
-
-An expense record should include:
-
-* Date.
-* Amount.
-* Category.
-* Description.
-* Project where applicable.
-* Payment method where appropriate.
-* Person responsible.
-* Supporting reference where applicable.
-
-## FR-025: Expense Categories
-
-The system should support categories such as:
-
-* Project expenses.
-* Poultry expenses.
-* Farm expenses.
-* Office expenses.
-* Transport.
-* Equipment.
-* Other authorised expenses.
-
-# 15. Staff and Volunteer Management
-
-## FR-026: Staff Records
-
-Authorised users shall be able to maintain staff records.
-
-## FR-027: Volunteer Records
-
-Authorised users shall be able to maintain volunteer records.
+Authorised users shall be able to record egg production.
 
 Records may include:
 
-* Name.
-* Role.
-* Contact information.
-* Start date.
-* Status.
-* Assigned responsibilities.
+* Date
+* Number produced
+* Number used
+* Number sold
+* Remaining quantity
+
+## FR-026: Feed Management
+
+The system shall support feed records including:
+
+* Feed purchased
+* Feed received from the farm
+* Feed used
+* Feed quantity
+* Feed cost where applicable
+
+## FR-027: Farm-to-Poultry Feed Transfer
+
+Where farm produce is used to support poultry operations, the system shall support recording the transfer of farm produce to poultry feed.
+
+The transfer should identify relevant quantities and dates.
+
+## FR-028: Poultry Health
+
+Authorised users shall be able to record:
+
+* Illness
+* Date identified
+* Number affected
+* Action taken
+* Outcome
+
+Poultry deaths shall also be recorded.
+
+## FR-029: Poultry Sales
+
+Authorised users with appropriate permissions shall be able to record poultry sales.
+
+Financial details shall be accessible according to Finance permissions.
+
+# 13. Small Farm Management
+
+## FR-030: Crop Management
+
+Authorised users with farm responsibilities shall be able to record crops grown by ERA.
+
+Initial crops may include:
+
+* Bananas
+* Natural or local vegetables
+* Sukuma wiki
+
+The crop list shall remain configurable where appropriate.
+
+## FR-031: Farm Activities
+
+Authorised users shall be able to record farm activities such as:
+
+* Planting
+* Watering
+* Weeding
+* Harvesting
+* Other approved activities
+
+## FR-032: Harvest Records
+
+Authorised users shall be able to record harvests.
+
+A harvest record may include:
+
+* Crop
+* Date
+* Quantity
+* Unit
+* Intended or actual use
+
+Produce use may include:
+
+* Used for poultry
+* Used by ERA
+* Sold
+* Other authorised use
+
+## FR-033: Farm-to-Poultry Transfer
+
+The system shall allow farm produce used for poultry support to be recorded as a transfer to poultry operations.
+
+This information shall support operational tracking and future reporting.
+
+## FR-034: Farm Expenses
+
+Authorised users shall be able to record farm-related expenses where permitted.
+
+Examples include:
+
+* Seeds
+* Tools
+* Farm inputs
+* Transport
+* Other approved farm expenses
+
+# 14. Basic Finance Management
+
+## FR-035: Expense Recording
+
+Authorised Finance users shall be able to record organisational and project expenses.
+
+Expense information may include:
+
+* Date
+* Amount
+* Category
+* Description
+* Project where applicable
+* Payment method where appropriate
+* Responsible person
+* Supporting reference where applicable
+
+## FR-036: Expense Categories
+
+The system shall support appropriate expense categories, including:
+
+* Project expenses
+* Poultry expenses
+* Farm expenses
+* Office expenses
+* Transport
+* Equipment
+* Other authorised expenses
+
+## FR-037: Income and Sales
+
+The system shall support basic recording of relevant income and sales, including where applicable:
+
+* Poultry sales
+* Egg sales
+* Farm produce sales
+* Other authorised project or organisational income
+
+This requirement is for basic financial management and reporting.
+
+ERA-IPMS shall not initially implement full accounting functionality.
+
+## FR-038: Financial Access
+
+Finance users shall have access to authorised financial records.
+
+Operational users may record operational quantities such as poultry or farm production while financial information remains subject to Finance permissions.
+
+# 15. Staff and Volunteer Management
+
+## FR-039: Staff Records
+
+Authorised users shall be able to maintain staff information according to their permissions.
+
+## FR-040: Volunteer Records
+
+Authorised users shall be able to maintain volunteer information according to their permissions.
+
+Records may include:
+
+* Name
+* Organisational title
+* Contact information
+* Start date
+* Status
+* Assigned responsibilities
+
+Operational responsibility shall not automatically create a new system title.
 
 # 16. Dashboard
 
-## FR-028: Management Dashboard
+## FR-041: Dashboard
 
-The system shall provide a dashboard containing key organisational indicators.
+The system shall provide dashboards appropriate to the user's permissions.
 
-The dashboard should display:
+Management-level dashboards may include indicators such as:
 
-* Total beneficiaries.
-* Home visits.
-* Referrals.
-* Referral follow-ups.
-* Current chickens.
-* Eggs produced.
-* Feed used or purchased.
-* Poultry deaths and illnesses.
-* Farm crops.
-* Harvests.
-* Farm expenses.
-* Organisational expenses.
-* Project expenses.
-* Activities conducted.
-* Staff and volunteers.
-* Upcoming activities.
-* Pending activities.
+* Beneficiaries
+* Home visits
+* Referrals
+* Referral follow-ups
+* Poultry quantities
+* Egg production
+* Feed
+* Poultry illness and deaths
+* Farm crops
+* Harvests
+* Farm expenses
+* Organisational expenses
+* Project expenses
+* Project activities
+* Staff and Members
+* Upcoming activities
+* Pending activities
+
+Users shall only see information they are authorised to access.
 
 # 17. Monitoring and Evaluation
 
-## FR-029: Indicator Monitoring
+## FR-042: Indicator Monitoring
 
-The system should support monitoring of selected organisational and project indicators.
+The system shall support selected organisational and project indicators.
 
-Examples include:
+Initial indicators may include:
 
-* Number of beneficiaries served.
-* Number of home visits.
-* Number of referrals.
-* Number of completed referrals.
-* Number of activities.
-* Poultry production.
-* Farm production.
+* Number of beneficiaries served
+* Number of home visits
+* Number of referrals
+* Number of completed referrals
+* Number of activities
+* Poultry production
+* Farm production
+
+Advanced M&E functionality is considered future scope unless separately approved.
 
 # 18. Reporting
 
-## FR-030: Report Generation
+## FR-043: Basic Report Generation
 
-Authorised users shall be able to generate reports.
+Authorised users shall be able to generate basic reports according to their permissions.
 
 Initial reports may include:
 
-* Beneficiary report.
-* Disability service report.
-* Home visit report.
-* Referral report.
-* Project activity report.
-* Poultry report.
-* Egg production report.
-* Farm report.
-* Expense report.
-* Management summary report.
+* Beneficiary report
+* Disability service report
+* Home visit report
+* Referral report
+* Project activity report
+* Poultry report
+* Egg production report
+* Farm report
+* Expense report
+* Management summary report
+
+Reports shall respect record-level access restrictions.
+
+## FR-044: Report Filtering
+
+Authorised reports should support appropriate filtering, including:
+
+* Date
+* Project
+* Beneficiary
+* Activity
+* Status
+* Crop
+* Poultry group or record
+* Expense category
+
+Advanced PDF and Excel export functionality is future scope unless separately approved.
 
 # 19. Search and Filtering
 
-## FR-031: Search
+## FR-045: Search
 
 The system shall provide search functionality for authorised records.
 
-Users should be able to filter information using relevant criteria.
+Search results shall respect the user's permissions and record-level access.
 
-Examples include:
+## FR-046: Filtering
 
-* Date.
-* Project.
-* Beneficiary.
-* Activity.
-* Status.
-* Crop.
-* Poultry record.
-* Expense category.
+Authorised users shall be able to filter records using relevant criteria.
 
-# 20. Non-Functional Requirements
+# 20. Notifications and Alerts
 
-Non-functional requirements describe how the system should perform.
+The initial MVP shall not require external SMS, WhatsApp, or similar notification services.
+
+The system may provide basic internal status information for items requiring attention, such as:
+
+* Pending referrals
+* Follow-ups
+* Pending activities
+* Other approved operational items
+
+External notifications remain future scope.
+
+# 21. Non-Functional Requirements
 
 ## NFR-001: Usability
 
-The system should have a simple and understandable interface.
+The system shall provide a simple and understandable interface.
 
-The system should be usable by people with different levels of technical experience.
+The interface should support users with different levels of technical experience.
 
 ## NFR-002: Performance
 
-The system should respond to normal user requests within a reasonable amount of time under expected usage.
+The system should provide reasonable response times under expected initial organisational usage.
+
+Performance requirements shall be refined after realistic usage and infrastructure requirements are established.
 
 ## NFR-003: Security
 
-The system shall require authentication.
+The system shall:
 
-The system shall implement role-based access control.
-
-Passwords shall not be stored as plain text.
-
-Unauthorised users shall not access restricted information.
+* Require authentication for protected functions.
+* Enforce authorisation on the backend.
+* Apply title and permission controls.
+* Apply record-level access where required.
+* Avoid storing passwords in plain text.
+* Restrict unauthorised access.
+* Protect session information.
+* Apply appropriate security controls to sensitive information.
 
 ## NFR-004: Data Protection
 
-Beneficiary and organisational information should be protected against unauthorised access, modification, or disclosure.
+Beneficiary and organisational information shall be protected against:
 
-Production information should not be stored in the public GitHub repository.
+* Unauthorised access
+* Unauthorised modification
+* Unauthorised disclosure
+* Accidental loss
 
-## NFR-005: Reliability
+Production information shall not be committed to the public GitHub repository.
+
+## NFR-005: Auditability
+
+Important system actions should be traceable to an authorised user where required.
+
+## NFR-006: Reliability
 
 The system should minimise data loss.
 
-Regular database backups should be implemented before production deployment.
+Database backup procedures shall be established before production deployment.
 
-## NFR-006: Maintainability
+## NFR-007: Maintainability
 
-The source code should be organised into logical components.
+The system shall use:
 
-The system should use clear naming conventions and documentation.
+* Logical application structure
+* Consistent naming
+* Clear documentation
+* Maintainable code
+* Controlled configuration
 
-## NFR-007: Scalability
+## NFR-008: Scalability
 
-The system should be designed so that additional modules and users can be added in the future.
+The system should allow additional users, responsibilities, titles, and modules to be introduced without requiring a complete redesign.
 
-## NFR-008: Compatibility
+## NFR-009: Browser Compatibility
 
-The initial system should operate through modern web browsers on computers and other supported devices.
+The initial system shall operate through supported modern web browsers on computers and other supported devices.
 
-# 21. Technology Requirements
+## NFR-010: Accessibility and Readability
 
-The initial development technology stack will be limited to the technologies selected for the project.
+The user interface should use clear labels, readable text, sufficient contrast, understandable forms, and consistent navigation.
 
-### Frontend
+Accessibility requirements shall be refined during interface design and testing.
 
-* HTML.
-* CSS.
-* JavaScript.
+# 22. Technology Requirements
 
-### Backend
+## 22.1 Frontend
 
-* Python.
+The initial frontend shall use:
 
-### Database
+* HTML
+* CSS
+* JavaScript
 
-* MySQL.
+## 22.2 Backend
 
-### Version Control
+The backend shall use:
 
-* Git.
-* GitHub.
+* Python
+* Django
 
-Java may be used for future components where appropriate, but it is not required for the initial ERA-IPMS MVP.
+## 22.3 Database
 
-# 22. Data Requirements
+The project shall use:
 
-ERA-IPMS will need structured data for the following main entities:
+* MariaDB/MySQL
 
-* Users.
-* Roles.
-* Beneficiaries.
-* Disability assessments.
-* Home visits.
-* Referrals.
-* Referral follow-ups.
-* Projects.
-* Activities.
-* Poultry records.
-* Egg production.
-* Feed records.
-* Poultry health records.
-* Farm crops.
-* Farm activities.
-* Harvests.
-* Expenses.
-* Staff.
-* Volunteers.
+The existing ERA-IPMS database design shall remain authoritative during the current documentation and architecture phase.
 
-These entities will be analysed in detail during database design.
+## 22.4 Version Control
 
-# 23. System Constraints
+The project shall use:
 
-The initial project has the following constraints:
+* Git
+* GitHub
 
-1. Development will use HTML, CSS, JavaScript, Python, and MySQL.
-2. The system will initially be developed for ERA.
-3. Initial testing will use fictional or test data.
-4. The first version will focus on essential functionality.
-5. Advanced mobile and integration features will be developed later.
-6. Internet availability may affect access to the web-based system.
+## 22.5 Development Environment
 
-# 24. Assumptions
+VS Code shall be the primary development environment.
 
-The project assumes that:
+The integrated terminal shall be used for development commands where appropriate, including Django, Git, database, testing, and environment-management commands.
 
-* ERA will provide feedback during development.
-* ERA users will participate in testing.
-* Users will receive appropriate training before deployment.
-* Data entered into the system will be reviewed for accuracy.
-* Appropriate procedures will be established for protecting organisational and beneficiary information.
-* The system will initially be used by authorised ERA personnel.
+# 23. Data Requirements
 
-# 25. MVP Requirements
+The system will require structured information for areas including:
 
-The first Minimum Viable Product should focus on the most important functions.
+### Identity and Access
 
-The MVP should include:
+* Users
+* Titles
+* Permissions
+* User-title assignments
+* Responsibility assignments
+* Audit records
 
-### Authentication
+### Beneficiary and Disability Services
 
-* Login.
-* Logout.
-* User roles.
-
-### Disability
-
-* Beneficiary registration.
-* Disability assessment.
-* Home visits.
-* Referrals.
-* Follow-ups.
+* Beneficiaries
+* Disability assessments
+* Home visits
+* Referrals
+* Referral follow-ups
 
 ### Projects
 
-* Project registration.
-* Activity registration.
-* Activity status.
+* Projects
+* Activities
+* Activity assignments
+* Project-related information
 
 ### Poultry
 
-* Chicken records.
-* Egg production.
-* Feed records.
-* Illness records.
-* Death records.
+* Poultry groups
+* Poultry movements
+* Poultry purchases
+* Egg production
+* Feed records
+* Farm-to-poultry transfers
+* Poultry health records
+* Poultry deaths
+* Poultry sales
 
 ### Farm
 
-* Crop records.
-* Farm activities.
-* Harvest records.
-* Farm expenses.
+* Crops
+* Farm activities
+* Harvests
+* Produce transfers
+* Farm expenses
 
 ### Finance
 
-* Expense records.
-* Expense categories.
+* Expenses
+* Expense categories
+* Sales
+* Income
+* Financial references
 
-### Management
+### Human Resources
 
-* Dashboard.
-* Basic reports.
+* Staff information
+* Volunteer information
+* Assigned responsibilities
 
-# 26. Acceptance Criteria
+The exact database entities, relationships, fields, constraints, indexes, and lifecycle rules shall be defined in the Database Entity Design and ERD documentation.
 
-ERA-IPMS will be considered ready for initial deployment when:
+# 24. System Constraints
 
-1. Authorised users can log in securely.
-2. Users receive access according to their assigned roles.
-3. Beneficiaries can be registered.
-4. Disability service information can be recorded.
-5. Home visits can be recorded.
-6. Referrals can be created and followed up.
-7. Projects and activities can be recorded.
-8. Poultry information can be recorded.
-9. Egg production can be recorded.
-10. Feed information can be recorded.
-11. Poultry illnesses and deaths can be recorded.
-12. Farm activities and harvests can be recorded.
-13. Expenses can be recorded.
-14. Management can view key indicators.
-15. Basic reports can be generated.
-16. Test data can be entered without major errors.
-17. Unauthorised users cannot access restricted information.
+The initial project has the following constraints:
 
-# 27. Future Development
+1. The system is initially developed for ERA.
+2. The initial application is web-based.
+3. Development uses Python, Django, MariaDB/MySQL, HTML, CSS, and JavaScript.
+4. Initial testing shall use fictional, synthetic, or approved test data.
+5. The MVP shall focus on essential functionality.
+6. Internet availability may affect access to the web-based system.
+7. Advanced mobile and external integration features are outside the initial MVP.
+8. Production beneficiary information shall not be used during ordinary development or testing.
+9. Existing database requirements must be reviewed before implementation changes are introduced.
 
-After successful implementation of the MVP, ERA-IPMS may be expanded to include:
+# 25. Assumptions
 
-* PDF reports.
-* Excel reports.
-* Mobile application.
-* Offline data collection.
-* SMS notifications.
-* WhatsApp notifications.
-* Advanced M&E.
-* KoboToolbox integration.
-* Excel import.
-* Multi-organisation support.
-* SaaS subscription functionality.
+The project assumes that:
 
-# 28. Conclusion
+* ERA will participate in requirements validation.
+* ERA users will participate in testing.
+* Users will receive appropriate training.
+* Users will follow approved data-entry procedures.
+* Information entered into the system will be reviewed for accuracy.
+* ERA will establish appropriate data-protection procedures.
+* The system will initially be used by authorised ERA personnel.
+* Organisational responsibilities may change over time.
+* New titles may be created by authorised administrators when required.
+* Final permissions will be validated before production deployment.
 
-This Software Requirements Specification defines the initial functional and non-functional requirements for ERA-IPMS.
+# 26. MVP Requirements
 
-The document establishes what the system should accomplish before software development begins.
+The initial MVP shall prioritise the following:
 
-The requirements will be reviewed and validated by ERA before implementation. Approved requirements will guide the system workflow design, database design, interface development, backend development, testing, and deployment.
+## Authentication and Access
 
-Future changes to the system should be documented and reviewed so that the project remains controlled and traceable.
+* Login
+* Logout
+* User management
+* Five initial titles
+* Permissions
+* Record-level access
+
+## Beneficiary and Disability Services
+
+* Beneficiary registration
+* Beneficiary search
+* Disability assessment
+* Home visits
+* Referrals
+* Referral approval where required
+* Referral follow-ups
+
+## Projects
+
+* Project registration
+* Project management
+* Activity registration
+* Activity assignment
+* Activity status
+
+## Poultry
+
+* Poultry groups
+* Poultry records
+* Poultry quantity tracking
+* Egg production
+* Feed records
+* Farm-to-poultry transfers
+* Illness records
+* Death records
+* Sales
+
+## Farm
+
+* Crop records
+* Farm activities
+* Harvest records
+* Farm-to-poultry produce transfers
+* Farm expenses
+
+## Finance
+
+* Expense records
+* Expense categories
+* Basic sales/income records
+* Financial reporting
+
+## Management
+
+* Dashboard
+* Basic reports
+* Search and filtering
+
+# 27. Acceptance Criteria
+
+ERA-IPMS shall be considered ready for initial deployment when:
+
+1. Authorised users can securely log in.
+2. Users can log out securely.
+3. Inactive or unauthorised users cannot access protected functions.
+4. Users receive access according to assigned titles and permissions.
+5. Record-level restrictions operate as approved.
+6. Admin users can manage authorised user accounts.
+7. Admin users can manage titles and permissions where authorised.
+8. Beneficiaries can be registered.
+9. Beneficiary records can be searched and updated according to permissions.
+10. Beneficiary records can be archived or made inactive where required.
+11. Disability assessments can be recorded.
+12. Home visits can be recorded.
+13. Referrals can be created.
+14. Referral approval workflows operate where required.
+15. Referral follow-ups can be recorded.
+16. Projects can be created and managed by authorised users.
+17. Activities can be created, assigned, and tracked.
+18. Poultry records can be maintained.
+19. Poultry quantities can be tracked.
+20. Egg production can be recorded.
+21. Feed can be recorded.
+22. Farm produce transferred to poultry can be recorded.
+23. Poultry illnesses and deaths can be recorded.
+24. Poultry and egg sales can be recorded where authorised.
+25. Farm crops and activities can be recorded.
+26. Harvests can be recorded.
+27. Farm produce use and transfers can be recorded.
+28. Expenses can be recorded.
+29. Basic sales and income can be recorded where applicable.
+30. Management users can view authorised key indicators.
+31. Basic reports can be generated.
+32. Search and filtering operate according to access rights.
+33. Important system actions can be audited where required.
+34. Unauthorised users cannot access restricted information.
+35. Testing can be performed using approved fictional or test data without major defects.
+
+# 28. Future Development
+
+Following successful implementation and validation of the MVP, ERA-IPMS may be expanded with:
+
+* PDF exports
+* Excel exports
+* Mobile application
+* Offline data collection
+* SMS notifications
+* WhatsApp notifications
+* Advanced M&E
+* KoboToolbox integration
+* Excel import
+* External partner access
+* Multi-organisation support
+* SaaS functionality
+* Additional modules approved by ERA
+
+Future features shall not be treated as MVP requirements without formal approval.
+
+# 29. Requirements Traceability and Change Control
+
+Each major requirement shall be traceable to the relevant project documentation and implementation component.
+
+Requirements should be identified using stable identifiers such as:
+
+* FR-xxx for functional requirements
+* NFR-xxx for non-functional requirements
+
+Changes to requirements shall be:
+
+1. Documented.
+2. Reviewed.
+3. Checked for contradictions with existing project documents.
+4. Approved where organisational approval is required.
+5. Reflected in affected design documents.
+6. Reflected in the development log.
+7. Implemented only after the documentation baseline is sufficiently aligned.
+
+# 30. Relationship to Subsequent Design
+
+This SRS establishes what ERA-IPMS is required to accomplish.
+
+The following documents shall translate these requirements into implementation specifications:
+
+1. User Roles and Permissions
+2. System Workflows
+3. Database Entity Design
+4. ERD
+5. Database Schema
+6. Interface and UI Design
+7. Backend implementation
+8. Testing documentation
+
+The database and application architecture shall not introduce functionality that contradicts this requirements baseline without an approved requirements change.
+
+# 31. Conclusion
+
+This Software Requirements Specification defines the current functional and non-functional requirements baseline for ERA-IPMS.
+
+The SRS establishes the approved initial scope, user-access model, operational requirements, security direction, technology direction, MVP requirements, and acceptance criteria.
+
+The initial system uses five approved titles:
+
+* Admin
+* Director
+* Programme Coordinator
+* Finance
+* Member
+
+Titles, permissions, and operational responsibilities are separate concepts.
+
+The SRS also establishes record-level access, referral approval, beneficiary archiving, poultry and farm operational tracking, farm-to-poultry transfers, and basic financial management as important requirements.
+
+Detailed permissions, workflows, database structures, and interface behaviour shall be developed in subsequent documentation while remaining consistent with this requirements baseline.

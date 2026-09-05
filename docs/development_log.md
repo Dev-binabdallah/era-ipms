@@ -191,3 +191,80 @@ Detailed permissions and access rules will be formalised in the Software Require
 ### Next Step
 
 Review and update the **Software Requirements Specification (SRS)** as the next documentation-baseline step.
+
+## 2026-09-05 - Software Requirements Specification Documentation Baseline
+
+### Objective
+
+Review and align the ERA-IPMS Software Requirements Specification with the approved Concept Note, README, Needs Assessment, and Stakeholder Analysis before proceeding to detailed permissions, workflows, and database design.
+
+### Work Completed
+
+* Reviewed the existing Software Requirements Specification version 1.0.
+* Identified outdated role definitions and requirements.
+* Updated the SRS from version 1.0 to version 1.1.
+* Replaced the outdated seven-role model with the five approved initial titles:
+
+  * Admin
+  * Director
+  * Programme Coordinator
+  * Finance
+  * Member
+* Clarified the distinction between:
+
+  * Titles
+  * Permissions
+  * Responsibilities
+* Added dynamic title and permission management requirements.
+* Added record-level access requirements.
+* Clarified that technical system administration authority does not automatically provide programme decision-making authority.
+* Aligned project creation and management with the approved governance direction.
+* Added referral submission and approval requirements.
+* Added beneficiary archiving/inactivation requirements.
+* Aligned poultry requirements with poultry groups, quantity tracking, production, feed, health, deaths, and sales.
+* Added farm-to-poultry feed and produce transfer tracking.
+* Aligned small farm requirements with crops, activities, harvests, transfers, and expenses.
+* Expanded basic finance requirements to include relevant sales and income.
+* Clarified that the initial finance module is basic financial management and not full accounting.
+* Aligned staff and volunteer requirements with the title and responsibility model.
+* Added permission-aware dashboards and reporting.
+* Added backend-enforced record-level access requirements.
+* Added auditability requirements for important system actions.
+* Updated the technology direction to Python, Django, MariaDB/MySQL, HTML, CSS, and JavaScript.
+* Confirmed VS Code as the primary development environment.
+* Added requirements traceability and change-control guidance.
+* Updated MVP requirements and acceptance criteria.
+* Kept advanced mobile, notification, integration, external-access, and multi-organisation features outside the initial MVP.
+
+### Documentation Decision
+
+The SRS now represents the current detailed requirements baseline for ERA-IPMS.
+
+The SRS confirms that operational functions such as field work, poultry, farm, and M&E are responsibilities that may be assigned to users and are not automatically separate system titles.
+
+The SRS also confirms that access must be controlled using titles, permissions, responsibilities, and record-level rules rather than relying only on broad role-based access.
+
+### Verification
+
+* SRS reviewed against the approved project baseline.
+* Five-title model aligned.
+* Title, permission, and responsibility terminology aligned.
+* Record-level access requirement added.
+* Referral approval requirement aligned.
+* Beneficiary archive/inactivation direction aligned.
+* Poultry and farm requirements aligned.
+* Farm-to-poultry transfer requirement aligned.
+* Basic finance scope aligned.
+* Technology direction aligned with Django and MariaDB/MySQL.
+* Future scope separated from MVP requirements.
+* No application or database architecture changes introduced.
+
+### Commit
+
+Planned commit message:
+
+`Update software requirements specification baseline`
+
+### Next Step
+
+Review and update the **User Roles and Permissions** document as the next documentation-baseline step.
