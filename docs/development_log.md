@@ -326,3 +326,107 @@ No application code, database schema, or production permissions were changed dur
 ### Next Step
 
 Proceed to **Step 7: System Workflows** only after Step 6 has been committed and pushed to GitHub.
+
+## Step 7 - System Workflows Baseline
+
+**Date:** September 2026
+
+### Work Completed
+
+The ERA-IPMS System Workflows document was reviewed and aligned with the current requirements baseline.
+
+The previous workflow version contained several references to the obsolete seven-role model, including Field Staff / Volunteer terminology. The workflow model has now been aligned with the approved five-title architecture:
+
+1. Admin
+2. Director
+3. Programme Coordinator
+4. Finance
+5. Member
+
+The revised workflow baseline covers:
+
+* Authentication.
+* Access control.
+* Beneficiary registration.
+* Disability assessment.
+* Home visits.
+* Referrals.
+* Referral approval.
+* Referral follow-up.
+* Projects.
+* Activities.
+* Activity assignment.
+* Poultry management.
+* Poultry stock.
+* Egg production.
+* Poultry feed.
+* Poultry health.
+* Poultry sales.
+* Small farm operations.
+* Farm harvests.
+* Farm-to-poultry transfers.
+* Finance.
+* Financial approval.
+* Staff and Member management.
+* User access changes.
+* Monitoring and evaluation.
+* Dashboard.
+* Reporting.
+* Search and filtering.
+* Notifications.
+* Error correction.
+* Data validation.
+* Beneficiary archiving.
+* Audit information.
+* Record-level access.
+
+The workflows now explicitly separate:
+
+* Title from permission.
+* Permission from responsibility.
+* Data entry from approval.
+* Operational quantities from financial transactions.
+* Technical administration from programme authority.
+
+### Consistency Decisions
+
+The workflow model confirms that:
+
+* Admin and Director are initially authorised for project creation.
+* Programme Coordinator manages programme and project operations.
+* Finance manages authorised financial transactions.
+* Members operate according to assigned responsibilities and permissions.
+* Beneficiary access is record-level and responsibility-aware.
+* Referral creation and referral approval are separate actions.
+* Farm-to-poultry transfers are traceable.
+* Poultry stock is based on recorded stock movements.
+* Financial records must not bypass access controls.
+* Beneficiary records should normally be archived or made inactive rather than physically deleted.
+* Audit information is required for important system actions.
+* Reports and exports must respect permissions and record-level access.
+
+### Outstanding Validation Items
+
+The following require confirmation during later requirements validation:
+
+* Exact referral approval authority.
+* Exact project approval authority.
+* Exact financial approval rules.
+* Final workflow status values.
+* Exact M&E indicators.
+* Final MVP report list.
+* Notification priority.
+* Detailed project and activity assignment rules.
+* Record correction and post-submission editing rules.
+
+These items will not be silently resolved in code.
+
+### Status
+
+Step 7 documentation is ready for review and commit.
+
+No application code or database structure was changed during this step.
+
+### Next Step
+
+Proceed to **Step 8: Database Entity Design** only after the Step 7 documentation has been committed and pushed to GitHub.
