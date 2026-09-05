@@ -138,3 +138,56 @@ Detailed software requirements, permissions, workflows, and database structures 
 ### Next Step
 
 Review and update the **Stakeholder Analysis** as the next documentation-baseline step.
+
+## 2026-09-05 - Stakeholder Analysis Documentation Baseline
+
+### Objective
+
+Review and align the ERA-IPMS Stakeholder Analysis with the approved Concept Note, README, and Needs Assessment before proceeding to detailed software requirements.
+
+### Work Completed
+
+* Reviewed the existing Stakeholder Analysis.
+* Updated the document from version 1.0 to version 1.1.
+* Corrected the outdated treatment of operational functions as separate system roles.
+* Aligned the stakeholder analysis with the five approved initial system titles:
+
+  * Admin
+  * Director
+  * Programme Coordinator
+  * Finance
+  * Member
+* Clarified the distinction between stakeholders, titles, permissions, and responsibilities.
+* Defined field work, community support, poultry, farm, and M&E as responsibilities that may be assigned according to organisational requirements.
+* Confirmed the Director's programme and M&E oversight position.
+* Confirmed Finance as the initial financial management title.
+* Confirmed Admin as the system administration title.
+* Clarified that technical authority does not automatically provide programme decision-making authority.
+* Preserved beneficiaries, persons with disabilities, vulnerable community members, partners, and service providers as important stakeholders without direct system access in the initial version.
+* Added stakeholder influence and interest classifications.
+* Added stakeholder communication and engagement guidance.
+* Added stakeholder validation responsibilities.
+* Added stakeholder risks and considerations.
+* Confirmed that stakeholder categories must not be converted directly into database roles or permissions without further requirements analysis.
+
+### Documentation Decision
+
+The Stakeholder Analysis now represents the current stakeholder baseline and is aligned with the Concept Note, README, and Needs Assessment.
+
+The document confirms that stakeholder identity, system title, permission, and operational responsibility are separate concepts.
+
+Detailed permissions and access rules will be formalised in the Software Requirements Specification and User Roles and Permissions documents.
+
+### Verification
+
+* Stakeholder Analysis reviewed against the approved project baseline.
+* Five-title model aligned.
+* Stakeholder and role terminology aligned.
+* Operational responsibilities separated from system titles.
+* Beneficiary and external stakeholder access restrictions retained.
+* Programme, finance, administration, and technical responsibilities clarified.
+* No application or database architecture changes introduced.
+
+### Next Step
+
+Review and update the **Software Requirements Specification (SRS)** as the next documentation-baseline step.
