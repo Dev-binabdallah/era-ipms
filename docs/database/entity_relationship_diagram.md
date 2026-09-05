@@ -2,506 +2,374 @@
 
 ## Entity Relationship Diagram Specification
 
-**Project:** ERA Integrated Project Management System (ERA-IPMS)
-**Document Type:** Entity Relationship Diagram Specification
-**Version:** 1.0
-**Date:** September 2026
-**Status:** Draft
-**Prepared By:** Abdullahi Abdi Mohamed
+**Project:** ERA Integrated Project Management System (ERA-IPMS)  
+**Document Type:** Entity Relationship Diagram Specification  
+**Version:** 1.1  
+**Date:** September 2026  
+**Status:** Baseline for database schema derivation  
 
 ## 1. Purpose
 
-This document defines the relationships between the database entities of the ERA Integrated Project Management System (ERA-IPMS).
+This document defines the visual and logical ERD baseline derived from the approved Database Entity Design v1.1.
 
-It explains how the tables connect through primary keys and foreign keys.
+The ERD is the bridge between the entity design and the MariaDB/MySQL schema. It must show the approved entities, primary keys, foreign keys, and cardinality relationships without introducing application features that are not in the approved design.
 
-This document will be used as the reference for creating the visual Entity Relationship Diagram (ERD) and the MySQL database schema.
+## 2. Important v1.1 Model Rules
 
-## 2. Relationship Notation
+The ERD preserves these distinctions:
 
-The following notation is used:
+1. **Title is not Permission.**
+2. **Permission is not Responsibility.**
+3. Titles are expandable by administrators; permissions are application-defined.
+4. Beneficiary access is record-level and is supported by accountable user relationships.
+5. Beneficiary deletion is an archive/inactivation operation rather than routine physical deletion.
+6. Activity assignment and activity participation are separate concepts.
+7. Poultry stock is movement-based.
+8. Farm harvests can be transferred to poultry through an explicit transfer record.
+9. Operational records and financial transactions remain separate.
+10. Audit events provide system accountability.
 
-```text
-1 ─────< Many
+## 3. Approved Entities
+
+The v1.1 ERD contains **31 entities**:
+
+1. `users`
+2. `titles`
+3. `permissions`
+4. `title_permissions`
+5. `responsibilities`
+6. `user_responsibilities`
+7. `staff_members`
+8. `user_project_assignments`
+9. `beneficiaries`
+10. `disability_assessments`
+11. `home_visits`
+12. `referrals`
+13. `referral_follow_ups`
+14. `projects`
+15. `activities`
+16. `activity_assignments`
+17. `activity_participants`
+18. `poultry_groups`
+19. `poultry_stock_movements`
+20. `egg_production`
+21. `feed_records`
+22. `poultry_health_records`
+23. `poultry_sales`
+24. `farm_crops`
+25. `farm_activities`
+26. `harvests`
+27. `farm_poultry_transfers`
+28. `financial_transactions`
+29. `me_indicators`
+30. `me_indicator_records`
+31. `audit_events`
+
+## 4. Relationship Diagram
+
+The following Mermaid diagram is the source representation of the logical ERD. The Draw.io file in `docs/database/erd/` is the editable visual representation.
+
+```mermaid
+erDiagram
+    TITLES ||--o{ USERS : assigned_to
+    TITLES ||--o{ TITLE_PERMISSIONS : has
+    PERMISSIONS ||--o{ TITLE_PERMISSIONS : grants
+    USERS ||--o{ USER_RESPONSIBILITIES : has
+    RESPONSIBILITIES ||--o{ USER_RESPONSIBILITIES : assigned
+    USERS ||--o{ STAFF_MEMBERS : profile
+    USERS ||--o{ USER_PROJECT_ASSIGNMENTS : assigned
+    PROJECTS ||--o{ USER_PROJECT_ASSIGNMENTS : includes
+    USERS ||--o{ BENEFICIARIES : creates
+    BENEFICIARIES ||--o{ DISABILITY_ASSESSMENTS : has
+    USERS ||--o{ DISABILITY_ASSESSMENTS : assesses
+    BENEFICIARIES ||--o{ HOME_VISITS : receives
+    USERS ||--o{ HOME_VISITS : conducts
+    BENEFICIARIES ||--o{ REFERRALS : has
+    USERS ||--o{ REFERRALS : creates
+    REFERRALS ||--o{ REFERRAL_FOLLOW_UPS : has
+    USERS ||--o{ REFERRAL_FOLLOW_UPS : conducts
+    USERS ||--o{ PROJECTS : creates
+    PROJECTS ||--o{ ACTIVITIES : contains
+    USERS ||--o{ ACTIVITIES : responsible
+    ACTIVITIES ||--o{ ACTIVITY_ASSIGNMENTS : has
+    USERS ||--o{ ACTIVITY_ASSIGNMENTS : assigned
+    ACTIVITIES ||--o{ ACTIVITY_PARTICIPANTS : has
+    BENEFICIARIES ||--o{ ACTIVITY_PARTICIPANTS : participates
+    PROJECTS ||--o{ POULTRY_GROUPS : contains
+    POULTRY_GROUPS ||--o{ POULTRY_STOCK_MOVEMENTS : has
+    USERS ||--o{ POULTRY_STOCK_MOVEMENTS : records
+    POULTRY_GROUPS ||--o{ EGG_PRODUCTION : has
+    USERS ||--o{ EGG_PRODUCTION : records
+    POULTRY_GROUPS ||--o{ FEED_RECORDS : has
+    USERS ||--o{ FEED_RECORDS : records
+    POULTRY_GROUPS ||--o{ POULTRY_HEALTH_RECORDS : has
+    USERS ||--o{ POULTRY_HEALTH_RECORDS : records
+    POULTRY_GROUPS ||--o{ POULTRY_SALES : has
+    USERS ||--o{ POULTRY_SALES : records
+    PROJECTS ||--o{ FARM_CROPS : contains
+    FARM_CROPS ||--o{ FARM_ACTIVITIES : has
+    USERS ||--o{ FARM_ACTIVITIES : records
+    FARM_CROPS ||--o{ HARVESTS : produces
+    USERS ||--o{ HARVESTS : records
+    HARVESTS ||--o{ FARM_POULTRY_TRANSFERS : source
+    POULTRY_GROUPS ||--o{ FARM_POULTRY_TRANSFERS : receives
+    USERS ||--o{ FARM_POULTRY_TRANSFERS : records
+    PROJECTS ||--o{ FINANCIAL_TRANSACTIONS : has
+    USERS ||--o{ FINANCIAL_TRANSACTIONS : records
+    PROJECTS ||--o{ ME_INDICATORS : defines
+    ME_INDICATORS ||--o{ ME_INDICATOR_RECORDS : records
+    USERS ||--o{ ME_INDICATOR_RECORDS : records
+    USERS ||--o{ AUDIT_EVENTS : generates
+
+    USERS {
+        user_id PK
+    }
+    TITLES {
+        title_id PK
+    }
+    PERMISSIONS {
+        permission_id PK
+    }
+    TITLE_PERMISSIONS {
+        title_permission_id PK
+        title_id FK
+        permission_id FK
+    }
+    RESPONSIBILITIES {
+        responsibility_id PK
+    }
+    USER_RESPONSIBILITIES {
+        user_responsibility_id PK
+        user_id FK
+        responsibility_id FK
+    }
+    STAFF_MEMBERS {
+        staff_member_id PK
+        user_id FK
+    }
+    USER_PROJECT_ASSIGNMENTS {
+        assignment_id PK
+        user_id FK
+        project_id FK
+    }
+    BENEFICIARIES {
+        beneficiary_id PK
+        created_by FK
+    }
+    DISABILITY_ASSESSMENTS {
+        assessment_id PK
+        beneficiary_id FK
+        assessed_by FK
+    }
+    HOME_VISITS {
+        home_visit_id PK
+        beneficiary_id FK
+        conducted_by FK
+    }
+    REFERRALS {
+        referral_id PK
+        beneficiary_id FK
+        referred_by FK
+    }
+    REFERRAL_FOLLOW_UPS {
+        follow_up_id PK
+        referral_id FK
+        conducted_by FK
+    }
+    PROJECTS {
+        project_id PK
+        created_by FK
+    }
+    ACTIVITIES {
+        activity_id PK
+        project_id FK
+        responsible_user_id FK
+    }
+    ACTIVITY_ASSIGNMENTS {
+        activity_assignment_id PK
+        activity_id FK
+        user_id FK
+    }
+    ACTIVITY_PARTICIPANTS {
+        participant_id PK
+        activity_id FK
+        beneficiary_id FK
+    }
+    POULTRY_GROUPS {
+        poultry_group_id PK
+        project_id FK
+    }
+    POULTRY_STOCK_MOVEMENTS {
+        movement_id PK
+        poultry_group_id FK
+        recorded_by FK
+    }
+    EGG_PRODUCTION {
+        egg_production_id PK
+        poultry_group_id FK
+        recorded_by FK
+    }
+    FEED_RECORDS {
+        feed_record_id PK
+        poultry_group_id FK
+        recorded_by FK
+    }
+    POULTRY_HEALTH_RECORDS {
+        health_record_id PK
+        poultry_group_id FK
+        recorded_by FK
+    }
+    POULTRY_SALES {
+        poultry_sale_id PK
+        poultry_group_id FK
+        recorded_by FK
+    }
+    FARM_CROPS {
+        crop_id PK
+        project_id FK
+        recorded_by FK
+    }
+    FARM_ACTIVITIES {
+        farm_activity_id PK
+        crop_id FK
+        recorded_by FK
+    }
+    HARVESTS {
+        harvest_id PK
+        crop_id FK
+        recorded_by FK
+    }
+    FARM_POULTRY_TRANSFERS {
+        transfer_id PK
+        harvest_id FK
+        poultry_group_id FK
+        recorded_by FK
+    }
+    FINANCIAL_TRANSACTIONS {
+        transaction_id PK
+        project_id FK
+        recorded_by FK
+    }
+    ME_INDICATORS {
+        indicator_id PK
+        project_id FK
+    }
+    ME_INDICATOR_RECORDS {
+        indicator_record_id PK
+        indicator_id FK
+        recorded_by FK
+    }
+    AUDIT_EVENTS {
+        audit_event_id PK
+        user_id FK
+    }
 ```
 
-This means one record in the first table can be related to many records in the second table.
+## 5. Relationship Groups
 
-For example:
+### 5.1 Access and Identity
 
-```text
-BENEFICIARIES 1 ─────< HOME_VISITS
-```
+- `titles` 1-to-many `users`
+- `titles` 1-to-many `title_permissions`
+- `permissions` 1-to-many `title_permissions`
+- `users` 1-to-many `user_responsibilities`
+- `responsibilities` 1-to-many `user_responsibilities`
+- `users` 1-to-0/1 `staff_members`
+- `users` and `projects` are linked through `user_project_assignments`
 
-This means one beneficiary can have many home visit records.
+### 5.2 Beneficiary and Service Delivery
 
-The foreign key is stored in the `home_visits` table:
+- `beneficiaries` 1-to-many `disability_assessments`
+- `beneficiaries` 1-to-many `home_visits`
+- `beneficiaries` 1-to-many `referrals`
+- `referrals` 1-to-many `referral_follow_ups`
+- `beneficiaries` and `activities` are linked through `activity_participants`
+- User foreign keys identify who created, assessed, conducted, or referred.
 
-```text
-home_visits.beneficiary_id
-```
+### 5.3 Project and Activity Management
 
-This references:
+- `projects` 1-to-many `activities`
+- `activities` 1-to-many `activity_assignments`
+- `activities` 1-to-many `activity_participants`
+- `users` are linked to projects and activities for accountability and access control.
 
-```text
-beneficiaries.beneficiary_id
-```
+### 5.4 Poultry
 
-# 3. User Management Relationships
+- `projects` 1-to-many `poultry_groups`
+- `poultry_groups` 1-to-many `poultry_stock_movements`
+- `poultry_groups` 1-to-many `egg_production`
+- `poultry_groups` 1-to-many `feed_records`
+- `poultry_groups` 1-to-many `poultry_health_records`
+- `poultry_groups` 1-to-many `poultry_sales`
 
-## 3.1 Roles and Users
+Stock is derived from movement records rather than maintained only as a manually edited balance.
 
-```text
-ROLES 1 ─────< USERS
-```
+### 5.5 Farm
 
-One role can be assigned to many users.
+- `projects` 1-to-many `farm_crops`
+- `farm_crops` 1-to-many `farm_activities`
+- `farm_crops` 1-to-many `harvests`
+- `harvests` 1-to-many `farm_poultry_transfers`
+- `poultry_groups` 1-to-many `farm_poultry_transfers`
 
-Each user must have one assigned role.
+This preserves traceability from crop production to harvest and, where applicable, poultry feed transfer.
 
-**Relationship:**
+### 5.6 Finance
 
-```text
-roles.role_id
-        │
-        └──────< users.role_id
-```
+- `projects` 1-to-many `financial_transactions`
+- Financial transactions are separate from operational poultry and farm records.
+- The initial finance scope is basic income and expense management, not full accounting.
 
-## 3.2 Users and Staff/Volunteers
+### 5.7 Monitoring and Evaluation
 
-USERS 1 ───── 0..1 STAFF_VOLUNTEERS
+- `projects` 1-to-many `me_indicators`
+- `me_indicators` 1-to-many `me_indicator_records`
 
-A system user can be linked to at most one staff or volunteer record.
+### 5.8 Audit
 
-Each staff or volunteer record must be linked to exactly one system user.
+- `users` 1-to-many `audit_events`
 
-The `user_id` foreign key in `staff_volunteers` is required and unique.
+## 6. Visual ERD Layout
 
-**Relationship:**
+The visual ERD is arranged in logical zones to reduce line crossings:
 
-```text
-users.user_id
-        │
-        └──────── staff_volunteers.user_id
-```
+1. Access and identity
+2. Beneficiary and service delivery
+3. Projects and activities
+4. Poultry
+5. Farm
+6. Finance
+7. Monitoring and evaluation
+8. Audit
 
-# 4. Beneficiary and Disability Management Relationships
+The editable Draw.io source should remain the master visual artifact. PNG and PDF are presentation/export artifacts.
 
-## 4.1 Beneficiaries and Disability Assessments
+## 7. Validation Before SQL
 
-```text
-BENEFICIARIES 1 ─────< DISABILITY_ASSESSMENTS
-```
+Before creating `database/schema.sql`, confirm:
 
-One beneficiary may have one or more disability assessments.
+- Every v1.1 entity appears exactly once.
+- Every PK appears in its entity.
+- Every FK shown in the ERD exists in the referenced entity.
+- Relationship cardinalities match the Database Entity Design.
+- No legacy `roles` table remains.
+- No legacy `staff_volunteers` table remains.
+- No legacy `poultry_transactions` table remains.
+- `poultry_groups` and movement-based stock are represented.
+- `farm_poultry_transfers` is represented.
+- `financial_transactions` replaces the legacy generic `expenses` design.
+- `me_indicator_records` is represented.
+- `audit_events` is represented.
+- Activity assignments are separate from participants.
 
-Each disability assessment belongs to one beneficiary.
+## 8. Legacy ERD Audit Result
 
-**Foreign Key:**
+The supplied previous ERD is not suitable as the v1.1 baseline. It visibly contains the old `ROLES`, `STAFF_VOLUNTEERS`, and legacy poultry/finance structures. The old Draw.io source also contains the older role-based model.
 
-```text
-disability_assessments.beneficiary_id
-→ beneficiaries.beneficiary_id
-```
+The v1.1 ERD therefore replaces the previous visual model rather than extending it incrementally.
 
-## 4.2 Beneficiaries and Home Visits
+## 9. Next Step
 
-```text
-BENEFICIARIES 1 ─────< HOME_VISITS
-```
+After the ERD baseline is reviewed and committed, proceed to **Step 10: `database/schema.sql`**.
 
-One beneficiary may receive multiple home visits.
-
-Each home visit belongs to one beneficiary.
-
-**Foreign Key:**
-
-```text
-home_visits.beneficiary_id
-→ beneficiaries.beneficiary_id
-```
-
-## 4.3 Beneficiaries and Referrals
-
-```text
-BENEFICIARIES 1 ─────< REFERRALS
-```
-
-One beneficiary may receive multiple referrals.
-
-Each referral belongs to one beneficiary.
-
-**Foreign Key:**
-
-```text
-referrals.beneficiary_id
-→ beneficiaries.beneficiary_id
-```
-
-## 4.4 Referrals and Referral Follow-Ups
-
-```text
-REFERRALS 1 ─────< REFERRAL_FOLLOW_UPS
-```
-
-One referral may have multiple follow-up records.
-
-Each follow-up record belongs to one referral.
-
-**Foreign Key:**
-
-```text
-referral_follow_ups.referral_id
-→ referrals.referral_id
-```
-
-# 5. Project and Activity Management Relationships
-
-## 5.1 Projects and Activities
-
-```text
-PROJECTS 1 ─────< ACTIVITIES
-```
-
-One project can have many activities.
-
-Each activity belongs to one project.
-
-**Foreign Key:**
-
-```text
-activities.project_id
-→ projects.project_id
-```
-
-## 5.2 Activities and Activity Participants
-
-```text
-ACTIVITIES 1 ─────< ACTIVITY_PARTICIPANTS
-```
-
-One activity can have many participants.
-
-Each participant record belongs to one activity.
-
-**Foreign Key:**
-
-```text
-activity_participants.activity_id
-→ activities.activity_id
-```
-
-## 5.3 Beneficiaries and Activity Participants
-
-```text
-BENEFICIARIES 1 ─────< ACTIVITY_PARTICIPANTS
-```
-
-A beneficiary may participate in multiple activities.
-
-The `activity_participants` table connects beneficiaries to activities.
-
-This creates a many-to-many relationship:
-
-```text
-BENEFICIARIES >────< ACTIVITIES
-```
-
-The relationship is implemented using:
-
-```text
-ACTIVITY_PARTICIPANTS
-```
-
-# 6. Poultry Management Relationships
-
-The poultry module currently contains four operational tables:
-
-```text
-POULTRY_TRANSACTIONS
-EGG_PRODUCTION
-FEED_RECORDS
-POULTRY_HEALTH_RECORDS
-```
-
-At the initial stage, these tables do not require direct foreign-key relationships with each other.
-
-Each record is connected to the user who created it.
-
-```text
-USERS 1 ─────< POULTRY_TRANSACTIONS
-
-USERS 1 ─────< EGG_PRODUCTION
-
-USERS 1 ─────< FEED_RECORDS
-
-USERS 1 ─────< POULTRY_HEALTH_RECORDS
-```
-
-Poultry deaths are recorded in `poultry_transactions` because they directly affect the total poultry stock.
-
-The current poultry stock will be calculated from poultry transactions such as:
-
-* Opening stock
-* Purchase
-* Received
-* Sale
-* Death
-* Adjustment
-
-# 7. Farm Management Relationships
-
-## 7.1 Farm Crops and Farm Activities
-
-```text
-FARM_CROPS 1 ─────< FARM_ACTIVITIES
-```
-
-One crop can have many farm activities.
-
-For example:
-
-* Planting
-* Watering
-* Weeding
-* Fertilising
-* Harvesting
-
-**Foreign Key:**
-
-```text
-farm_activities.crop_id
-→ farm_crops.crop_id
-```
-
-## 7.2 Farm Crops and Harvests
-
-```text
-FARM_CROPS 1 ─────< HARVESTS
-```
-
-One crop may have multiple harvest records.
-
-**Foreign Key:**
-
-```text
-harvests.crop_id
-→ farm_crops.crop_id
-```
-
-The harvest can be recorded as being used for:
-
-* Poultry feed
-* ERA organisational use
-* Sale
-* Other purposes
-
-# 8. Finance Relationships
-
-## 8.1 Projects and Expenses
-
-```text
-PROJECTS 1 ─────< EXPENSES
-```
-
-One project may have many expenses.
-
-An organisational, farm, or poultry expense may not always belong to a specific project.
-
-Therefore, `expenses.project_id` may be optional.
-
-**Foreign Key:**
-
-```text
-expenses.project_id
-→ projects.project_id
-```
-
-# 9. Monitoring and Evaluation Relationships
-
-## 9.1 Projects and M&E Indicators
-
-PROJECTS 1 ─────< ME_INDICATORS
-
-One project may have multiple monitoring and evaluation indicators.
-
-Each M&E indicator must be connected to one specific project.
-
-Therefore, `me_indicators.project_id` is required in the database.
-
-**Foreign Key:**
-
-```text
-me_indicators.project_id
-→ projects.project_id
-```
-
-# 10. User Audit Relationships
-
-The `users` table is connected to many operational records because the system needs to know who created, conducted, or recorded an activity.
-
-The following relationships apply:
-
-```text
-USERS 1 ─────< BENEFICIARIES
-USERS 1 ─────< DISABILITY_ASSESSMENTS
-USERS 1 ─────< HOME_VISITS
-USERS 1 ─────< REFERRALS
-USERS 1 ─────< REFERRAL_FOLLOW_UPS
-USERS 1 ─────< PROJECTS
-USERS 1 ─────< ACTIVITIES
-USERS 1 ─────< POULTRY_TRANSACTIONS
-USERS 1 ─────< EGG_PRODUCTION
-USERS 1 ─────< FEED_RECORDS
-USERS 1 ─────< POULTRY_HEALTH_RECORDS
-USERS 1 ─────< FARM_CROPS
-USERS 1 ─────< FARM_ACTIVITIES
-USERS 1 ─────< HARVESTS
-USERS 1 ─────< EXPENSES
-USERS 1 ─────< ME_INDICATORS
-```
-
-These relationships provide basic accountability and help identify who created or managed a record.
-
-# 11. Complete Relationship Summary
-
-The main relationships in the ERA-IPMS database are:
-
-```text
-ROLES
-  └────< USERS
-
-USERS
-  └──── STAFF_VOLUNTEERS
-
-BENEFICIARIES
-  ├────< DISABILITY_ASSESSMENTS
-  ├────< HOME_VISITS
-  ├────< REFERRALS
-  └────< ACTIVITY_PARTICIPANTS
-
-REFERRALS
-  └────< REFERRAL_FOLLOW_UPS
-
-PROJECTS
-  ├────< ACTIVITIES
-  ├────< EXPENSES
-  └────< ME_INDICATORS
-
-ACTIVITIES
-  └────< ACTIVITY_PARTICIPANTS
-
-FARM_CROPS
-  ├────< FARM_ACTIVITIES
-  └────< HARVESTS
-```
-
-In addition, the `users` table is connected to operational records through fields such as:
-
-```text
-created_by
-assessed_by
-conducted_by
-referred_by
-responsible_user_id
-recorded_by
-```
-
-# 12. Core Database Relationship Model
-
-The simplified structure of ERA-IPMS is:
-
-```text
-                         ROLES
-                           │
-                           │ 1
-                           ▼
-                         USERS
-                           │
-          ┌────────────────┼─────────────────┐
-          │                │                 │
-          ▼                ▼                 ▼
- STAFF_VOLUNTEERS    BENEFICIARIES        PROJECTS
-                         │                   │
-          ┌──────────────┼───────┐           │
-          │              │       │           │
-          ▼              ▼       ▼           ▼
-    ASSESSMENTS    HOME_VISITS  REFERRALS  ACTIVITIES
-                                  │           │
-                                  ▼           ▼
-                               FOLLOW-UPS  PARTICIPANTS
-                                               ▲
-                                               │
-                                         BENEFICIARIES
-
-
-FARM_CROPS
-    │
-    ├────< FARM_ACTIVITIES
-    │
-    └────< HARVESTS
-
-
-PROJECTS
-    │
-    ├────< EXPENSES
-    │
-    └────< ME_INDICATORS
-
-
-POULTRY MODULE
-    │
-    ├──── POULTRY_TRANSACTIONS
-    ├──── EGG_PRODUCTION
-    ├──── FEED_RECORDS
-    └──── POULTRY_HEALTH_RECORDS
-```
-
-# 13. Design Decisions
-
-The following design decisions have been made for Version 1 of ERA-IPMS:
-
-1. Field Staff and Volunteers will share the same system access role.
-
-2. Staff and volunteer information will be stored separately from user login accounts.
-
-3. A beneficiary may have multiple assessments, home visits, and referrals.
-
-4. A referral may have multiple follow-up records.
-
-5. Beneficiaries and activities have a many-to-many relationship implemented through `activity_participants`.
-
-6. Poultry stock will be calculated from transaction records rather than manually storing only one current stock number.
-
-7. Farm harvests can be marked according to how they are used, including poultry feed.
-
-8. Expenses may be connected to a project, poultry activities, farm activities, or general organisational operations.
-
-9. M&E indicators may belong to a specific project or to ERA's general organisational monitoring.
-
-10. The `users` table will provide accountability by recording which user created or managed operational records.
-
-# 14. Next Step
-
-After this relationship specification is reviewed, the next step is to create the visual Entity Relationship Diagram.
-
-The visual ERD will:
-
-* Show all database tables.
-* Show primary keys.
-* Show foreign keys.
-* Display one-to-many relationships.
-* Display the many-to-many relationship between beneficiaries and activities.
-* Provide the final database blueprint before MySQL implementation.
-
-The visual ERD will be created using Draw.io and stored in:
-
-```text
-docs/database/erd/
-```
-
-The completed ERD will then be used to create:
-
-```text
-database/schema.sql
-```
+No Django model migration or production database change is authorized by this document alone.

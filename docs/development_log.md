@@ -524,3 +524,65 @@ The entity design will be used as the logical baseline for the next database-des
 **Step 9: Entity Relationship Diagram (ERD)**
 
 The ERD will visually represent the approved entities, primary keys, foreign keys, cardinalities, junction entities, access-control relationships, farm-to-poultry traceability, finance relationships, and audit relationships.
+
+## Step 9: Entity Relationship Diagram Baseline
+
+**Date:** September 2026  
+**Status:** Prepared for review and commit
+
+### Work Completed
+
+The existing ERA-IPMS ERD was audited against the approved Database Entity Design v1.1.
+
+The previous ERD was identified as a legacy model because it still contained the old `roles`, `staff_volunteers`, and `poultry_transactions` structures. The v1.1 ERD was therefore prepared as a replacement baseline.
+
+The updated ERD represents the approved database areas:
+
+- User titles, permissions and responsibilities
+- Staff members and project assignments
+- Beneficiaries and disability assessments
+- Home visits
+- Referrals and referral follow-ups
+- Projects and activities
+- Activity assignments and participants
+- Poultry groups and movement-based stock
+- Egg production, feed, health and poultry sales
+- Farm crops, activities and harvests
+- Farm-to-poultry transfers
+- Financial transactions
+- M&E indicators and indicator records
+- Audit events
+
+### Design Decisions Preserved
+
+- Title, permission and responsibility remain separate concepts.
+- Titles remain expandable by administrators.
+- Permissions remain application-defined.
+- Beneficiary access remains record-level.
+- Beneficiary deletion is treated as archive/inactivation.
+- Activity assignment is separate from activity participation.
+- Poultry stock is derived from stock movements.
+- Farm-to-poultry transfer is explicitly traceable.
+- Operational records remain separate from financial transactions.
+- Audit events provide accountability.
+
+### ERD Artifacts
+
+The Step 9 baseline contains:
+
+- `docs/database/entity_relationship_diagram.md`
+- `docs/database/erd/era_ipms_erd.drawio`
+- `docs/database/erd/era_ipms_erd.png`
+- `docs/database/erd/era_ipms_erd.pdf`
+
+The Draw.io file is the editable visual source. PNG and PDF are presentation artifacts.
+
+### Validation
+
+The ERD must be reviewed against the Database Entity Design v1.1 before the database schema is generated.
+
+No Django model migration or production database change is included in Step 9.
+
+### Next Step
+
+After the ERD baseline is committed and verified clean, proceed to Step 10: `database/schema.sql`.
