@@ -705,3 +705,61 @@ The existing MariaDB database must be migrated deliberately after the legacy-to-
 ### Next step
 
 After Step 11 is committed, pushed, and verified clean, proceed to application/database integration and authentication alignment.
+
+## Step 12A — Authentication Backend Alignment
+
+**Status:** Validated against Django models and disposable MariaDB test database
+
+### Work completed
+
+- Updated the custom authentication backend to use the approved `Users` model structure.
+- Replaced the legacy `role` relationship with the approved `title` relationship.
+- Added authentication using either:
+  - username
+  - email address
+- Added identifier trimming and empty-identifier rejection.
+- Added safe handling for ambiguous username/email matches.
+- Preserved inactive-user rejection.
+- Updated `get_user()` to use the current `Users` model and `title` relationship.
+- Kept authentication based on the existing MariaDB `users` table.
+- Did not modify the database schema or generate Django migrations.
+
+### Validation results
+
+| Validation | Result |
+|---|---|
+| Django system check | Passed |
+| Username authentication | Passed |
+| Email authentication | Passed |
+| Incorrect password rejection | Passed |
+| Inactive user rejection | Passed |
+| `get_user()` lookup | Passed |
+| `Users.title` relationship | Passed |
+| Legacy role references in `core/auth` | None |
+| `git diff --check` | Passed |
+
+### Database validation
+
+Authentication behavior was tested against the disposable MariaDB database:
+
+`era_ipms_model_test`
+
+Temporary test users and titles were created for validation and removed after testing.
+
+### Implementation boundary
+
+This step aligns the authentication backend with the approved title-based user model.
+
+It does **not** yet address:
+- authentication views
+- URL structure
+- Django settings cleanup
+- login/logout presentation
+- authorization and permission enforcement
+- record-level access enforcement
+
+Those will be handled as separate logical development steps.
+
+### Next step
+
+Proceed to authentication view and URL alignment after Step 12A is committed and verified clean.
