@@ -5,12 +5,12 @@ from django.middleware.csrf import get_token
 
 def auth_test(request):
     if request.method == "POST":
-        username = request.POST.get("username")
+        identifier = request.POST.get("identifier")
         password = request.POST.get("password")
 
         user = authenticate(
             request,
-            username=username,
+            username=identifier,
             password=password,
         )
 
@@ -26,13 +26,15 @@ def auth_test(request):
             "authenticated": True,
             "user_id": user.user_id,
             "username": user.username,
-            "role": user.role.role_name,
+            "title": user.title.title_name,
         })
 
     if request.user.is_authenticated:
         return JsonResponse({
             "authenticated": True,
+            "user_id": request.user.user_id,
             "username": request.user.username,
+            "title": request.user.title.title_name,
         })
 
     get_token(request)
