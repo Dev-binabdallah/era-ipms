@@ -637,3 +637,71 @@ The schema is a database design/install baseline and is **not a migration script
 ### Next step
 
 Proceed to application/database integration only after the schema baseline is committed and pushed.
+## Step 11 — Django Application Model Baseline
+
+**Status:** Validated against MariaDB schema v1.1
+
+### Work completed
+
+- Replaced the legacy Django model definitions in `backend/core/models.py`.
+- Aligned the Django application models with the approved database schema v1.1.
+- Replaced the legacy role-based model structure with the approved:
+  - titles
+  - permissions
+  - responsibilities
+  - user responsibilities
+  - project assignments
+- Replaced legacy staff/volunteer and poultry transaction structures with the approved v1.1 entities.
+- Added the application model representations for:
+  - beneficiaries and disability assessments
+  - home visits
+  - referrals and referral follow-ups
+  - projects and activities
+  - activity assignments and participants
+  - poultry groups and stock movements
+  - egg production, feed, health, and poultry sales
+  - farm crops, activities, harvests, and farm-to-poultry transfers
+  - financial transactions
+  - M&E indicators and indicator records
+  - audit events
+- Updated the `Users` model to use `title_id` instead of the legacy `role_id`.
+- Added Django authentication interface properties required by the custom authentication backend.
+- Kept the application models unmanaged because the MariaDB schema remains the authoritative database structure and existing database migration requires a deliberate migration plan.
+
+### Validation results
+
+| Validation | Result |
+|---|---|
+| Django system check | Passed |
+| Django model count | 31 |
+| Database schema table count | 31 |
+| Model/schema table mapping | Matched |
+| Model/schema column mapping | Matched |
+| Foreign-key mappings | Passed |
+| Foreign-key constraints | 56 |
+| Unique constraints | 15 |
+| InnoDB tables | 31 |
+| utf8mb4_unicode_ci tables | 31 |
+| `managed = False` models | 31 |
+| Model relationship `on_delete` audit | Passed |
+| Legacy model check | Passed |
+
+### Database validation
+
+The v1.1 Django models were validated against the disposable MariaDB test database:
+
+`era_ipms_model_test`
+
+The existing `era_ipms` database was not used as the validation target because it contains the legacy database structure and requires a separate migration plan.
+
+### Important implementation boundary
+
+The Django model baseline does **not** constitute a migration of the existing database.
+
+No Django migration was generated or applied for the v1.1 model baseline.
+
+The existing MariaDB database must be migrated deliberately after the legacy-to-v1.1 migration strategy has been reviewed and approved.
+
+### Next step
+
+After Step 11 is committed, pushed, and verified clean, proceed to application/database integration and authentication alignment.
