@@ -301,7 +301,7 @@ class Referrals(models.Model):
         related_name="referrals",
     )
     referral_date = models.DateField()
-    referral_destination = models.CharField(max_length=255)
+    destination = models.CharField(max_length=255)
     reason = models.TextField(blank=True, null=True)
     referred_by = models.ForeignKey(
         Users,

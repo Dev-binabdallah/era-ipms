@@ -512,7 +512,7 @@ Stores beneficiary referrals.
 | `referral_id`            | BIGINT       | Unique identifier                |
 | `beneficiary_id`         | BIGINT       | Beneficiary                      |
 | `referral_date`          | DATE         | Referral date                    |
-| `referral_destination`   | VARCHAR(200) | Service or organisation          |
+| `destination`   | VARCHAR(200) | Service or organisation          |
 | `reason`                 | TEXT         | Referral reason                  |
 | `supporting_information` | TEXT         | Relevant information             |
 | `referred_by`            | BIGINT       | User creating referral           |

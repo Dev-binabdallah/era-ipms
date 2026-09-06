@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS referrals (
     referral_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     beneficiary_id BIGINT UNSIGNED NOT NULL,
     referral_date DATE NOT NULL,
-    referral_destination VARCHAR(255) NOT NULL,
+    destination VARCHAR(255) NOT NULL,
     reason TEXT NULL,
     referred_by BIGINT UNSIGNED NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'submitted',

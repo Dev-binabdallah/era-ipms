@@ -566,6 +566,241 @@ The following matrix represents the initial access direction.
 
 The matrix represents the baseline direction. Detailed permissions may be assigned more precisely during implementation.
 
+## 12.1 Title-Level Permission Baseline for Implementation
+
+The following baseline defines the initial title-level permissions to be represented in the `title_permissions` table.
+
+Title-level permissions define the types of operations a title may perform. They do not by themselves grant unrestricted access to all records.
+
+| Permission | Admin | Director | Programme Coordinator | Finance | Member |
+| ---------- | :---: | :------: | :-------------------: | :-----: | :----: |
+| View       | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Add        | ✓ | — | ✓ | ✓ | ✓* |
+| Edit       | ✓ | — | ✓ | ✓ | ✓* |
+| Delete     | ✓ | — | — | — | — |
+| Approve    | ✓ | ✓ | — | — | — |
+| Export     | ✓ | ✓ | ✓ | ✓ | — |
+| Manage     | ✓ | ✓ | ✓ | ✓ | — |
+| Administer | ✓ | — | — | — | — |
+
+`*` Member Add/Edit permissions are subject to assigned operational responsibilities and record-level authorization.
+
+### 12.1.1 Authorization Interpretation
+
+The title-level baseline shall be combined with:
+
+1. Assigned operational responsibility.
+2. Project assignment.
+3. Activity assignment where applicable.
+4. User-created, user-assessed, or user-visited record relationships where applicable.
+5. Record-level authorization rules.
+6. Separate approval authority where required.
+
+A title-level permission must not be interpreted as unrestricted access to every record in a module.
+
+### 12.1.2 Administrative Authority
+
+`Administer` is restricted to the Admin title in the initial baseline.
+
+Administrative authority does not automatically grant programme decision-making authority. Programme governance and approval responsibilities remain governed by the Director and other explicitly authorised users.
+
+### 12.1.3 Approval Authority
+
+`Approve` is separate from `Add` and `Edit`.
+
+The initial baseline grants title-level approval permission to Director. Specific approval workflows may impose additional record, project, programme, or responsibility-level restrictions.
+
+### 12.1.4 Member Authorization
+
+Member is a general operational title.
+
+Member access shall primarily be determined by assigned responsibilities and applicable project/activity assignments. Member users do not receive Delete, Approve, Export, Manage, or Administer permissions in the initial baseline.
+
+### 12.1.5 Implementation Boundary
+
+This baseline is the authorization foundation for the initial `title_permissions` seed.
+
+It does not replace record-level authorization logic and does not by itself determine access to beneficiary, disability, financial, poultry, farm, project, activity, or other operational records.
+
+## 12.2 Responsibility Baseline for Implementation
+
+The following responsibilities define the initial operational areas that may be assigned to users.
+
+Responsibilities determine the operational scope of a user's access. They do not independently grant permissions. Access shall be determined by the combination of title-level permissions, assigned responsibilities, project/activity assignments, and record-level authorization rules.
+
+| Responsibility Code | Responsibility Name |
+| -------------------- | ------------------- |
+| `DISABILITY_SERVICES` | Disability Services |
+| `BENEFICIARY_REGISTRATION` | Beneficiary Registration |
+| `DISABILITY_ASSESSMENT` | Disability Assessment |
+| `HOME_VISITS` | Home Visits |
+| `REFERRALS_FOLLOW_UP` | Referrals and Follow-Up |
+| `COMMUNITY_AWARENESS` | Community Awareness |
+| `PROJECT_ACTIVITIES` | Project Activities |
+| `POULTRY_OPERATIONS` | Poultry Operations |
+| `FARM_OPERATIONS` | Farm Operations |
+| `PROJECT_COORDINATION` | Project Coordination |
+| `FINANCIAL_OPERATIONS` | Financial Operations |
+| `MONITORING_EVALUATION` | Monitoring and Evaluation |
+
+### 12.2.1 Responsibility Interpretation
+
+A responsibility identifies an operational area in which a user may be authorised to work.
+
+A responsibility does not automatically grant View, Add, Edit, Delete, Approve, Export, Manage, or Administer permissions.
+
+The applicable title-level permission must exist before a responsibility can contribute to authorisation.
+
+### 12.2.2 Responsibility and Record-Level Access
+
+Responsibility assignments shall be combined with applicable project, activity, and record-level authorization rules.
+
+For example, a user assigned `POULTRY_OPERATIONS` may work with authorised poultry records only when the user's title permissions and applicable project or record-level rules also permit the requested operation.
+
+### 12.2.3 Initial Responsibility Scope
+
+The initial responsibility baseline covers:
+
+- Disability and beneficiary services.
+- Beneficiary registration.
+- Disability assessment.
+- Home visits.
+- Referrals and follow-up.
+- Community awareness.
+- Project and activity operations.
+- Poultry operations.
+- Farm operations.
+- Project coordination.
+- Financial operations.
+- Monitoring and evaluation.
+
+Additional responsibilities may be introduced when validated operational requirements require them.
+
+### 12.2.4 Reporting Boundary
+
+Reporting is not initially defined as a standalone responsibility.
+
+Reporting access shall be controlled through the applicable operational responsibility, title-level permissions, and record-level authorization. Export access remains separately controlled through the `EXPORT` permission.
+
+## 12.3 Title-to-Responsibility Eligibility Baseline
+
+The following baseline defines which operational responsibilities may be assigned to users based on their title.
+
+This is an eligibility baseline, not an automatic assignment rule. A user's title does not automatically assign all responsibilities listed for that title.
+
+| Responsibility | Admin | Director | Programme Coordinator | Finance | Member |
+| -------------- | :---: | :------: | :-------------------: | :-----: | :----: |
+| Disability Services | — | ✓ | ✓ | — | ✓ |
+| Beneficiary Registration | — | ✓ | ✓ | — | ✓ |
+| Disability Assessment | — | ✓ | ✓ | — | ✓ |
+| Home Visits | — | ✓ | ✓ | — | ✓ |
+| Referrals and Follow-Up | — | ✓ | ✓ | — | ✓ |
+| Community Awareness | — | ✓ | ✓ | — | ✓ |
+| Project Activities | — | ✓ | ✓ | — | ✓ |
+| Poultry Operations | — | ✓ | ✓ | — | ✓ |
+| Farm Operations | — | ✓ | ✓ | — | ✓ |
+| Project Coordination | — | ✓ | ✓ | — | — |
+| Financial Operations | — | ✓ | ✓ | ✓ | — |
+| Monitoring and Evaluation | — | ✓ | ✓ | ✓ | ✓ |
+
+### 12.3.1 Eligibility Interpretation
+
+The table defines the initial responsibility areas that may be assigned to users holding the corresponding title.
+
+Eligibility does not automatically create a responsibility assignment.
+
+Actual user responsibility assignments shall be made according to the user's operational duties and least-privilege requirements.
+
+### 12.3.2 Administrative Title
+
+The Admin title does not automatically receive operational responsibilities.
+
+Administrative authority is provided through the applicable title-level permissions, including `ADMINISTER`, and does not automatically create programme or operational responsibility.
+
+### 12.3.3 Director and Programme Coordinator
+
+Director and Programme Coordinator users may be assigned broad operational responsibilities where required by their programme or coordination duties.
+
+Specific assignments shall remain subject to organisational requirements and least-privilege principles.
+
+### 12.3.4 Finance
+
+Finance users may be assigned `FINANCIAL_OPERATIONS` and, where required, `MONITORING_EVALUATION`.
+
+Financial responsibility does not automatically provide access to beneficiary, disability, home visit, referral, poultry, or farm operational records.
+
+### 12.3.5 Member
+
+Member users shall normally receive only the operational responsibilities required for their assigned duties.
+
+A Member title does not automatically grant every Member-eligible responsibility.
+
+### 12.3.6 Assignment Boundary
+
+Responsibility assignment shall remain separate from:
+
+1. Title assignment.
+2. Title-level permission assignment.
+3. Project assignment.
+4. Activity assignment.
+5. Record-level authorization.
+
+All applicable authorization conditions must be satisfied before an operation is permitted.
+
+## 12.4 User Responsibility Assignment Rules
+
+User responsibilities shall be assigned explicitly according to the user's operational duties and least-privilege requirements.
+
+A responsibility shall not be inferred solely from the user's title.
+
+### 12.4.1 Multiple Responsibilities
+
+A user may have multiple active responsibilities where required by their authorised duties.
+
+Each responsibility shall be independently recorded in the `user_responsibilities` table.
+
+### 12.4.2 Assignment Authority
+
+Responsibility assignments shall be performed only by users with the appropriate administrative or management authority.
+
+The `assigned_by` field shall identify the user who performed the assignment where applicable.
+
+### 12.4.3 Responsibility Eligibility
+
+A responsibility may be assigned only where it is compatible with the user's title-level authorization baseline and the user's actual operational duties.
+
+An assignment must not be used to bypass title-level permission restrictions.
+
+### 12.4.4 Activation and Deactivation
+
+Responsibility assignments shall support activation and deactivation through the `is_active` field.
+
+Deactivating a responsibility shall remove it from the user's active operational authorization without requiring historical assignment data to be physically deleted.
+
+### 12.4.5 Least-Privilege Assignment
+
+Users shall receive only the responsibilities necessary for their authorised duties.
+
+New responsibility assignments shall not automatically grant project-wide or system-wide access.
+
+### 12.4.6 Project and Activity Scope
+
+Where applicable, responsibility assignments shall be combined with project and activity assignments.
+
+A user having an active responsibility does not by itself grant access to every project, activity, or record associated with that responsibility.
+
+### 12.4.7 Administrative Boundary
+
+The Admin title provides system-level administrative permissions but does not automatically create programme responsibilities.
+
+Administrative users may manage responsibility assignments where authorised, while operational responsibility remains separately assigned.
+
+### 12.4.8 Auditability
+
+Responsibility assignment and deactivation shall remain auditable.
+
+Historical assignment information shall be preserved where required for accountability and audit purposes.
+
 # 13. Record-Level Access Rules
 
 Record-level access is a mandatory part of the access-control design.
