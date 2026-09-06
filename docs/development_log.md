@@ -586,3 +586,54 @@ No Django model migration or production database change is included in Step 9.
 ### Next Step
 
 After the ERD baseline is committed and verified clean, proceed to Step 10: `database/schema.sql`.
+
+## Step 10 — Database Schema Baseline
+
+**Status:** Validated in disposable MariaDB test database
+
+### Work completed
+
+- Replaced the legacy `database/schema.sql` structure with the approved v1.1 database schema.
+- Preserved the existing `era_ipms` database by testing the schema in a separate disposable database:
+  `era_ipms_schema_test`.
+- Verified that the schema imports successfully into MariaDB 10.11.18.
+- Verified that the schema creates 31 tables.
+- Verified that the schema creates 56 foreign-key relationships.
+- Verified that all 31 tables use InnoDB.
+- Verified that all 31 tables use `utf8mb4_unicode_ci`.
+- Verified key tables including:
+  - `users`
+  - `projects`
+  - `poultry_stock_movements`
+  - `financial_transactions`
+  - `audit_events`
+
+### Important schema decisions
+
+- `users` uses `title_id` rather than the legacy `role_id`.
+- Titles, permissions, and responsibilities remain separate concepts.
+- Poultry inventory uses movement-based stock tracking.
+- Financial transactions are separated from operational poultry/farm records.
+- Audit events are included for traceability.
+- Beneficiary records are designed for archival/inactivation rather than physical deletion.
+
+### Validation results
+
+| Validation | Result |
+|---|---|
+| Schema import | Passed |
+| Tables created | 31 |
+| Foreign keys | 56 |
+| Storage engine | InnoDB |
+| Table collation | utf8mb4_unicode_ci |
+| Key table DDL checks | Passed |
+
+### Safety
+
+The schema was **not executed against the existing `era_ipms` database**. The existing database remains separate from the disposable schema test database.
+
+The schema is a database design/install baseline and is **not a migration script** for the existing database.
+
+### Next step
+
+Proceed to application/database integration only after the schema baseline is committed and pushed.

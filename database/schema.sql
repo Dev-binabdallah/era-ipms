@@ -1,505 +1,755 @@
-/*M!999999\- enable the sandbox mode */ 
--- MariaDB dump 10.19  Distrib 10.11.18-MariaDB, for debian-linux-gnu (x86_64)
+-- ERA-IPMS Database Schema v1.1
+-- MariaDB / MySQL
+-- September 2026
 --
--- Host: localhost    Database: era_ipms
--- ------------------------------------------------------
--- Server version	10.11.18-MariaDB-0+deb12u1
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
+-- PURPOSE:
+--   Authoritative database schema baseline derived from the approved
+--   Database Entity Design v1.1 and ERD v1.1.
 --
--- Table structure for table `activities`
+-- SAFETY:
+--   This file is a design/install baseline. It does NOT perform migrations
+--   of the existing legacy database and contains no DROP TABLE statements.
+--   Do not run it against an existing production database until a migration
+--   plan has been reviewed and approved.
 --
+-- IMPORTANT:
+--   Status/type/category values are intentionally VARCHAR where final
+--   controlled vocabularies remain subject to validation.
 
-DROP TABLE IF EXISTS `activities`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `activities` (
-  `activity_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `project_id` bigint(20) unsigned NOT NULL,
-  `activity_name` varchar(200) NOT NULL,
-  `activity_date` date DEFAULT NULL,
-  `location` varchar(200) DEFAULT NULL,
-  `responsible_user_id` bigint(20) unsigned NOT NULL,
-  `description` text DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `results` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`activity_id`),
-  KEY `project_id` (`project_id`),
-  KEY `responsible_user_id` (`responsible_user_id`),
-  CONSTRAINT `activities_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `projects` (`project_id`) ON UPDATE CASCADE,
-  CONSTRAINT `activities_ibfk_2` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE DATABASE IF NOT EXISTS era_ipms
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
---
--- Table structure for table `activity_participants`
---
+USE era_ipms;
 
-DROP TABLE IF EXISTS `activity_participants`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `activity_participants` (
-  `participant_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `activity_id` bigint(20) unsigned NOT NULL,
-  `beneficiary_id` bigint(20) unsigned NOT NULL,
-  `participant_name` varchar(200) DEFAULT NULL,
-  `participant_type` varchar(100) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`participant_id`),
-  KEY `activity_id` (`activity_id`),
-  KEY `beneficiary_id` (`beneficiary_id`),
-  CONSTRAINT `activity_participants_ibfk_1` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`activity_id`) ON UPDATE CASCADE,
-  CONSTRAINT `activity_participants_ibfk_2` FOREIGN KEY (`beneficiary_id`) REFERENCES `beneficiaries` (`beneficiary_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+SET NAMES utf8mb4;
 
---
--- Table structure for table `beneficiaries`
---
+-- ============================================================
+-- 1. ACCESS AND IDENTITY
+-- ============================================================
 
-DROP TABLE IF EXISTS `beneficiaries`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `beneficiaries` (
-  `beneficiary_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `beneficiary_code` varchar(50) NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) NOT NULL,
-  `date_of_birth` date DEFAULT NULL,
-  `sex` varchar(20) DEFAULT NULL,
-  `location` varchar(200) DEFAULT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `registration_date` date DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `created_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`beneficiary_id`),
-  UNIQUE KEY `beneficiary_code` (`beneficiary_code`),
-  KEY `created_by` (`created_by`),
-  CONSTRAINT `beneficiaries_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS titles (
+    title_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    title_name VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (title_id),
+    UNIQUE KEY uq_titles_name (title_name),
+    KEY idx_titles_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `disability_assessments`
---
+CREATE TABLE IF NOT EXISTS permissions (
+    permission_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    permission_code VARCHAR(100) NOT NULL,
+    permission_name VARCHAR(150) NOT NULL,
+    description TEXT NULL,
+    PRIMARY KEY (permission_id),
+    UNIQUE KEY uq_permissions_code (permission_code),
+    UNIQUE KEY uq_permissions_name (permission_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `disability_assessments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `disability_assessments` (
-  `assessment_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `beneficiary_id` bigint(20) unsigned NOT NULL,
-  `assessment_date` date NOT NULL,
-  `assessment_type` varchar(100) DEFAULT NULL,
-  `disability_type` varchar(100) DEFAULT NULL,
-  `needs` text DEFAULT NULL,
-  `assessment_notes` text DEFAULT NULL,
-  `assessed_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`assessment_id`),
-  KEY `beneficiary_id` (`beneficiary_id`),
-  KEY `assessed_by` (`assessed_by`),
-  CONSTRAINT `disability_assessments_ibfk_1` FOREIGN KEY (`beneficiary_id`) REFERENCES `beneficiaries` (`beneficiary_id`) ON UPDATE CASCADE,
-  CONSTRAINT `disability_assessments_ibfk_2` FOREIGN KEY (`assessed_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS responsibilities (
+    responsibility_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    responsibility_code VARCHAR(100) NOT NULL,
+    responsibility_name VARCHAR(150) NOT NULL,
+    description TEXT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (responsibility_id),
+    UNIQUE KEY uq_responsibilities_code (responsibility_code),
+    UNIQUE KEY uq_responsibilities_name (responsibility_name),
+    KEY idx_responsibilities_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `egg_production`
---
+CREATE TABLE IF NOT EXISTS users (
+    user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    title_id BIGINT UNSIGNED NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    phone VARCHAR(30) NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    last_login DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id),
+    UNIQUE KEY uq_users_username (username),
+    UNIQUE KEY uq_users_email (email),
+    KEY idx_users_title (title_id),
+    KEY idx_users_active (is_active),
+    CONSTRAINT fk_users_title
+        FOREIGN KEY (title_id) REFERENCES titles (title_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `egg_production`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `egg_production` (
-  `egg_production_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `production_date` date NOT NULL,
-  `eggs_produced` int(11) NOT NULL,
-  `eggs_used` int(11) DEFAULT 0,
-  `eggs_sold` int(11) DEFAULT 0,
-  `eggs_remaining` int(11) DEFAULT 0,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`egg_production_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `egg_production_ibfk_1` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS title_permissions (
+    title_permission_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    title_id BIGINT UNSIGNED NOT NULL,
+    permission_id BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (title_permission_id),
+    UNIQUE KEY uq_title_permissions (title_id, permission_id),
+    KEY idx_tp_permission (permission_id),
+    CONSTRAINT fk_tp_title
+        FOREIGN KEY (title_id) REFERENCES titles (title_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_tp_permission
+        FOREIGN KEY (permission_id) REFERENCES permissions (permission_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `expenses`
---
+CREATE TABLE IF NOT EXISTS user_responsibilities (
+    user_responsibility_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    responsibility_id BIGINT UNSIGNED NOT NULL,
+    assigned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    assigned_by BIGINT UNSIGNED NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY (user_responsibility_id),
+    UNIQUE KEY uq_user_responsibility (user_id, responsibility_id),
+    KEY idx_ur_responsibility (responsibility_id),
+    KEY idx_ur_assigned_by (assigned_by),
+    CONSTRAINT fk_ur_user
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ur_responsibility
+        FOREIGN KEY (responsibility_id) REFERENCES responsibilities (responsibility_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_ur_assigned_by
+        FOREIGN KEY (assigned_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `expenses`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `expenses` (
-  `expense_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `expense_date` date NOT NULL,
-  `category` varchar(100) NOT NULL,
-  `amount` decimal(12,2) NOT NULL,
-  `description` text DEFAULT NULL,
-  `project_id` bigint(20) unsigned DEFAULT NULL,
-  `expense_area` varchar(100) DEFAULT NULL,
-  `payment_method` varchar(50) DEFAULT NULL,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`expense_id`),
-  KEY `project_id` (`project_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `projects` (`project_id`) ON UPDATE CASCADE,
-  CONSTRAINT `expenses_ibfk_2` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS staff_members (
+    staff_member_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    full_name VARCHAR(200) NOT NULL,
+    person_type VARCHAR(100) NULL,
+    phone VARCHAR(30) NULL,
+    email VARCHAR(150) NULL,
+    start_date DATE NULL,
+    status VARCHAR(50) NULL,
+    notes TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (staff_member_id),
+    UNIQUE KEY uq_staff_user (user_id),
+    KEY idx_staff_status (status),
+    CONSTRAINT fk_staff_user
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `farm_activities`
---
+-- ============================================================
+-- 2. PROJECT AND ACCESS ASSIGNMENT
+-- ============================================================
 
-DROP TABLE IF EXISTS `farm_activities`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `farm_activities` (
-  `farm_activity_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `crop_id` bigint(20) unsigned NOT NULL,
-  `activity_date` date NOT NULL,
-  `activity_type` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `conducted_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`farm_activity_id`),
-  KEY `crop_id` (`crop_id`),
-  KEY `conducted_by` (`conducted_by`),
-  CONSTRAINT `farm_activities_ibfk_1` FOREIGN KEY (`crop_id`) REFERENCES `farm_crops` (`crop_id`) ON UPDATE CASCADE,
-  CONSTRAINT `farm_activities_ibfk_2` FOREIGN KEY (`conducted_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS projects (
+    project_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    project_name VARCHAR(200) NOT NULL,
+    description TEXT NULL,
+    start_date DATE NULL,
+    end_date DATE NULL,
+    objectives TEXT NULL,
+    status VARCHAR(50) NULL,
+    created_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (project_id),
+    KEY idx_projects_status (status),
+    KEY idx_projects_dates (start_date, end_date),
+    KEY idx_projects_created_by (created_by),
+    CONSTRAINT fk_projects_created_by
+        FOREIGN KEY (created_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `farm_crops`
---
+CREATE TABLE IF NOT EXISTS user_project_assignments (
+    assignment_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    project_id BIGINT UNSIGNED NOT NULL,
+    assigned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    assigned_by BIGINT UNSIGNED NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY (assignment_id),
+    UNIQUE KEY uq_user_project (user_id, project_id),
+    KEY idx_upa_project (project_id),
+    KEY idx_upa_assigned_by (assigned_by),
+    CONSTRAINT fk_upa_user
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_upa_project
+        FOREIGN KEY (project_id) REFERENCES projects (project_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_upa_assigned_by
+        FOREIGN KEY (assigned_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `farm_crops`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `farm_crops` (
-  `crop_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `crop_name` varchar(200) NOT NULL,
-  `description` text DEFAULT NULL,
-  `planting_date` date DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`crop_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `farm_crops_ibfk_1` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ============================================================
+-- 3. BENEFICIARY AND SERVICE DELIVERY
+-- ============================================================
 
---
--- Table structure for table `feed_records`
---
+CREATE TABLE IF NOT EXISTS beneficiaries (
+    beneficiary_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    beneficiary_code VARCHAR(50) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    date_of_birth DATE NULL,
+    sex VARCHAR(20) NULL,
+    location VARCHAR(200) NULL,
+    phone VARCHAR(30) NULL,
+    registration_date DATE NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (beneficiary_id),
+    UNIQUE KEY uq_beneficiary_code (beneficiary_code),
+    KEY idx_beneficiaries_created_by (created_by),
+    KEY idx_beneficiaries_status (status),
+    KEY idx_beneficiaries_name (last_name, first_name),
+    CONSTRAINT fk_beneficiaries_created_by
+        FOREIGN KEY (created_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `feed_records`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `feed_records` (
-  `feed_record_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `record_date` date NOT NULL,
-  `feed_source` varchar(200) DEFAULT NULL,
-  `feed_description` text DEFAULT NULL,
-  `quantity` decimal(10,2) NOT NULL,
-  `unit` varchar(50) DEFAULT NULL,
-  `cost` decimal(12,2) DEFAULT 0.00,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`feed_record_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `feed_records_ibfk_1` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS disability_assessments (
+    assessment_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    beneficiary_id BIGINT UNSIGNED NOT NULL,
+    assessment_date DATE NOT NULL,
+    assessment_type VARCHAR(100) NULL,
+    disability_type VARCHAR(100) NULL,
+    needs TEXT NULL,
+    assessment_notes TEXT NULL,
+    assessed_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (assessment_id),
+    KEY idx_da_beneficiary (beneficiary_id),
+    KEY idx_da_assessed_by (assessed_by),
+    KEY idx_da_date (assessment_date),
+    CONSTRAINT fk_da_beneficiary
+        FOREIGN KEY (beneficiary_id) REFERENCES beneficiaries (beneficiary_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_da_assessed_by
+        FOREIGN KEY (assessed_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `harvests`
---
+CREATE TABLE IF NOT EXISTS home_visits (
+    home_visit_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    beneficiary_id BIGINT UNSIGNED NOT NULL,
+    visit_date DATE NOT NULL,
+    conducted_by BIGINT UNSIGNED NOT NULL,
+    purpose VARCHAR(255) NULL,
+    observations TEXT NULL,
+    support_provided TEXT NULL,
+    follow_up_required TINYINT(1) NOT NULL DEFAULT 0,
+    next_action TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (home_visit_id),
+    KEY idx_hv_beneficiary (beneficiary_id),
+    KEY idx_hv_conducted_by (conducted_by),
+    KEY idx_hv_date (visit_date),
+    CONSTRAINT fk_hv_beneficiary
+        FOREIGN KEY (beneficiary_id) REFERENCES beneficiaries (beneficiary_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_hv_conducted_by
+        FOREIGN KEY (conducted_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `harvests`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `harvests` (
-  `harvest_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `crop_id` bigint(20) unsigned NOT NULL,
-  `harvest_date` date NOT NULL,
-  `quantity` decimal(12,2) NOT NULL,
-  `unit` varchar(50) DEFAULT NULL,
-  `usage_type` varchar(100) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`harvest_id`),
-  KEY `crop_id` (`crop_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `harvests_ibfk_1` FOREIGN KEY (`crop_id`) REFERENCES `farm_crops` (`crop_id`) ON UPDATE CASCADE,
-  CONSTRAINT `harvests_ibfk_2` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS referrals (
+    referral_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    beneficiary_id BIGINT UNSIGNED NOT NULL,
+    referral_date DATE NOT NULL,
+    referral_destination VARCHAR(255) NOT NULL,
+    reason TEXT NULL,
+    referred_by BIGINT UNSIGNED NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'submitted',
+    approved_by BIGINT UNSIGNED NULL,
+    approved_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (referral_id),
+    KEY idx_ref_beneficiary (beneficiary_id),
+    KEY idx_ref_referred_by (referred_by),
+    KEY idx_ref_approved_by (approved_by),
+    KEY idx_ref_status (status),
+    CONSTRAINT fk_ref_beneficiary
+        FOREIGN KEY (beneficiary_id) REFERENCES beneficiaries (beneficiary_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_ref_referred_by
+        FOREIGN KEY (referred_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_ref_approved_by
+        FOREIGN KEY (approved_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `home_visits`
---
+CREATE TABLE IF NOT EXISTS referral_follow_ups (
+    follow_up_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    referral_id BIGINT UNSIGNED NOT NULL,
+    follow_up_date DATE NOT NULL,
+    conducted_by BIGINT UNSIGNED NOT NULL,
+    outcome TEXT NULL,
+    service_received TINYINT(1) NOT NULL DEFAULT 0,
+    remaining_needs TEXT NULL,
+    next_action TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follow_up_id),
+    KEY idx_rfu_referral (referral_id),
+    KEY idx_rfu_conducted_by (conducted_by),
+    KEY idx_rfu_date (follow_up_date),
+    CONSTRAINT fk_rfu_referral
+        FOREIGN KEY (referral_id) REFERENCES referrals (referral_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_rfu_conducted_by
+        FOREIGN KEY (conducted_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `home_visits`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `home_visits` (
-  `home_visit_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `beneficiary_id` bigint(20) unsigned NOT NULL,
-  `visit_date` date NOT NULL,
-  `conducted_by` bigint(20) unsigned NOT NULL,
-  `purpose` varchar(255) DEFAULT NULL,
-  `observations` text DEFAULT NULL,
-  `support_provided` text DEFAULT NULL,
-  `follow_up_required` tinyint(1) DEFAULT 0,
-  `next_action` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`home_visit_id`),
-  KEY `beneficiary_id` (`beneficiary_id`),
-  KEY `conducted_by` (`conducted_by`),
-  CONSTRAINT `home_visits_ibfk_1` FOREIGN KEY (`beneficiary_id`) REFERENCES `beneficiaries` (`beneficiary_id`) ON UPDATE CASCADE,
-  CONSTRAINT `home_visits_ibfk_2` FOREIGN KEY (`conducted_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ============================================================
+-- 4. ACTIVITIES
+-- ============================================================
 
---
--- Table structure for table `me_indicators`
---
+CREATE TABLE IF NOT EXISTS activities (
+    activity_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    project_id BIGINT UNSIGNED NOT NULL,
+    activity_name VARCHAR(200) NOT NULL,
+    activity_date DATE NULL,
+    location VARCHAR(200) NULL,
+    responsible_user_id BIGINT UNSIGNED NOT NULL,
+    description TEXT NULL,
+    status VARCHAR(50) NULL,
+    results TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (activity_id),
+    KEY idx_activities_project (project_id),
+    KEY idx_activities_responsible (responsible_user_id),
+    KEY idx_activities_date (activity_date),
+    KEY idx_activities_status (status),
+    CONSTRAINT fk_activities_project
+        FOREIGN KEY (project_id) REFERENCES projects (project_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_activities_responsible
+        FOREIGN KEY (responsible_user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `me_indicators`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `me_indicators` (
-  `indicator_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `project_id` bigint(20) unsigned NOT NULL,
-  `indicator_name` varchar(200) NOT NULL,
-  `description` text DEFAULT NULL,
-  `target_value` decimal(12,2) DEFAULT NULL,
-  `current_value` decimal(12,2) DEFAULT NULL,
-  `unit` varchar(50) DEFAULT NULL,
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`indicator_id`),
-  KEY `project_id` (`project_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `me_indicators_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `projects` (`project_id`) ON UPDATE CASCADE,
-  CONSTRAINT `me_indicators_ibfk_2` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS activity_assignments (
+    activity_assignment_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    activity_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    assigned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    assigned_by BIGINT UNSIGNED NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'assigned',
+    PRIMARY KEY (activity_assignment_id),
+    UNIQUE KEY uq_activity_user_assignment (activity_id, user_id),
+    KEY idx_aa_user (user_id),
+    KEY idx_aa_assigned_by (assigned_by),
+    CONSTRAINT fk_aa_activity
+        FOREIGN KEY (activity_id) REFERENCES activities (activity_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_aa_user
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_aa_assigned_by
+        FOREIGN KEY (assigned_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `poultry_health_records`
---
+CREATE TABLE IF NOT EXISTS activity_participants (
+    participant_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    activity_id BIGINT UNSIGNED NOT NULL,
+    beneficiary_id BIGINT UNSIGNED NOT NULL,
+    participant_name VARCHAR(200) NULL,
+    participant_type VARCHAR(100) NOT NULL DEFAULT 'beneficiary',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (participant_id),
+    UNIQUE KEY uq_activity_beneficiary (activity_id, beneficiary_id),
+    KEY idx_ap_beneficiary (beneficiary_id),
+    CONSTRAINT fk_ap_activity
+        FOREIGN KEY (activity_id) REFERENCES activities (activity_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ap_beneficiary
+        FOREIGN KEY (beneficiary_id) REFERENCES beneficiaries (beneficiary_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `poultry_health_records`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `poultry_health_records` (
-  `health_record_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `record_date` date NOT NULL,
-  `condition_type` varchar(100) NOT NULL,
-  `number_affected` int(11) NOT NULL,
-  `description` text DEFAULT NULL,
-  `action_taken` text DEFAULT NULL,
-  `outcome` text DEFAULT NULL,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`health_record_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `poultry_health_records_ibfk_1` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ============================================================
+-- 5. POULTRY
+-- ============================================================
 
---
--- Table structure for table `poultry_transactions`
---
+CREATE TABLE IF NOT EXISTS poultry_groups (
+    poultry_group_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    project_id BIGINT UNSIGNED NOT NULL,
+    group_name VARCHAR(150) NOT NULL,
+    poultry_category VARCHAR(100) NULL,
+    breed_or_type VARCHAR(100) NULL,
+    start_date DATE NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    description TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (poultry_group_id),
+    UNIQUE KEY uq_poultry_group_project_name (project_id, group_name),
+    KEY idx_pg_project (project_id),
+    KEY idx_pg_status (status),
+    CONSTRAINT fk_pg_project
+        FOREIGN KEY (project_id) REFERENCES projects (project_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `poultry_transactions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `poultry_transactions` (
-  `poultry_transaction_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `transaction_date` date NOT NULL,
-  `transaction_type` varchar(100) NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `chicken_type` varchar(100) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `recorded_by` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`poultry_transaction_id`),
-  KEY `recorded_by` (`recorded_by`),
-  CONSTRAINT `poultry_transactions_ibfk_1` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS poultry_stock_movements (
+    movement_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    poultry_group_id BIGINT UNSIGNED NOT NULL,
+    movement_date DATE NOT NULL,
+    movement_type VARCHAR(50) NOT NULL,
+    quantity INT UNSIGNED NOT NULL,
+    description TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (movement_id),
+    KEY idx_psm_group (poultry_group_id),
+    KEY idx_psm_date (movement_date),
+    KEY idx_psm_type (movement_type),
+    KEY idx_psm_recorded_by (recorded_by),
+    CONSTRAINT fk_psm_group
+        FOREIGN KEY (poultry_group_id) REFERENCES poultry_groups (poultry_group_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_psm_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `projects`
---
+CREATE TABLE IF NOT EXISTS egg_production (
+    egg_production_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    poultry_group_id BIGINT UNSIGNED NOT NULL,
+    production_date DATE NOT NULL,
+    eggs_produced INT UNSIGNED NOT NULL DEFAULT 0,
+    eggs_used INT UNSIGNED NOT NULL DEFAULT 0,
+    eggs_sold INT UNSIGNED NOT NULL DEFAULT 0,
+    eggs_remaining INT UNSIGNED NOT NULL DEFAULT 0,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (egg_production_id),
+    KEY idx_ep_group (poultry_group_id),
+    KEY idx_ep_date (production_date),
+    KEY idx_ep_recorded_by (recorded_by),
+    CONSTRAINT fk_ep_group
+        FOREIGN KEY (poultry_group_id) REFERENCES poultry_groups (poultry_group_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ep_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `projects`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `projects` (
-  `project_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `project_name` varchar(200) NOT NULL,
-  `description` text DEFAULT NULL,
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
-  `objectives` text DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `responsible_user_id` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`project_id`),
-  KEY `responsible_user_id` (`responsible_user_id`),
-  CONSTRAINT `projects_ibfk_1` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS feed_records (
+    feed_record_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    poultry_group_id BIGINT UNSIGNED NOT NULL,
+    record_date DATE NOT NULL,
+    feed_source VARCHAR(200) NULL,
+    feed_description TEXT NULL,
+    quantity DECIMAL(12,2) NOT NULL,
+    unit VARCHAR(50) NULL,
+    cost DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (feed_record_id),
+    KEY idx_feed_group (poultry_group_id),
+    KEY idx_feed_date (record_date),
+    KEY idx_feed_recorded_by (recorded_by),
+    CONSTRAINT fk_feed_group
+        FOREIGN KEY (poultry_group_id) REFERENCES poultry_groups (poultry_group_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_feed_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_feed_quantity CHECK (quantity >= 0),
+    CONSTRAINT chk_feed_cost CHECK (cost >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `referral_follow_ups`
---
+CREATE TABLE IF NOT EXISTS poultry_health_records (
+    health_record_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    poultry_group_id BIGINT UNSIGNED NOT NULL,
+    record_date DATE NOT NULL,
+    condition_type VARCHAR(100) NOT NULL,
+    number_affected INT UNSIGNED NOT NULL DEFAULT 0,
+    description TEXT NULL,
+    action_taken TEXT NULL,
+    outcome TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (health_record_id),
+    KEY idx_phr_group (poultry_group_id),
+    KEY idx_phr_date (record_date),
+    KEY idx_phr_recorded_by (recorded_by),
+    CONSTRAINT fk_phr_group
+        FOREIGN KEY (poultry_group_id) REFERENCES poultry_groups (poultry_group_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_phr_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `referral_follow_ups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `referral_follow_ups` (
-  `follow_up_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `referral_id` bigint(20) unsigned NOT NULL,
-  `follow_up_date` date NOT NULL,
-  `conducted_by` bigint(20) unsigned NOT NULL,
-  `outcome` text DEFAULT NULL,
-  `service_received` tinyint(1) DEFAULT 0,
-  `remaining_needs` text DEFAULT NULL,
-  `next_action` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`follow_up_id`),
-  KEY `referral_id` (`referral_id`),
-  KEY `conducted_by` (`conducted_by`),
-  CONSTRAINT `referral_follow_ups_ibfk_1` FOREIGN KEY (`referral_id`) REFERENCES `referrals` (`referral_id`) ON UPDATE CASCADE,
-  CONSTRAINT `referral_follow_ups_ibfk_2` FOREIGN KEY (`conducted_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS poultry_sales (
+    poultry_sale_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    poultry_group_id BIGINT UNSIGNED NOT NULL,
+    sale_date DATE NOT NULL,
+    quantity INT UNSIGNED NOT NULL,
+    unit_price DECIMAL(12,2) NULL,
+    total_amount DECIMAL(12,2) NULL,
+    buyer_description VARCHAR(255) NULL,
+    notes TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (poultry_sale_id),
+    KEY idx_ps_group (poultry_group_id),
+    KEY idx_ps_date (sale_date),
+    KEY idx_ps_recorded_by (recorded_by),
+    CONSTRAINT fk_ps_group
+        FOREIGN KEY (poultry_group_id) REFERENCES poultry_groups (poultry_group_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ps_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_ps_unit_price CHECK (unit_price IS NULL OR unit_price >= 0),
+    CONSTRAINT chk_ps_total_amount CHECK (total_amount IS NULL OR total_amount >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `referrals`
---
+-- ============================================================
+-- 6. SMALL FARM
+-- ============================================================
 
-DROP TABLE IF EXISTS `referrals`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `referrals` (
-  `referral_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `beneficiary_id` bigint(20) unsigned NOT NULL,
-  `referral_date` date NOT NULL,
-  `referral_destination` varchar(255) NOT NULL,
-  `reason` text DEFAULT NULL,
-  `referred_by` bigint(20) unsigned NOT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`referral_id`),
-  KEY `beneficiary_id` (`beneficiary_id`),
-  KEY `referred_by` (`referred_by`),
-  CONSTRAINT `referrals_ibfk_1` FOREIGN KEY (`beneficiary_id`) REFERENCES `beneficiaries` (`beneficiary_id`) ON UPDATE CASCADE,
-  CONSTRAINT `referrals_ibfk_2` FOREIGN KEY (`referred_by`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS farm_crops (
+    crop_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    project_id BIGINT UNSIGNED NOT NULL,
+    crop_name VARCHAR(200) NOT NULL,
+    description TEXT NULL,
+    planting_date DATE NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (crop_id),
+    KEY idx_fc_project (project_id),
+    KEY idx_fc_status (status),
+    KEY idx_fc_recorded_by (recorded_by),
+    CONSTRAINT fk_fc_project
+        FOREIGN KEY (project_id) REFERENCES projects (project_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_fc_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `roles`
---
+CREATE TABLE IF NOT EXISTS farm_activities (
+    farm_activity_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    crop_id BIGINT UNSIGNED NOT NULL,
+    activity_date DATE NOT NULL,
+    activity_type VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (farm_activity_id),
+    KEY idx_fa_crop (crop_id),
+    KEY idx_fa_date (activity_date),
+    KEY idx_fa_recorded_by (recorded_by),
+    CONSTRAINT fk_fa_crop
+        FOREIGN KEY (crop_id) REFERENCES farm_crops (crop_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_fa_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `roles` (
-  `role_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `role_name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`role_id`),
-  UNIQUE KEY `role_name` (`role_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS harvests (
+    harvest_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    crop_id BIGINT UNSIGNED NOT NULL,
+    harvest_date DATE NOT NULL,
+    quantity DECIMAL(12,2) NOT NULL,
+    unit VARCHAR(50) NULL,
+    usage_type VARCHAR(100) NULL,
+    notes TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (harvest_id),
+    KEY idx_harvest_crop (crop_id),
+    KEY idx_harvest_date (harvest_date),
+    KEY idx_harvest_recorded_by (recorded_by),
+    CONSTRAINT fk_harvest_crop
+        FOREIGN KEY (crop_id) REFERENCES farm_crops (crop_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_harvest_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_harvest_quantity CHECK (quantity >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `staff_volunteers`
---
+CREATE TABLE IF NOT EXISTS farm_poultry_transfers (
+    transfer_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    harvest_id BIGINT UNSIGNED NOT NULL,
+    poultry_group_id BIGINT UNSIGNED NOT NULL,
+    transfer_date DATE NOT NULL,
+    quantity DECIMAL(12,2) NOT NULL,
+    unit VARCHAR(50) NULL,
+    notes TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (transfer_id),
+    KEY idx_fpt_harvest (harvest_id),
+    KEY idx_fpt_group (poultry_group_id),
+    KEY idx_fpt_date (transfer_date),
+    KEY idx_fpt_recorded_by (recorded_by),
+    CONSTRAINT fk_fpt_harvest
+        FOREIGN KEY (harvest_id) REFERENCES harvests (harvest_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_fpt_group
+        FOREIGN KEY (poultry_group_id) REFERENCES poultry_groups (poultry_group_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_fpt_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_fpt_quantity CHECK (quantity > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `staff_volunteers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `staff_volunteers` (
-  `staff_volunteer_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) unsigned NOT NULL,
-  `full_name` varchar(200) NOT NULL,
-  `person_type` varchar(100) NOT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `email` varchar(150) DEFAULT NULL,
-  `start_date` date DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`staff_volunteer_id`),
-  UNIQUE KEY `user_id` (`user_id`),
-  CONSTRAINT `staff_volunteers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- ============================================================
+-- 7. FINANCE
+-- ============================================================
 
---
--- Table structure for table `users`
---
+CREATE TABLE IF NOT EXISTS financial_transactions (
+    transaction_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    project_id BIGINT UNSIGNED NULL,
+    transaction_date DATE NOT NULL,
+    transaction_type VARCHAR(30) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    amount DECIMAL(14,2) NOT NULL,
+    description TEXT NULL,
+    payment_method VARCHAR(50) NULL,
+    reference_number VARCHAR(100) NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    approved_by BIGINT UNSIGNED NULL,
+    approved_at DATETIME NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'recorded',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (transaction_id),
+    KEY idx_ft_project (project_id),
+    KEY idx_ft_date (transaction_date),
+    KEY idx_ft_type (transaction_type),
+    KEY idx_ft_category (category),
+    KEY idx_ft_recorded_by (recorded_by),
+    KEY idx_ft_approved_by (approved_by),
+    KEY idx_ft_status (status),
+    CONSTRAINT fk_ft_project
+        FOREIGN KEY (project_id) REFERENCES projects (project_id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_ft_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_ft_approved_by
+        FOREIGN KEY (approved_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT chk_ft_amount CHECK (amount > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
-  `user_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `role_id` bigint(20) unsigned NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `email` varchar(150) DEFAULT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `is_active` tinyint(1) DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `email` (`email`),
-  KEY `role_id` (`role_id`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- ============================================================
+-- 8. MONITORING AND EVALUATION
+-- ============================================================
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+CREATE TABLE IF NOT EXISTS me_indicators (
+    indicator_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    project_id BIGINT UNSIGNED NULL,
+    indicator_name VARCHAR(200) NOT NULL,
+    description TEXT NULL,
+    target_value DECIMAL(14,2) NULL,
+    unit VARCHAR(50) NULL,
+    start_date DATE NULL,
+    end_date DATE NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (indicator_id),
+    KEY idx_mei_project (project_id),
+    KEY idx_mei_created_by (created_by),
+    KEY idx_mei_status (status),
+    CONSTRAINT fk_mei_project
+        FOREIGN KEY (project_id) REFERENCES projects (project_id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_mei_created_by
+        FOREIGN KEY (created_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_mei_target CHECK (target_value IS NULL OR target_value >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dump completed on 2026-09-02 20:46:55
+CREATE TABLE IF NOT EXISTS me_indicator_records (
+    indicator_record_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    indicator_id BIGINT UNSIGNED NOT NULL,
+    record_date DATE NOT NULL,
+    recorded_value DECIMAL(14,2) NOT NULL,
+    notes TEXT NULL,
+    recorded_by BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (indicator_record_id),
+    KEY idx_meir_indicator (indicator_id),
+    KEY idx_meir_date (record_date),
+    KEY idx_meir_recorded_by (recorded_by),
+    CONSTRAINT fk_meir_indicator
+        FOREIGN KEY (indicator_id) REFERENCES me_indicators (indicator_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_meir_recorded_by
+        FOREIGN KEY (recorded_by) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 9. AUDIT
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS audit_events (
+    audit_event_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NULL,
+    event_type VARCHAR(50) NOT NULL,
+    entity_name VARCHAR(100) NULL,
+    entity_id BIGINT UNSIGNED NULL,
+    description TEXT NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (audit_event_id),
+    KEY idx_audit_user (user_id),
+    KEY idx_audit_event_type (event_type),
+    KEY idx_audit_entity (entity_name, entity_id),
+    KEY idx_audit_created_at (created_at),
+    CONSTRAINT fk_audit_user
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 10. INITIAL APPLICATION DATA
+-- ============================================================
+-- Permission and title seed data should be inserted through a controlled
+-- deployment/initialisation process after final permission and governance
+-- validation. No production users or passwords are included here.
+
+-- ============================================================
+-- 11. DESIGN NOTES
+-- ============================================================
+-- 1. Poultry stock is derived from poultry_stock_movements.
+-- 2. Poultry sales are operational records; related money is recorded in
+--    financial_transactions.
+-- 3. Farm harvests can be linked to poultry through farm_poultry_transfers.
+-- 4. Beneficiaries are archived/inactivated rather than routinely deleted.
+-- 5. Record-level access is implemented by application logic using the
+--    accountable user relationships and project/activity assignments.
+-- 6. Title, permission, and responsibility are intentionally separate.
+-- 7. This schema is not a full accounting system.
+-- 8. Controlled status/type values remain subject to final validation.
