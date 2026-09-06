@@ -241,21 +241,14 @@ class AuthorizationService:
 
     def has_scope(self, user, resource, record=None, context=None):
         """
-        Determine project/activity scope for resources that require it.
+        Determine record-level project/activity scope.
 
-        Project resources require an active project assignment.
-
-        Activity resources require:
-            1. an active project assignment for the activity's project
-            2. an active activity assignment
-
-        Scope is intentionally explicit through record/context so that
-        authorization does not guess relationships between unrelated
-        records.
+        Scope is resolved only through explicitly approved domain
+        relationships. Resources without an applicable project/activity
+        relationship pass this scope layer. Unknown resources are denied.
         """
 
         resource_name = str(resource).strip().lower() if resource else ""
-
         context = context or {}
 
         if resource_name in {"project", "projects"}:
@@ -274,7 +267,181 @@ class AuthorizationService:
 
             return self.has_activity_scope(user, activity)
 
-        return True
+        if resource_name in {
+            "activity_participant",
+            "activity_participants",
+        }:
+            activity = getattr(record, "activity", None)
+
+            if activity is None:
+                return False
+
+            project = getattr(activity, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "poultry_group",
+            "poultry_groups",
+        }:
+            project = getattr(record, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "poultry_stock_movement",
+            "poultry_stock_movements",
+            "egg_production",
+            "feed_record",
+            "feed_records",
+            "poultry_health_record",
+            "poultry_health_records",
+            "poultry_sale",
+            "poultry_sales",
+        }:
+            poultry_group = getattr(record, "poultry_group", None)
+
+            if poultry_group is None:
+                return False
+
+            project = getattr(poultry_group, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "farm",
+            "farms",
+            "farm_crop",
+            "farm_crops",
+        }:
+            project = getattr(record, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "farm_activity",
+            "farm_activities",
+        }:
+            crop = getattr(record, "crop", None)
+
+            if crop is None:
+                return False
+
+            project = getattr(crop, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "harvest",
+            "harvests",
+        }:
+            crop = getattr(record, "crop", None)
+
+            if crop is None:
+                return False
+
+            project = getattr(crop, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "farm_poultry_transfer",
+            "farm_poultry_transfers",
+        }:
+            harvest = getattr(record, "harvest", None)
+            poultry_group = getattr(record, "poultry_group", None)
+
+            if harvest is None or poultry_group is None:
+                return False
+
+            crop = getattr(harvest, "crop", None)
+            farm_project = getattr(crop, "project", None) if crop else None
+            poultry_project = getattr(poultry_group, "project", None)
+
+            if farm_project is None or poultry_project is None:
+                return False
+
+            if farm_project != poultry_project:
+                return False
+
+            return self.has_project_scope(user, farm_project)
+
+        if resource_name in {
+            "financial_transaction",
+            "financial_transactions",
+        }:
+            project = getattr(record, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "me_indicator",
+            "me_indicators",
+        }:
+            project = getattr(record, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "me_indicator_record",
+            "me_indicator_records",
+        }:
+            indicator = getattr(record, "indicator", None)
+
+            if indicator is None:
+                return False
+
+            project = getattr(indicator, "project", None)
+
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if resource_name in {
+            "beneficiary",
+            "beneficiaries",
+            "disability_assessment",
+            "disability_assessments",
+            "home_visit",
+            "home_visits",
+            "referral",
+            "referrals",
+            "follow_up",
+            "follow_ups",
+            "referral_follow_up",
+            "referral_follow_ups",
+            "disability_service",
+            "disability_services",
+            "community_awareness",
+        }:
+            return True
+
+        return False
 
     def can_access_resource(
         self,

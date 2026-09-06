@@ -976,3 +976,212 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
                 context={"activity": activity},
             )
         )
+
+
+    def make_poultry_group(self, group_id, project):
+        return SimpleNamespace(
+            poultry_group_id=group_id,
+            project=project,
+        )
+
+    def make_farm_crop(self, crop_id, project):
+        return SimpleNamespace(
+            crop_id=crop_id,
+            project=project,
+        )
+
+    def make_financial_transaction(self, transaction_id, project):
+        return SimpleNamespace(
+            transaction_id=transaction_id,
+            project=project,
+        )
+
+    def make_me_indicator(self, indicator_id, project):
+        return SimpleNamespace(
+            indicator_id=indicator_id,
+            project=project,
+        )
+
+    def test_activity_participant_inherits_project_scope(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+        participant = SimpleNamespace(
+            participant_id=100,
+            activity=activity,
+        )
+
+        user = self.make_user(
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.has_scope(
+                user,
+                "activity_participant",
+                record=participant,
+            )
+        )
+
+    def test_activity_participant_without_project_scope_is_denied(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+        participant = SimpleNamespace(
+            participant_id=100,
+            activity=activity,
+        )
+
+        user = self.make_user(
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.has_scope(
+                user,
+                "activity_participant",
+                record=participant,
+            )
+        )
+
+    def test_poultry_group_inherits_project_scope(self):
+        project = self.make_project(1)
+        group = self.make_poultry_group(10, project)
+
+        user = self.make_user(
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.has_scope(
+                user,
+                "poultry_group",
+                record=group,
+            )
+        )
+
+    def test_poultry_group_without_project_scope_is_denied(self):
+        project = self.make_project(1)
+        group = self.make_poultry_group(10, project)
+
+        user = self.make_user(
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.has_scope(
+                user,
+                "poultry_group",
+                record=group,
+            )
+        )
+
+    def test_farm_crop_inherits_project_scope(self):
+        project = self.make_project(1)
+        crop = self.make_farm_crop(10, project)
+
+        user = self.make_user(
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.has_scope(
+                user,
+                "farm",
+                record=crop,
+            )
+        )
+
+    def test_farm_crop_without_project_scope_is_denied(self):
+        project = self.make_project(1)
+        crop = self.make_farm_crop(10, project)
+
+        user = self.make_user(
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.has_scope(
+                user,
+                "farm",
+                record=crop,
+            )
+        )
+
+    def test_financial_transaction_inherits_project_scope(self):
+        project = self.make_project(1)
+        transaction = self.make_financial_transaction(10, project)
+
+        user = self.make_user(
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.has_scope(
+                user,
+                "financial_transaction",
+                record=transaction,
+            )
+        )
+
+    def test_financial_transaction_without_project_scope_is_denied(self):
+        project = self.make_project(1)
+        transaction = self.make_financial_transaction(10, project)
+
+        user = self.make_user(
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.has_scope(
+                user,
+                "financial_transaction",
+                record=transaction,
+            )
+        )
+
+    def test_me_indicator_inherits_project_scope(self):
+        project = self.make_project(1)
+        indicator = self.make_me_indicator(10, project)
+
+        user = self.make_user(
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.has_scope(
+                user,
+                "me_indicator",
+                record=indicator,
+            )
+        )
+
+    def test_me_indicator_without_project_scope_is_denied(self):
+        project = self.make_project(1)
+        indicator = self.make_me_indicator(10, project)
+
+        user = self.make_user(
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.has_scope(
+                user,
+                "me_indicator",
+                record=indicator,
+            )
+        )
+
+    def test_unknown_resource_does_not_gain_scope_from_project_attribute(self):
+        project = self.make_project(1)
+        record = SimpleNamespace(project=project)
+
+        user = self.make_user(
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.has_scope(
+                user,
+                "unknown_resource",
+                record=record,
+            )
+        )

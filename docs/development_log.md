@@ -763,3 +763,165 @@ Those will be handled as separate logical development steps.
 ### Next step
 
 Proceed to authentication view and URL alignment after Step 12A is committed and verified clean.
+
+## 2026-09-06 — Step 13.14B: Record-Level Authorization Scope
+
+### Objective
+
+Complete the record-level authorization layer for ERA-IPMS by enforcing approved project and activity scope relationships across operational resources.
+
+The authorization model must evaluate access through the approved layered sequence:
+
+1. Authentication and active user status.
+2. Active user title.
+3. Required title permission.
+4. Required responsibility.
+5. Active responsibility assignment.
+6. Applicable project scope.
+7. Applicable activity scope where required.
+
+Unknown resources must not receive authorization through an unrestricted scope fallback.
+
+### Work Completed
+
+* Extended `backend/core/authorization/service.py` to implement explicit record-level project/activity scope resolution.
+* Added project-scope inheritance for activity participants through:
+  `activity_participants → activities → projects`.
+* Added project-scope enforcement for poultry groups through:
+  `poultry_groups → projects`.
+* Added project-scope inheritance for poultry operational records through their poultry group relationship:
+
+  * poultry stock movements
+  * egg production
+  * feed records
+  * poultry health records
+  * poultry sales
+* Added project-scope enforcement for farm crops through:
+  `farm_crops → projects`.
+* Added project-scope inheritance for farm activities through:
+  `farm_activities → farm_crops → projects`.
+* Added project-scope inheritance for harvests through:
+  `harvests → farm_crops → projects`.
+* Added cross-domain scope validation for farm-to-poultry transfers:
+
+  * farm-side project is resolved through the harvest/crop relationship;
+  * poultry-side project is resolved through the poultry group;
+  * both projects must match;
+  * the user must have active scope for that project.
+* Added project-scope enforcement for financial transactions through their project relationship.
+* Added project-scope enforcement for M&E indicators through their project relationship.
+* Added project-scope inheritance for M&E indicator records through:
+  `me_indicator_records → me_indicators → projects`.
+* Preserved explicit handling for beneficiary and beneficiary-related resources where the current schema does not provide a project relationship.
+* Changed the scope fallback so that unknown resources are denied rather than automatically granted scope.
+* Removed the obsolete `backend/core/tests.py` Django placeholder because it conflicted with the real `backend/core/tests/` test package during Django test discovery.
+* Preserved the actual authorization test package:
+  `backend/core/tests/test_authorization_service.py`.
+* Expanded authorization tests to cover record-level project inheritance, denial without project scope, cross-domain scope validation, and unknown-resource denial.
+
+### Schema Alignment Supporting Authorization
+
+The record-level authorization implementation was preceded by live-schema alignment required to support approved domain relationships.
+
+The following relationships were aligned and verified:
+
+* `egg_production.poultry_group_id`
+* `feed_records.poultry_group_id`
+* `poultry_health_records.poultry_group_id`
+* `farm_crops.project_id`
+* `me_indicators.project_id`
+* `me_indicators.status`
+* `me_indicators.updated_at`
+* `referrals.updated_at`
+
+The corresponding live foreign keys and indexes were verified.
+
+The canonical Django models, MariaDB schema, and active database were subsequently checked for column alignment.
+
+### Verification
+
+Full Django test discovery and execution completed successfully:
+
+```text
+Found 63 test(s).
+System check identified no issues (0 silenced).
+
+Ran 63 tests in 0.179s
+
+OK
+```
+
+Authorization coverage includes:
+
+* authentication and active-user checks;
+* active-title checks;
+* title-permission checks;
+* responsibility eligibility;
+* active responsibility assignments;
+* permission + responsibility integration;
+* resource-to-responsibility mapping;
+* project scope;
+* activity scope;
+* activity assignment;
+* project inheritance for related records;
+* cross-domain farm/poultry project matching;
+* denial of records outside the user's project scope;
+* denial of unknown resources.
+
+Additional repository validation:
+
+```text
+git diff --check
+```
+
+passed with no errors.
+
+The full Django suite completed without creating or modifying a test database:
+
+```text
+Skipping setup of unused database(s): default.
+```
+
+### Authorization Design Decision
+
+Record-level authorization is now explicitly relationship-driven.
+
+The service does not infer scope from arbitrary object attributes. Each supported resource has an explicit approved relationship through which project or activity scope is resolved.
+
+Unknown resources are denied.
+
+Project scope is required where the approved schema provides a project relationship. Activity resources additionally require both:
+
+1. active project assignment; and
+2. active activity assignment.
+
+Responsibility assignment remains independent from project/activity scope. Possessing a responsibility does not grant access outside the user's assigned project or activity scope.
+
+Administrative technical authority remains separate from programme responsibility.
+
+### Current Limitation
+
+Beneficiary and beneficiary-derived records such as disability assessments, home visits, referrals, and referral follow-ups do not currently inherit project scope because the approved current schema does not provide a project relationship from beneficiaries to projects.
+
+This is therefore not treated as an implicit project-scope relationship.
+
+Any future beneficiary/project scoping requirement must be addressed through an explicitly approved schema or policy change rather than inferred in the authorization service.
+
+### Repository State
+
+Step 13.14B is validated and ready for the documentation/commit checkpoint.
+
+Current intended changes are limited to:
+
+* `backend/core/authorization/service.py`
+* `backend/core/tests/test_authorization_service.py`
+* removal of obsolete `backend/core/tests.py`
+* `docs/development_log.md`
+
+No commit or push is included in this step.
+
+### Next Step
+
+Review the completed Step 13.14B documentation and working-tree diff.
+
+After review, create the agreed logical commit for the authorization record-level scope implementation and documentation, then push it to the repository.
