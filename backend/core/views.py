@@ -1,7 +1,11 @@
+import json
+from datetime import date
+
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
+from django.utils import timezone
 
-from core.authorization.constants import PERMISSION_VIEW
+from core.authorization.constants import PERMISSION_ADD, PERMISSION_VIEW
 from core.authorization.decorators import require_permission
 from core.authorization.querysets import authorized_queryset
 from core.models import Projects
@@ -81,6 +85,103 @@ def auth_logout(request):
         "authenticated": False,
         "message": "Logged out successfully",
     })
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="projects",
+)
+def projects_create(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    project_name = str(payload.get("project_name", "")).strip()
+
+    if not project_name:
+        return JsonResponse(
+            {"error": "project_name is required"},
+            status=400,
+        )
+
+    date_values = {}
+
+    for field in ("start_date", "end_date"):
+        value = payload.get(field)
+
+        if value in (None, ""):
+            date_values[field] = None
+            continue
+
+        try:
+            date_values[field] = date.fromisoformat(str(value))
+        except ValueError:
+            return JsonResponse(
+                {
+                    "error": f"{field} must use YYYY-MM-DD format",
+                },
+                status=400,
+            )
+
+    now = timezone.now()
+
+    project = Projects.objects.create(
+        project_name=project_name,
+        description=payload.get("description"),
+        start_date=date_values["start_date"],
+        end_date=date_values["end_date"],
+        objectives=payload.get("objectives"),
+        status=payload.get("status"),
+        created_by_id=request.user.user_id,
+        created_at=now,
+        updated_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "project": {
+                "project_id": project.project_id,
+                "project_name": project.project_name,
+                "description": project.description,
+                "start_date": project.start_date,
+                "end_date": project.end_date,
+                "objectives": project.objectives,
+                "status": project.status,
+                "created_by_id": project.created_by_id,
+                "created_at": project.created_at,
+                "updated_at": project.updated_at,
+            }
+        },
+        status=201,
+    )
+
+def projects_collection(request):
+    if request.method == "POST":
+        return projects_create(request)
+
+    if request.method == "GET":
+        return projects_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
+    )
 
 
 @require_permission(

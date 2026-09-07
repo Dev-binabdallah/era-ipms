@@ -92,3 +92,48 @@ Project detail API implementation and regression tests are complete and passing.
 
 ### Next Step
 Review the working-tree diff, commit the completed Projects API detail milestone, and push it to GitHub.
+
+## 2026-09-07 — Projects API Create Endpoint
+
+### Objective
+Extend the authorized Projects API with a project creation endpoint while preserving the centralized authentication, responsibility, and record-level authorization model.
+
+### Work Completed
+- Added `projects_create()` for `POST /projects/`.
+- Added `projects_collection()` to dispatch:
+  - `GET /projects/` to the existing project list endpoint.
+  - `POST /projects/` to the project creation endpoint.
+  - unsupported methods to HTTP 405.
+- Updated `/projects/` URL routing to use the collection dispatcher.
+- Required `project_name` for project creation.
+- Added JSON body validation.
+- Added ISO `YYYY-MM-DD` validation for `start_date` and `end_date`.
+- Made `created_by` server-controlled from the authenticated user.
+- Made `project_id` server-controlled by the database.
+- Made `created_at` and `updated_at` server-generated.
+- Added HTTP 201 project creation response.
+- Added creation API tests covering:
+  - unauthenticated requests,
+  - unauthorized requests,
+  - authorized project creation,
+  - malformed JSON,
+  - non-object JSON,
+  - missing project name,
+  - invalid dates,
+  - unsupported request methods.
+- Adjusted the authorization service so top-level `ADD` operations do not require an existing record-level project/activity scope when no record or parent context exists.
+- Preserved scope enforcement for `ADD` operations when a parent record/context is supplied.
+- Preserved existing `VIEW`, `EDIT`, `DELETE`, `APPROVE`, `EXPORT`, `MANAGE`, and `ADMINISTER` authorization behavior.
+
+### Verification
+- `python -m py_compile backend/core/views.py` — passed.
+- `python -m py_compile backend/core/tests/test_projects_api.py` — passed.
+- Projects API tests — **15/15 PASSED**.
+- Complete `core` test suite — **111/111 PASSED**.
+- Django system check — **no issues**.
+
+### Status
+Projects API create implementation, authorization adjustment, routing, and regression tests are complete and passing.
+
+### Next Step
+Review the complete working-tree diff, verify the development log entry, commit the completed milestone, and push it to GitHub.

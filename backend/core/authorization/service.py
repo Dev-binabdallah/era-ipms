@@ -472,6 +472,16 @@ class AuthorizationService:
         ):
             return False
 
+        # A new top-level record has no record-level scope yet.
+        # Scope is still enforced for ADD operations when a parent
+        # record/context is supplied.
+        if (
+            permission == PERMISSION_ADD
+            and record is None
+            and not context
+        ):
+            return True
+
         return self.has_scope(
             user,
             resource,

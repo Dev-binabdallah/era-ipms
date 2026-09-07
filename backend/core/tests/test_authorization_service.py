@@ -853,6 +853,21 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
             )
         )
 
+    def test_project_add_does_not_require_existing_project_scope(self):
+        user = self.make_user(
+            permissions={PERMISSION_ADD},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+        )
+
+        self.assertTrue(
+            self.service.can_add(
+                user,
+                resource="projects",
+            )
+        )
+
     def test_project_resource_is_allowed_with_permission_responsibility_and_scope(self):
         project = self.make_project(1)
 

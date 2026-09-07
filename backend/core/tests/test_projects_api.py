@@ -1,10 +1,11 @@
+from datetime import date
 from types import SimpleNamespace
 from unittest.mock import call, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
 from core.models import Projects
-from core.views import projects_detail, projects_list
+from core.views import projects_create, projects_detail, projects_list
 
 
 class ProjectsApiTests(SimpleTestCase):
@@ -264,4 +265,227 @@ class ProjectsApiTests(SimpleTestCase):
            None,
            resource="projects",
            context=None,
+        )
+
+    def make_post_request(
+        self,
+        user,
+        body,
+        path="/projects/",
+    ):
+        request = self.factory.post(
+            path,
+            data=body,
+            content_type="application/json",
+        )
+        request.user = user
+        return request
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_unauthenticated_request_returns_401(self, service):
+        response = projects_create(
+            self.make_post_request(
+                self.unauthenticated_user,
+                '{"project_name": "Test Project"}',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+        service.can_add.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_unauthorized_request_returns_403(self, service):
+        service.can_add.return_value = False
+
+        user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=10,
+        )
+
+        response = projects_create(
+            self.make_post_request(
+                user,
+                '{"project_name": "Test Project"}',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        service.can_add.assert_called_once_with(
+            user,
+            "projects",
+            context=None,
+        )
+
+    @patch("core.views.timezone.now")
+    @patch("core.views.Projects.objects.create")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_authorized_request_creates_project(
+        self,
+        service,
+        objects_create,
+        timezone_now,
+    ):
+        service.can_add.return_value = True
+
+        user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=10,
+        )
+
+        timestamp = "2026-09-07T10:00:00Z"
+        timezone_now.return_value = timestamp
+
+        project = SimpleNamespace(
+            project_id=25,
+            project_name="New Project",
+            description="Project description",
+            start_date="2026-09-10",
+            end_date="2026-12-31",
+            objectives="Project objectives",
+            status="active",
+            created_by_id=10,
+            created_at=timestamp,
+            updated_at=timestamp,
+        )
+
+        objects_create.return_value = project
+
+        response = projects_create(
+            self.make_post_request(
+                user,
+                '{"project_name": "New Project", '
+                '"description": "Project description", '
+                '"start_date": "2026-09-10", '
+                '"end_date": "2026-12-31", '
+                '"objectives": "Project objectives", '
+                '"status": "active", '
+                '"created_by_id": 999, '
+                '"project_id": 999}',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "project": {
+                    "project_id": 25,
+                    "project_name": "New Project",
+                    "description": "Project description",
+                    "start_date": "2026-09-10",
+                    "end_date": "2026-12-31",
+                    "objectives": "Project objectives",
+                    "status": "active",
+                    "created_by_id": 10,
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                }
+            },
+        )
+
+        objects_create.assert_called_once_with(
+            project_name="New Project",
+            description="Project description",
+            start_date=date(2026, 9, 10),
+            end_date=date(2026, 12, 31),
+            objectives="Project objectives",
+            status="active",
+            created_by_id=10,
+            created_at=timestamp,
+            updated_at=timestamp,
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_malformed_json_returns_400(self, service):
+        service.can_add.return_value = True
+
+        response = projects_create(
+            self.make_post_request(
+                self.authenticated_user,
+                '{"project_name": ',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Invalid JSON"},
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_non_object_json_returns_400(self, service):
+        service.can_add.return_value = True
+
+        response = projects_create(
+            self.make_post_request(
+                self.authenticated_user,
+                '["Test Project"]',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "JSON body must be an object"},
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_missing_project_name_returns_400(self, service):
+        service.can_add.return_value = True
+
+        response = projects_create(
+            self.make_post_request(
+                self.authenticated_user,
+                '{"description": "Missing name"}',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "project_name is required"},
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_invalid_date_returns_400(self, service):
+        service.can_add.return_value = True
+
+        response = projects_create(
+            self.make_post_request(
+                self.authenticated_user,
+                '{"project_name": "Test Project", '
+                '"start_date": "10/09/2026"}',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "start_date must use YYYY-MM-DD format",
+            },
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_non_post_request_returns_405(self, service):
+        service.can_add.return_value = True
+
+        request = self.factory.get("/projects/")
+        request.user = self.authenticated_user
+
+        response = projects_create(request)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
         )
