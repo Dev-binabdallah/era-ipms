@@ -5,7 +5,7 @@ from core.views import (
     auth_me,
     auth_logout,
     projects_collection,
-    projects_detail,
+    projects_detail_collection,
 )
 
 urlpatterns = [
@@ -14,5 +14,5 @@ urlpatterns = [
     path("auth/me/", auth_me),
     path("auth/logout/", auth_logout),
     path("projects/", projects_collection),
-    path("projects/<int:project_id>/", projects_detail),
+    path("projects/<int:project_id>/", projects_detail_collection),
 ]

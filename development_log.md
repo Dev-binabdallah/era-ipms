@@ -137,3 +137,67 @@ Projects API create implementation, authorization adjustment, routing, and regre
 
 ### Next Step
 Review the complete working-tree diff, verify the development log entry, commit the completed milestone, and push it to GitHub.
+
+## 2026-09-07 — Projects API Update/Edit Endpoint
+
+### Objective
+Extend the authorized Projects API with a record-level project update endpoint using HTTP PATCH while preserving centralized authentication, responsibility, and record-level authorization.
+
+### Work Completed
+- Added `projects_update()` for `PATCH /projects/<project_id>/`.
+- Reused the existing `require_permission()` authorization decorator with `PERMISSION_EDIT`.
+- Applied record-level project authorization before allowing updates.
+- Added `projects_detail_collection()` to dispatch:
+  - `GET /projects/<project_id>/` to the existing detail endpoint.
+  - `PATCH /projects/<project_id>/` to the update endpoint.
+  - unsupported methods to HTTP 405.
+- Added JSON request validation.
+- Added partial-update support for:
+  - `project_name`
+  - `description`
+  - `start_date`
+  - `end_date`
+  - `objectives`
+  - `status`
+- Prevented modification of server-controlled fields:
+  - `project_id`
+  - `created_by`
+  - `created_by_id`
+  - `created_at`
+  - `updated_at`
+- Rejected unknown fields.
+- Required at least one editable field.
+- Prevented blank project names.
+- Added ISO `YYYY-MM-DD` date validation.
+- Allowed nullable/empty date values to clear existing dates.
+- Updated `updated_at` server-side on successful updates.
+- Restricted database updates to the approved editable fields plus `updated_at`.
+- Added comprehensive Projects API update tests covering:
+  - unauthenticated requests,
+  - unauthorized requests,
+  - nonexistent projects,
+  - authorized partial updates,
+  - protected fields,
+  - unknown fields,
+  - empty payloads,
+  - blank project names,
+  - valid dates,
+  - invalid dates,
+  - clearing dates,
+  - malformed JSON,
+  - non-object JSON,
+  - unsupported request methods.
+
+### Verification
+- `python -m py_compile backend/core/views.py backend/config/urls.py` — passed.
+- `python -m py_compile backend/core/tests/test_projects_api.py` — passed.
+- Projects API tests — **30/30 PASSED**.
+- Complete `core` test suite — **126/126 PASSED**.
+- Django system check — **no issues**.
+- `git diff --check` — passed.
+
+### Status
+Projects API update/edit implementation, routing, authorization enforcement, validation, and regression tests are complete and passing.
+
+### Next Step
+Review the final staged diff, commit the completed Projects API update milestone, push it to GitHub, and verify the working tree is clean and synchronized.

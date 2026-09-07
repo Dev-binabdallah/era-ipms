@@ -5,7 +5,12 @@ from unittest.mock import call, patch
 from django.test import RequestFactory, SimpleTestCase
 
 from core.models import Projects
-from core.views import projects_create, projects_detail, projects_list
+from core.views import (
+    projects_create,
+    projects_detail,
+    projects_list,
+    projects_update,
+)
 
 
 class ProjectsApiTests(SimpleTestCase):
@@ -24,6 +29,537 @@ class ProjectsApiTests(SimpleTestCase):
         request = self.factory.get(path)
         request.user = user
         return request
+
+    def make_patch_request(self, user, path="/projects/1/", body=b"{}"):
+        request = self.factory.patch(
+            path,
+            data=body,
+            content_type="application/json",
+        )
+        request.user = user
+        return request
+
+    def test_update_unauthenticated_request_returns_401(self):
+        response = projects_update(
+            self.make_patch_request(self.unauthenticated_user),
+            1,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_unauthorized_request_returns_403(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = False
+
+        project = SimpleNamespace(
+            project_id=1,
+        )
+        project_get.return_value = project
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        project_get.assert_called_once_with(
+            project_id=1,
+        )
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            project,
+            resource="projects",
+            context=None,
+        )
+
+    @patch("django.utils.timezone.now")
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_authorized_request_updates_project(
+        self,
+        service,
+        project_get,
+        timezone_now,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(
+            project_id=1,
+            project_name="Original Project",
+            description="Original description",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 12, 31),
+            objectives="Original objectives",
+            status="active",
+            created_by_id=10,
+            created_at="original-created-at",
+            updated_at="original-updated-at",
+        )
+
+        project_get.return_value = project
+        timezone_now.return_value = "new-updated-at"
+
+        project.save = lambda **kwargs: None
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"project_name":"Updated Project","status":"completed"}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "project": {
+                    "project_id": 1,
+                    "project_name": "Updated Project",
+                    "description": "Original description",
+                    "start_date": "2026-01-01",
+                    "end_date": "2026-12-31",
+                    "objectives": "Original objectives",
+                    "status": "completed",
+                    "created_by_id": 10,
+                    "created_at": "original-created-at",
+                    "updated_at": "new-updated-at",
+                }
+            },
+        )
+
+        self.assertEqual(project.project_name, "Updated Project")
+        self.assertEqual(project.status, "completed")
+        self.assertEqual(project.created_by_id, 10)
+        self.assertEqual(project.created_at, "original-created-at")
+        self.assertEqual(project.updated_at, "new-updated-at")
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            project,
+            resource="projects",
+            context=None,
+        )
+
+        project_get.assert_has_calls(
+            [
+                call(project_id=1),
+                call(project_id=1),
+            ]
+        )
+        self.assertEqual(project_get.call_count, 2)
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_protected_fields_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"project_id":999,"created_by_id":999}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Protected fields cannot be modified",
+                "fields": ["created_by_id", "project_id"],
+            },
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_unknown_fields_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"project_name":"Updated","unknown_field":"value"}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Unknown fields",
+                "fields": ["unknown_field"],
+            },
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_empty_payload_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b"{}",
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "At least one editable field is required",
+            },
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_blank_project_name_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"project_name":"   "}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "project_name cannot be empty",
+            },
+        )
+
+    @patch("django.utils.timezone.now")
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_valid_dates(
+        self,
+        service,
+        project_get,
+        timezone_now,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(
+            project_id=1,
+            project_name="Test Project",
+            description="Description",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 6, 30),
+            objectives="Objectives",
+            status="active",
+            created_by_id=10,
+            created_at="created-at",
+            updated_at="old-updated-at",
+        )
+
+        project_get.return_value = project
+        timezone_now.return_value = "new-updated-at"
+        project.save = lambda **kwargs: None
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"start_date":"2026-02-01","end_date":"2026-11-30"}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(project.start_date, date(2026, 2, 1))
+        self.assertEqual(project.end_date, date(2026, 11, 30))
+        self.assertEqual(project.updated_at, "new-updated-at")
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_invalid_date_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"start_date":"01-02-2026"}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "start_date must use YYYY-MM-DD format",
+            },
+        )
+
+    @patch("django.utils.timezone.now")
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_null_date_clears_date(
+        self,
+        service,
+        project_get,
+        timezone_now,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(
+            project_id=1,
+            project_name="Test Project",
+            description="Description",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 12, 31),
+            objectives="Objectives",
+            status="active",
+            created_by_id=10,
+            created_at="created-at",
+            updated_at="old-updated-at",
+        )
+
+        project_get.return_value = project
+        timezone_now.return_value = "new-updated-at"
+        project.save = lambda **kwargs: None
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"start_date":null}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(project.start_date)
+        self.assertEqual(project.end_date, date(2026, 12, 31))
+
+    @patch("django.utils.timezone.now")
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_empty_date_clears_date(
+        self,
+        service,
+        project_get,
+        timezone_now,
+    ):
+        service.can_edit.return_value = True
+
+        project = SimpleNamespace(
+            project_id=1,
+            project_name="Test Project",
+            description="Description",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 12, 31),
+            objectives="Objectives",
+            status="active",
+            created_by_id=10,
+            created_at="created-at",
+            updated_at="old-updated-at",
+        )
+
+        project_get.return_value = project
+        timezone_now.return_value = "new-updated-at"
+        project.save = lambda **kwargs: None
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"end_date":""}',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(project.start_date, date(2026, 1, 1))
+        self.assertIsNone(project.end_date)
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_malformed_json_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+        project_get.return_value = SimpleNamespace(project_id=1)
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'{"project_name":',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Invalid JSON"},
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_non_object_json_returns_400(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+        project_get.return_value = SimpleNamespace(project_id=1)
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=b'["project_name","Updated"]',
+        )
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "JSON body must be an object"},
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_non_patch_request_returns_405(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+        project_get.return_value = SimpleNamespace(project_id=1)
+
+        request = self.factory.get("/projects/1/")
+        request.user = self.authenticated_user
+
+        response = projects_update(
+            request,
+            1,
+        )
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_nonexistent_project_returns_404(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_edit.return_value = True
+        project_get.side_effect = Projects.DoesNotExist
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            "/projects/999/",
+        )
+
+        response = projects_update(
+            request,
+            999,
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Project not found",
+            },
+        )
+
+        project_get.assert_has_calls(
+            [
+                call(project_id=999),
+                call(project_id=999),
+            ]
+        )
+        self.assertEqual(project_get.call_count, 2)
 
     def test_unauthenticated_request_returns_401(self):
         response = projects_list(
