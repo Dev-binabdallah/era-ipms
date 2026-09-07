@@ -925,3 +925,63 @@ No commit or push is included in this step.
 Review the completed Step 13.14B documentation and working-tree diff.
 
 After review, create the agreed logical commit for the authorization record-level scope implementation and documentation, then push it to the repository.
+
+## Step 13.15 — Authorization Enforcement at Django View/API Boundary
+
+### Objective
+
+Establish a reusable Django authorization boundary that enforces authentication, permission, responsibility, and record-level scope checks before protected views execute.
+
+### Work Completed
+
+* Added `backend/core/authorization/decorators.py`.
+* Implemented the `require_permission()` decorator as the Django view/API authorization boundary.
+* Centralized authorization decisions through `AuthorizationService`.
+* Added support for all approved permissions:
+
+  * VIEW
+  * ADD
+  * EDIT
+  * DELETE
+  * APPROVE
+  * EXPORT
+  * MANAGE
+  * ADMINISTER
+* Added optional `record_getter` support for record-level authorization.
+* Added optional `context_getter` support for project/activity authorization context.
+* Enforced HTTP 401 responses for unauthenticated requests.
+* Enforced HTTP 403 responses for authenticated but unauthorized requests.
+* Kept `ADMINISTER` as a dedicated technical administration authorization check.
+* Required a resource for all non-administration permissions.
+* Updated the authorization service documentation to reflect the existing record-level project/activity scope implementation.
+* Added dedicated authorization-boundary tests covering authentication, authorization denial, successful execution, record/context propagation, ADD handling, ADMINISTER handling, and decorator validation.
+
+### Verification
+
+The authorization boundary implementation passed:
+
+* Python compilation checks.
+* `git diff --check`.
+* Authorization boundary test suite: **11 tests passed**.
+* Full Django test suite: **74 tests passed**.
+* Django system check: **clean**.
+* No operational CRUD/API endpoints were introduced.
+* No database migrations or data mutations were performed.
+
+### Database Decision
+
+No database schema changes are required for this step. The existing authorization schema and approved record-level relationships are consumed by the authorization service; the new decorator provides the Django boundary for applying those decisions.
+
+### Design Decision
+
+Authorization remains centralized in `AuthorizationService`. The Django boundary does not duplicate permission, responsibility, project, activity, or record-level policy logic. Views provide the appropriate resource, record, and/or context to the authorization service through the decorator.
+
+### Current Limitation
+
+Beneficiary-centered resources that do not have an approved project/activity relationship cannot inherit project scope from the current schema. They remain outside project-derived record-level scope until an explicit domain relationship is approved.
+
+### Next Step
+
+**Step 13.16 — Authorization-aware querysets and data filtering.**
+
+The next step will address filtering querysets so users receive only records within their authorized project/activity scope, rather than relying solely on per-request boundary checks.

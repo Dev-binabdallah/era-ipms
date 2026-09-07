@@ -29,7 +29,7 @@ class AuthorizationService:
             -> active responsibility assignment
             -> project/activity scope
 
-    Record-level rules will be added in a subsequent authorization layer.
+    Record-level project/activity scope is enforced through explicitly approved domain relationships.
     """
 
     def can_view(self, user, record, resource=None, context=None):
