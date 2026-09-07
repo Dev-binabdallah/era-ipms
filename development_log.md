@@ -299,3 +299,54 @@ remains authoritative, and Django models remain `managed = False`.
 
 Continue implementation of the next validated ERA-IPMS core module while
 preserving the established authorization boundary and development log.
+
+## 2026-09-07 — Beneficiary Management API
+
+### Objective
+
+Implement the beneficiary registration and listing API while preserving
+the established authorization boundary and authoritative MariaDB schema.
+
+### Work Completed
+
+- Added beneficiary registration through `POST /beneficiaries/`.
+- Preserved beneficiary listing through `GET /beneficiaries/`.
+- Applied centralized `PERMISSION_ADD` authorization to beneficiary
+  registration.
+- Preserved centralized `PERMISSION_VIEW` authorization for beneficiary
+  listing.
+- Added validation for required beneficiary fields:
+  - `beneficiary_code`
+  - `first_name`
+  - `last_name`
+- Added ISO `YYYY-MM-DD` validation for:
+  - `date_of_birth`
+  - `registration_date`
+- Set the authenticated user as `created_by`.
+- Set `created_at` and `updated_at` using the current application time.
+- Defaulted beneficiary status to `active` when not supplied.
+- Added API tests covering successful registration, authorization denial,
+  invalid JSON, missing required fields, invalid dates, and unsupported
+  methods.
+- Preserved the existing beneficiary record-level authorization model.
+- Added a collection dispatcher so `GET` uses `PERMISSION_VIEW` and
+  `POST` uses `PERMISSION_ADD` independently.
+- Did not introduce a project foreign key or otherwise alter the
+  authoritative database schema.
+
+### Verification
+
+- Beneficiary API tests — 9/9 PASSED
+- Full `core` test suite — 148/148 PASSED
+- `python backend/manage.py check` — PASSED
+- `git diff --check` — PASSED
+
+### Database Decision
+
+No production database migration was performed. The existing MariaDB
+schema remains authoritative, and Django models remain `managed = False`.
+
+### Next Step
+
+Review the complete Git diff, commit and push the Beneficiary Management API
+milestone, then continue with the next validated ERA-IPMS core module.

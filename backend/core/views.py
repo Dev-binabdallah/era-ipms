@@ -5,13 +5,22 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.utils import timezone
 
-from core.authorization.constants import PERMISSION_ADD, PERMISSION_EDIT, PERMISSION_VIEW
+from core.authorization.constants import (
+    PERMISSION_ADD,
+    PERMISSION_EDIT,
+    PERMISSION_VIEW,
+)
 from core.authorization.decorators import (
     require_permission,
     require_project_assignment_management,
 )
 from core.authorization.querysets import authorized_queryset
-from core.models import Projects, UserProjectAssignments, Users
+from core.models import (
+    Beneficiaries,
+    Projects,
+    UserProjectAssignments,
+    Users,
+)
 
 
 def auth_login(request):
@@ -172,6 +181,149 @@ def projects_create(request):
             }
         },
         status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="beneficiaries",
+)
+def beneficiary_create(request):
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    required_fields = (
+        "beneficiary_code",
+        "first_name",
+        "last_name",
+    )
+
+    for field in required_fields:
+        value = str(payload.get(field, "")).strip()
+
+        if not value:
+            return JsonResponse(
+                {"error": f"{field} is required"},
+                status=400,
+            )
+
+        payload[field] = value
+
+    date_values = {}
+
+    for field in ("date_of_birth", "registration_date"):
+        value = payload.get(field)
+
+        if value in (None, ""):
+            date_values[field] = None
+            continue
+
+        try:
+            date_values[field] = date.fromisoformat(str(value))
+        except ValueError:
+            return JsonResponse(
+                {
+                    "error": f"{field} must use YYYY-MM-DD format",
+                },
+                status=400,
+            )
+
+    now = timezone.now()
+
+    beneficiary = Beneficiaries.objects.create(
+        beneficiary_code=payload["beneficiary_code"],
+        first_name=payload["first_name"],
+        last_name=payload["last_name"],
+        date_of_birth=date_values["date_of_birth"],
+        sex=payload.get("sex"),
+        location=payload.get("location"),
+        phone=payload.get("phone"),
+        registration_date=date_values["registration_date"],
+        status=payload.get("status") or "active",
+        created_by_id=request.user.user_id,
+        created_at=now,
+        updated_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "beneficiary": {
+                "beneficiary_id": beneficiary.beneficiary_id,
+                "beneficiary_code": beneficiary.beneficiary_code,
+                "first_name": beneficiary.first_name,
+                "last_name": beneficiary.last_name,
+                "date_of_birth": beneficiary.date_of_birth,
+                "sex": beneficiary.sex,
+                "location": beneficiary.location,
+                "phone": beneficiary.phone,
+                "registration_date": beneficiary.registration_date,
+                "status": beneficiary.status,
+                "created_by_id": beneficiary.created_by_id,
+                "created_at": beneficiary.created_at,
+                "updated_at": beneficiary.updated_at,
+            }
+        },
+        status=201,
+    )
+
+
+def beneficiaries_collection(request):
+    if request.method == "POST":
+        return beneficiary_create(request)
+
+    if request.method == "GET":
+        return beneficiaries_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="beneficiaries",
+)
+def beneficiaries_list(request):
+    queryset = authorized_queryset(
+        request.user,
+        "beneficiaries",
+        Beneficiaries.objects.all(),
+    )
+
+    beneficiaries = list(
+        queryset.values(
+            "beneficiary_id",
+            "beneficiary_code",
+            "first_name",
+            "last_name",
+            "date_of_birth",
+            "sex",
+            "location",
+            "phone",
+            "registration_date",
+            "status",
+            "created_by_id",
+            "created_at",
+            "updated_at",
+        )
+    )
+
+    return JsonResponse(
+        {
+            "beneficiaries": beneficiaries,
+        }
     )
 
 def projects_collection(request):
