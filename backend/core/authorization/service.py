@@ -7,6 +7,7 @@ from core.authorization.constants import (
     PERMISSION_EXPORT,
     PERMISSION_MANAGE,
     PERMISSION_VIEW,
+    RESPONSIBILITY_PROJECT_COORDINATION,
     RESPONSIBILITIES,
 )
 from core.authorization.policy import (
@@ -90,6 +91,27 @@ class AuthorizationService:
             permission=PERMISSION_MANAGE,
             resource=resource,
             context=context,
+        )
+
+    def can_manage_project_assignments(self, user, project):
+        """
+        Determine whether an active user may manage project assignments.
+
+        Project assignment management requires both the existing MANAGE
+        permission and PROJECT_COORDINATION responsibility.
+
+        Project membership itself is intentionally not required here because
+        this operation creates or changes project membership. Requiring an
+        existing project assignment would prevent the first assignment from
+        ever being created.
+        """
+
+        if not self.has_permission(user, PERMISSION_MANAGE):
+            return False
+
+        return self.has_responsibility(
+            user,
+            RESPONSIBILITY_PROJECT_COORDINATION,
         )
 
     def can_administer(self, user):

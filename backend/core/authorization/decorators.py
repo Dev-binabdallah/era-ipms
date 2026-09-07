@@ -121,3 +121,58 @@ def require_permission(
         return wrapped_view
 
     return decorator
+
+
+def require_project_assignment_management(view_func):
+    """
+    Enforce authorization for project assignment management.
+
+    Authentication failures return HTTP 401.
+    Authorization failures return HTTP 403.
+    Missing projects return HTTP 404.
+
+    Project assignment management uses the dedicated
+    AuthorizationService decision because the operation creates or
+    changes project membership and therefore cannot require
+    pre-existing project membership.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(request, project_id, *args, **kwargs):
+        user = getattr(request, "user", None)
+
+        if not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"authorized": False},
+                status=401,
+            )
+
+        from core.models import Projects
+
+        try:
+            project = Projects.objects.get(
+                project_id=project_id,
+            )
+        except Projects.DoesNotExist:
+            return JsonResponse(
+                {"error": "Project not found"},
+                status=404,
+            )
+
+        if not authorization_service.can_manage_project_assignments(
+            user,
+            project,
+        ):
+            return JsonResponse(
+                {"authorized": False},
+                status=403,
+            )
+
+        return view_func(
+            request,
+            project,
+            *args,
+            **kwargs,
+        )
+
+    return wrapped_view

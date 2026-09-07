@@ -201,3 +201,52 @@ Projects API update/edit implementation, routing, authorization enforcement, val
 
 ### Next Step
 Review the final staged diff, commit the completed Projects API update milestone, push it to GitHub, and verify the working tree is clean and synchronized.
+
+## 2026-09-07 — Project Assignment Management API
+
+### Objective
+
+Implement controlled project-user assignment management while preserving the
+existing ERA-IPMS authorization model and authoritative MariaDB schema.
+
+### Work Completed
+
+- Added dedicated project assignment authorization.
+- Required both `MANAGE` permission and `PROJECT_COORDINATION` responsibility
+  for project assignment management.
+- Added project assignment listing endpoint:
+  `GET /projects/<project_id>/assignments/`
+- Added project assignment creation endpoint:
+  `POST /projects/<project_id>/assignments/create/`
+- Added project assignment update endpoint:
+  `PATCH /projects/<project_id>/assignments/<assignment_id>/`
+- Restricted assignment creation to existing active users.
+- Implemented reactivation of existing inactive assignments instead of
+  creating duplicate records.
+- Recorded the assigning user and assignment timestamp.
+- Restricted assignment updates to the `is_active` field.
+- Used deactivation instead of physical assignment deletion.
+- Added URL routing for all assignment endpoints.
+- Added focused API tests covering authentication, authorization,
+  listing, creation, reactivation, inactive users, deactivation, and
+  protected-field rejection.
+
+### Verification
+
+- Project assignment tests — 8/8 PASSED
+- Projects API tests — 38/38 PASSED
+- Full `core` test suite — 134/134 PASSED
+- `python backend/manage.py check` — PASSED
+- `python -m py_compile backend/config/urls.py` — PASSED
+- `git diff --check` — PASSED
+
+### Database Decision
+
+No production database migration was performed. The existing
+`user_project_assignments` table remains authoritative, and Django models
+remain `managed = False`.
+
+### Next Step
+
+Continue implementation of the next validated ERA-IPMS core module while
+preserving the established authorization boundary and development log.

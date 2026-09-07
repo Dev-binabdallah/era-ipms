@@ -6,9 +6,12 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 from core.authorization.constants import PERMISSION_ADD, PERMISSION_EDIT, PERMISSION_VIEW
-from core.authorization.decorators import require_permission
+from core.authorization.decorators import (
+    require_permission,
+    require_project_assignment_management,
+)
 from core.authorization.querysets import authorized_queryset
-from core.models import Projects
+from core.models import Projects, UserProjectAssignments, Users
 
 
 def auth_login(request):
@@ -423,5 +426,200 @@ def projects_detail(request, project_id):
                 "created_at": project.created_at,
                 "updated_at": project.updated_at,
             }
+        }
+    )
+
+
+def _assignment_payload(assignment):
+    return {
+        "assignment_id": assignment.assignment_id,
+        "user_id": assignment.user_id,
+        "project_id": assignment.project_id,
+        "assigned_at": assignment.assigned_at,
+        "assigned_by_id": assignment.assigned_by_id,
+        "is_active": assignment.is_active,
+    }
+
+
+@require_project_assignment_management
+def project_assignments(request, project):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    assignments = UserProjectAssignments.objects.filter(
+        project=project,
+    )
+
+    return JsonResponse(
+        {
+            "assignments": [
+                _assignment_payload(assignment)
+                for assignment in assignments
+            ]
+        }
+    )
+
+
+@require_project_assignment_management
+def project_assignment_create(request, project):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    if "user_id" not in payload:
+        return JsonResponse(
+            {"error": "user_id is required"},
+            status=400,
+        )
+
+    try:
+        user_id = int(payload["user_id"])
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "user_id must be an integer"},
+            status=400,
+        )
+
+    try:
+        target_user = Users.objects.get(
+            user_id=user_id,
+        )
+    except Users.DoesNotExist:
+        return JsonResponse(
+            {"error": "Target user not found"},
+            status=404,
+        )
+
+    if not target_user.is_active:
+        return JsonResponse(
+            {"error": "Target user is inactive"},
+            status=400,
+        )
+
+    assignment = UserProjectAssignments.objects.filter(
+        user=target_user,
+        project=project,
+    ).first()
+
+    now = timezone.now()
+
+    if assignment is not None:
+        assignment.is_active = True
+        assignment.assigned_at = now
+        assignment.assigned_by = request.user
+        assignment.save(
+            update_fields=[
+                "assigned_at",
+                "assigned_by",
+                "is_active",
+            ],
+        )
+
+        return JsonResponse(
+            {
+                "assignment": _assignment_payload(assignment),
+            }
+        )
+
+    assignment = UserProjectAssignments.objects.create(
+        user=target_user,
+        project=project,
+        assigned_at=now,
+        assigned_by=request.user,
+        is_active=True,
+    )
+
+    return JsonResponse(
+        {
+            "assignment": _assignment_payload(assignment),
+        },
+        status=201,
+    )
+
+
+@require_project_assignment_management
+def project_assignment_update(
+    request,
+    project,
+    assignment_id,
+):
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        assignment = UserProjectAssignments.objects.get(
+            assignment_id=assignment_id,
+            project=project,
+        )
+    except UserProjectAssignments.DoesNotExist:
+        return JsonResponse(
+            {"error": "Assignment not found"},
+            status=404,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    if set(payload) - {"is_active"}:
+        return JsonResponse(
+            {
+                "error": "Only is_active can be modified",
+            },
+            status=400,
+        )
+
+    if not payload:
+        return JsonResponse(
+            {"error": "is_active is required"},
+            status=400,
+        )
+
+    if not isinstance(payload["is_active"], bool):
+        return JsonResponse(
+            {"error": "is_active must be a boolean"},
+            status=400,
+        )
+
+    assignment.is_active = payload["is_active"]
+    assignment.save(
+        update_fields=["is_active"],
+    )
+
+    return JsonResponse(
+        {
+            "assignment": _assignment_payload(assignment),
         }
     )
