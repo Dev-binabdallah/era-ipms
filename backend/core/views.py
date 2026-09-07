@@ -1,58 +1,84 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from core.authorization.querysets import authorized_queryset
 from core.models import Projects
 
 
-def auth_test(request):
-    if request.method == "POST":
-        identifier = request.POST.get("identifier")
-        password = request.POST.get("password")
-
-        user = authenticate(
-            request,
-            username=identifier,
-            password=password,
+def auth_login(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
         )
 
-        if user is None:
-            return JsonResponse(
-                {"authenticated": False},
-                status=401,
-            )
+    identifier = request.POST.get("identifier", "").strip()
+    password = request.POST.get("password", "")
 
-        login(request, user)
+    if not identifier or not password:
+        return JsonResponse(
+            {
+                "authenticated": False,
+                "error": "Identifier and password are required",
+            },
+            status=400,
+        )
 
-        return JsonResponse({
-            "authenticated": True,
-            "user_id": user.user_id,
-            "username": user.username,
-            "title": user.title.title_name,
-        })
+    user = authenticate(
+        request,
+        username=identifier,
+        password=password,
+    )
 
-    if request.user.is_authenticated:
-        return JsonResponse({
-            "authenticated": True,
-            "user_id": request.user.user_id,
-            "username": request.user.username,
-            "title": request.user.title.title_name,
-        })
+    if user is None:
+        return JsonResponse(
+            {
+                "authenticated": False,
+                "error": "Invalid credentials",
+            },
+            status=401,
+        )
 
-    get_token(request)
+    login(request, user)
 
     return JsonResponse({
-        "authenticated": False,
+        "authenticated": True,
+        "user_id": user.user_id,
+        "username": user.username,
+        "title": user.title.title_name,
+    })
+
+
+def auth_me(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {
+                "authenticated": False,
+            },
+            status=401,
+        )
+
+    return JsonResponse({
+        "authenticated": True,
+        "user_id": request.user.user_id,
+        "username": request.user.username,
+        "title": request.user.title.title_name,
     })
 
 
 def auth_logout(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
     logout(request)
 
     return JsonResponse({
         "authenticated": False,
         "message": "Logged out successfully",
     })
+
 
 def projects_list(request):
     queryset = authorized_queryset(
