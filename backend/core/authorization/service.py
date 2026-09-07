@@ -30,7 +30,8 @@ class AuthorizationService:
             -> active responsibility assignment
             -> project/activity scope
 
-    Record-level project/activity scope is enforced through explicitly approved domain relationships.
+    Record-level project/activity scope is enforced through explicitly approved
+    domain relationships.
     """
 
     def can_view(self, user, record, resource=None, context=None):
@@ -263,11 +264,10 @@ class AuthorizationService:
 
     def has_scope(self, user, resource, record=None, context=None):
         """
-        Determine record-level project/activity scope.
+        Determine record-level project/activity and beneficiary scope.
 
         Scope is resolved only through explicitly approved domain
-        relationships. Resources without an applicable project/activity
-        relationship pass this scope layer. Unknown resources are denied.
+        relationships. Unknown resources are denied.
         """
 
         resource_name = str(resource).strip().lower() if resource else ""
@@ -444,9 +444,96 @@ class AuthorizationService:
 
             return self.has_project_scope(user, project)
 
+        if resource_name in {"beneficiary", "beneficiaries"}:
+            if record is None:
+                return False
+
+            title_name = getattr(
+                getattr(user, "title", None),
+                "title_name",
+                "",
+            )
+
+            # Director and Programme Coordinator have broader
+            # beneficiary visibility.
+            if title_name in {
+                "Director",
+                "Programme Coordinator",
+            }:
+                return True
+
+            # Member access is restricted to beneficiaries with
+            # a direct operational relationship.
+            if title_name != "Member":
+                return False
+
+            user_id = getattr(user, "user_id", None)
+
+            if user_id is None:
+                return False
+
+            created_by = getattr(record, "created_by", None)
+
+            if getattr(created_by, "user_id", None) == user_id:
+                return True
+
+            assessments = getattr(
+                record,
+                "disability_assessments",
+                None,
+            )
+
+            if assessments is not None:
+                if hasattr(assessments, "filter"):
+                    if assessments.filter(
+                        assessed_by=user,
+                    ).exists():
+                        return True
+                else:
+                    for assessment in assessments:
+                        assessed_by = getattr(
+                            assessment,
+                            "assessed_by",
+                            None,
+                        )
+
+                        if getattr(
+                            assessed_by,
+                            "user_id",
+                            None,
+                        ) == user_id:
+                            return True
+
+            home_visits = getattr(
+                record,
+                "home_visits",
+                None,
+            )
+
+            if home_visits is not None:
+                if hasattr(home_visits, "filter"):
+                    if home_visits.filter(
+                        conducted_by=user,
+                    ).exists():
+                        return True
+                else:
+                    for visit in home_visits:
+                        conducted_by = getattr(
+                            visit,
+                            "conducted_by",
+                            None,
+                        )
+
+                        if getattr(
+                            conducted_by,
+                            "user_id",
+                            None,
+                        ) == user_id:
+                            return True
+
+            return False
+
         if resource_name in {
-            "beneficiary",
-            "beneficiaries",
             "disability_assessment",
             "disability_assessments",
             "home_visit",

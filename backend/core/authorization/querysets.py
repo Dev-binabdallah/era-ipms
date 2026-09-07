@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, Q
 
 from core.authorization.constants import PERMISSION_VIEW
 from core.authorization.policy import RESOURCE_RESPONSIBILITY_MAP
@@ -60,8 +60,6 @@ ME_INDICATOR_RECORD_RESOURCES = {
 }
 
 UNSCOPED_RESOURCES = {
-    "beneficiary",
-    "beneficiaries",
     "disability_assessment",
     "disability_assessments",
     "home_visit",
@@ -186,6 +184,25 @@ def authorized_queryset(user, resource, queryset):
         return queryset.filter(
             indicator__project__user_assignments__user=user,
             indicator__project__user_assignments__is_active=True,
+        ).distinct()
+
+    if resource_name in {"beneficiary", "beneficiaries"}:
+        title_name = getattr(
+            getattr(user, "title", None),
+            "title_name",
+            "",
+        )
+
+        if title_name in {
+            "Director",
+            "Programme Coordinator",
+        }:
+            return queryset
+
+        return queryset.filter(
+            Q(created_by=user)
+            | Q(disability_assessments__assessed_by=user)
+            | Q(home_visits__conducted_by=user)
         ).distinct()
 
     if resource_name in UNSCOPED_RESOURCES:

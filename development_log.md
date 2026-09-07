@@ -250,3 +250,52 @@ remain `managed = False`.
 
 Continue implementation of the next validated ERA-IPMS core module while
 preserving the established authorization boundary and development log.
+
+## 2026-09-07 — Beneficiary Record-Level Authorization
+
+### Objective
+
+Implement controlled beneficiary record-level access while preserving the
+existing ERA-IPMS authorization model and authoritative MariaDB schema.
+
+### Work Completed
+
+- Added beneficiary-specific record-level authorization.
+- Restricted Member beneficiary visibility to records with a direct
+  operational relationship:
+  - personally registered beneficiaries;
+  - beneficiaries personally assessed; or
+  - beneficiaries personally visited.
+- Allowed Director and Programme Coordinator broader beneficiary visibility.
+- Prevented unrelated roles from receiving beneficiary scope through this
+  record-level authorization layer.
+- Added database-level beneficiary queryset filtering using Django `Q`
+  conditions.
+- Removed beneficiaries from the previously unscoped resource list.
+- Preserved the existing beneficiary responsibility requirement:
+  `BENEFICIARY_REGISTRATION`.
+- Added service-level tests for registration, assessment, home visit, and
+  unrelated beneficiary access.
+- Added queryset-level tests verifying direct-relationship filtering and
+  broader Director access.
+- Did not introduce a project foreign key or otherwise alter the authoritative
+  database schema.
+
+### Verification
+
+- Beneficiary authorization service tests — PASSED
+- Authorization service tests — 68/68 PASSED
+- Authorization queryset tests — 14/14 PASSED
+- Full `core` test suite — 139/139 PASSED
+- `python backend/manage.py check` — PASSED
+- `git diff --check` — PASSED
+
+### Database Decision
+
+No production database migration was performed. The existing MariaDB schema
+remains authoritative, and Django models remain `managed = False`.
+
+### Next Step
+
+Continue implementation of the next validated ERA-IPMS core module while
+preserving the established authorization boundary and development log.

@@ -702,14 +702,10 @@ class AuthorizationServiceIntegrationTests(SimpleTestCase):
 
 
 class AuthorizationServiceScopeTests(SimpleTestCase):
-    """
-    Step 13.12 tests: project/activity scope authorization.
-
-    Tests use mocks/test doubles only. No database records are created.
-    """
-
     def setUp(self):
         self.service = AuthorizationService()
+        self.user = self.make_user()
+        self.user.user_id = 1
 
     def make_user(
         self,
@@ -779,6 +775,89 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
             project_assignments=project_manager,
             activity_assignments=activity_manager,
         )
+
+    def test_member_can_view_beneficiary_they_registered(self):
+        beneficiary = SimpleNamespace(
+            created_by=self.user,
+        )
+
+        self.user.title.title_name = "Member"
+
+        self.assertTrue(
+            self.service.has_scope(
+                self.user,
+                "beneficiary",
+                record=beneficiary,
+            )
+        )
+
+    def test_member_can_view_beneficiary_they_assessed(self):
+        assessor = SimpleNamespace(user_id=1)
+
+        beneficiary = SimpleNamespace(
+            created_by=SimpleNamespace(user_id=2),
+            disability_assessments=[
+                SimpleNamespace(assessed_by=assessor),
+            ],
+        )
+
+        self.user.user_id = 1
+        self.user.title.title_name = "Member"
+
+        self.assertTrue(
+            self.service.has_scope(
+                self.user,
+                "beneficiary",
+                record=beneficiary,
+            )
+        )
+
+    def test_member_can_view_beneficiary_they_visited(self):
+        visitor = SimpleNamespace(user_id=1)
+
+        beneficiary = SimpleNamespace(
+            created_by=SimpleNamespace(user_id=2),
+            disability_assessments=[],
+            home_visits=[
+                SimpleNamespace(conducted_by=visitor),
+            ],
+        )
+
+        self.user.user_id = 1
+        self.user.title.title_name = "Member"
+
+        self.assertTrue(
+            self.service.has_scope(
+                self.user,
+                "beneficiary",
+                record=beneficiary,
+            )
+        )
+
+    def test_member_cannot_view_unrelated_beneficiary(self):
+        beneficiary = SimpleNamespace(
+            created_by=SimpleNamespace(user_id=2),
+            disability_assessments=[],
+            home_visits=[],
+        )
+
+        self.user.user_id = 1
+        self.user.title.title_name = "Member"
+
+        self.assertFalse(
+            self.service.has_scope(
+                self.user,
+                "beneficiary",
+                record=beneficiary,
+            )
+        )
+
+
+    """
+    Step 13.12 tests: project/activity scope authorization.
+
+    Tests use mocks/test doubles only. No database records are created.
+    """
 
     def make_project(self, project_id):
         return SimpleNamespace(project_id=project_id)

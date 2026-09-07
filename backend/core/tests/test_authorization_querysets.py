@@ -334,7 +334,7 @@ class AuthorizedQuerysetTests(SimpleTestCase):
     @patch(
         "core.authorization.querysets.authorization_service"
     )
-    def test_beneficiary_resource_is_not_artificially_project_filtered(
+    def test_member_beneficiary_queryset_is_limited_to_direct_relationships(
         self,
         service,
     ):
@@ -343,6 +343,55 @@ class AuthorizedQuerysetTests(SimpleTestCase):
             RESPONSIBILITY_BENEFICIARY_REGISTRATION
         )
         service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(title_name="Member")
+
+        result = authorized_queryset(
+            self.user,
+            "beneficiary",
+            self.queryset,
+        )
+
+        self.queryset.filter.assert_called_once()
+        filter_args = self.queryset.filter.call_args.args
+
+        self.assertEqual(len(filter_args), 1)
+
+        condition = filter_args[0]
+
+        self.assertEqual(condition.connector, "OR")
+        self.assertEqual(len(condition.children), 3)
+
+        self.assertIn(
+            ("created_by", self.user),
+            condition.children,
+        )
+        self.assertIn(
+            ("disability_assessments__assessed_by", self.user),
+            condition.children,
+        )
+        self.assertIn(
+            ("home_visits__conducted_by", self.user),
+            condition.children,
+        )
+
+        self.filtered_queryset.distinct.assert_called_once_with()
+        self.assertIs(result, self.filtered_queryset)
+
+    @patch(
+        "core.authorization.querysets.authorization_service"
+    )
+    def test_director_beneficiary_queryset_is_not_relationship_filtered(
+        self,
+        service,
+    ):
+        service.has_permission.return_value = True
+        service.get_required_responsibility.return_value = (
+            RESPONSIBILITY_BENEFICIARY_REGISTRATION
+        )
+        service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(title_name="Director")
 
         result = authorized_queryset(
             self.user,
