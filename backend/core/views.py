@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
+from core.authorization.constants import PERMISSION_VIEW
+from core.authorization.decorators import require_permission
 from core.authorization.querysets import authorized_queryset
 from core.models import Projects
 
@@ -80,6 +82,10 @@ def auth_logout(request):
     })
 
 
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="projects",
+)
 def projects_list(request):
     queryset = authorized_queryset(
         request.user,
