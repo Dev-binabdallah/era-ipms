@@ -350,3 +350,65 @@ schema remains authoritative, and Django models remain `managed = False`.
 
 Review the complete Git diff, commit and push the Beneficiary Management API
 milestone, then continue with the next validated ERA-IPMS core module.
+
+## 2026-09-07 — Disability Assessment Management API
+
+### Objective
+
+Implement the disability assessment registration and listing API while
+preserving the established authorization boundary and authoritative
+MariaDB schema.
+
+### Work Completed
+
+- Added disability assessment registration through
+  `POST /disability-assessments/`.
+- Added disability assessment listing through
+  `GET /disability-assessments/`.
+- Applied centralized `PERMISSION_ADD` authorization to assessment
+  registration.
+- Applied centralized `PERMISSION_VIEW` authorization to assessment
+  listing.
+- Added validation for required fields:
+  - `beneficiary_id`
+  - `assessment_date`
+- Added positive-integer validation for `beneficiary_id`.
+- Added ISO `YYYY-MM-DD` validation for `assessment_date`.
+- Supported optional assessment fields:
+  - `assessment_type`
+  - `disability_type`
+  - `needs`
+  - `assessment_notes`
+- Set the authenticated user as `assessed_by`.
+- Set `created_at` using the current application time.
+- Applied `authorized_queryset()` to disability assessment listing.
+- Added a collection dispatcher so `GET` uses `PERMISSION_VIEW` and
+  `POST` uses `PERMISSION_ADD` independently.
+- Added API tests covering successful creation, authorization denial,
+  authentication denial, invalid JSON, missing required fields, invalid
+  beneficiary IDs, invalid dates, authorized listing, denied listing,
+  and unsupported methods.
+- Preserved the existing unscoped disability assessment authorization
+  model.
+- Did not introduce a project foreign key or otherwise alter the
+  authoritative database schema.
+
+### Verification
+
+- Disability Assessment API tests — 11/11 PASSED
+- Full `core` test suite — 159/159 PASSED
+- `python -m py_compile` — PASSED
+- `python backend/manage.py test core` — PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database Decision
+
+No production database migration was performed. The existing MariaDB
+schema remains authoritative, and Django models remain `managed = False`.
+
+### Next Step
+
+Review the updated Git diff, stage the Disability Assessment Management API
+changes, commit and push the milestone, then continue with the next
+validated ERA-IPMS core module.

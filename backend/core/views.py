@@ -17,6 +17,7 @@ from core.authorization.decorators import (
 from core.authorization.querysets import authorized_queryset
 from core.models import (
     Beneficiaries,
+    DisabilityAssessments,
     Projects,
     UserProjectAssignments,
     Users,
@@ -275,6 +276,153 @@ def beneficiary_create(request):
             }
         },
         status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="disability_assessments",
+)
+def disability_assessment_create(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    required_fields = (
+        "beneficiary_id",
+        "assessment_date",
+    )
+
+    for field in required_fields:
+        value = payload.get(field)
+
+        if value in (None, ""):
+            return JsonResponse(
+                {"error": f"{field} is required"},
+                status=400,
+            )
+
+    try:
+        beneficiary_id = int(payload["beneficiary_id"])
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "beneficiary_id must be an integer"},
+            status=400,
+        )
+
+    if beneficiary_id <= 0:
+        return JsonResponse(
+            {"error": "beneficiary_id must be a positive integer"},
+            status=400,
+        )
+
+    try:
+        assessment_date = date.fromisoformat(
+            str(payload["assessment_date"])
+        )
+    except ValueError:
+        return JsonResponse(
+            {
+                "error": "assessment_date must use YYYY-MM-DD format",
+            },
+            status=400,
+        )
+
+    now = timezone.now()
+
+    assessment = DisabilityAssessments.objects.create(
+        beneficiary_id=beneficiary_id,
+        assessment_date=assessment_date,
+        assessment_type=payload.get("assessment_type"),
+        disability_type=payload.get("disability_type"),
+        needs=payload.get("needs"),
+        assessment_notes=payload.get("assessment_notes"),
+        assessed_by_id=request.user.user_id,
+        created_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "assessment": {
+                "assessment_id": assessment.assessment_id,
+                "beneficiary_id": assessment.beneficiary_id,
+                "assessment_date": assessment.assessment_date,
+                "assessment_type": assessment.assessment_type,
+                "disability_type": assessment.disability_type,
+                "needs": assessment.needs,
+                "assessment_notes": assessment.assessment_notes,
+                "assessed_by_id": assessment.assessed_by_id,
+                "created_at": assessment.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="disability_assessments",
+)
+def disability_assessments_list(request):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    queryset = authorized_queryset(
+        request.user,
+        "disability_assessments",
+        DisabilityAssessments.objects.all(),
+    )
+
+    assessments = list(
+        queryset.values(
+            "assessment_id",
+            "beneficiary_id",
+            "assessment_date",
+            "assessment_type",
+            "disability_type",
+            "needs",
+            "assessment_notes",
+            "assessed_by_id",
+            "created_at",
+        )
+    )
+
+    return JsonResponse(
+        {
+            "assessments": assessments,
+        }
+    )
+
+
+def disability_assessments_collection(request):
+    if request.method == "POST":
+        return disability_assessment_create(request)
+
+    if request.method == "GET":
+        return disability_assessments_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
     )
 
 
