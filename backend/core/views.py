@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from core.authorization.querysets import authorized_queryset
+from core.models import Projects
 
 
 def auth_test(request):
@@ -51,3 +53,31 @@ def auth_logout(request):
         "authenticated": False,
         "message": "Logged out successfully",
     })
+
+def projects_list(request):
+    queryset = authorized_queryset(
+        request.user,
+        "projects",
+        Projects.objects.all(),
+    )
+
+    projects = list(
+        queryset.values(
+            "project_id",
+            "project_name",
+            "description",
+            "start_date",
+            "end_date",
+            "objectives",
+            "status",
+            "created_by_id",
+            "created_at",
+            "updated_at",
+        )
+    )
+
+    return JsonResponse(
+        {
+            "projects": projects,
+        }
+    )
