@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
+
 from core.authorization.constants import PERMISSION_VIEW
 from core.authorization.decorators import require_permission
 from core.authorization.querysets import authorized_queryset
@@ -111,5 +112,51 @@ def projects_list(request):
     return JsonResponse(
         {
             "projects": projects,
+        }
+    )
+
+
+def get_project(request, project_id):
+    try:
+        return Projects.objects.get(
+            project_id=project_id,
+        )
+    except Projects.DoesNotExist:
+        return None
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="projects",
+    record_getter=get_project,
+)
+def projects_detail(request, project_id):
+    project = get_project(
+        request,
+        project_id,
+    )
+
+    if project is None:
+        return JsonResponse(
+            {
+                "error": "Project not found",
+            },
+            status=404,
+        )
+
+    return JsonResponse(
+        {
+            "project": {
+                "project_id": project.project_id,
+                "project_name": project.project_name,
+                "description": project.description,
+                "start_date": project.start_date,
+                "end_date": project.end_date,
+                "objectives": project.objectives,
+                "status": project.status,
+                "created_by_id": project.created_by_id,
+                "created_at": project.created_at,
+                "updated_at": project.updated_at,
+            }
         }
     )

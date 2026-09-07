@@ -62,3 +62,33 @@ Strengthen the `/projects/` API endpoint with explicit authentication and author
 
 ### Next Step
 Review the complete diff, commit the Projects API authorization boundary milestone, and push it to GitHub.
+
+## 2026-09-07 — Projects API Detail Endpoint
+
+### Objective
+Extend the authorized Projects API with a record-level project detail endpoint while preserving the existing authentication and authorization boundary.
+
+### Work Completed
+- Added `projects_detail()` endpoint for individual projects.
+- Added `/projects/<int:project_id>/` URL route.
+- Reused the existing `require_permission()` authorization decorator.
+- Applied the existing project authorization scope to project detail access.
+- Added 404 handling for nonexistent projects.
+- Added focused API tests covering:
+  - unauthenticated detail requests,
+  - unauthorized detail requests,
+  - authorized detail requests,
+  - nonexistent project requests.
+- Kept the existing `/projects/` list endpoint and authorization-aware queryset behavior unchanged.
+
+### Verification
+- `python -m py_compile backend/core/tests/test_projects_api.py` — passed.
+- `python backend/manage.py test core.tests.test_projects_api` — **7/7 passed**.
+- `python backend/manage.py test core` — **102/102 passed**.
+- Django system check — **no issues**.
+
+### Status
+Project detail API implementation and regression tests are complete and passing.
+
+### Next Step
+Review the working-tree diff, commit the completed Projects API detail milestone, and push it to GitHub.
