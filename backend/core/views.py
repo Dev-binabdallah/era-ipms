@@ -650,7 +650,7 @@ def referral_create(request):
         destination=payload["destination"],
         reason=payload.get("reason"),
         referred_by_id=request.user.user_id,
-        status="submitted",
+        status="pending",
         approved_by_id=None,
         approved_at=None,
         created_at=now,
@@ -674,6 +674,77 @@ def referral_create(request):
             }
         },
         status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_EDIT,
+    resource="referrals",
+    record_getter=get_referral,
+)
+def referral_submit(request, referral_id):
+    referral = get_referral(
+        request,
+        referral_id,
+    )
+
+    if referral is None:
+        return JsonResponse(
+            {"error": "Referral not found"},
+            status=404,
+        )
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    if referral.status == "submitted":
+        return JsonResponse(
+            {"error": "Referral is already submitted"},
+            status=409,
+        )
+
+    if referral.status != "pending":
+        return JsonResponse(
+            {
+                "error": (
+                    "Referral cannot be submitted from status "
+                    f"'{referral.status}'"
+                )
+            },
+            status=409,
+        )
+
+    now = timezone.now()
+
+    referral.status = "submitted"
+    referral.updated_at = now
+
+    referral.save(
+        update_fields=[
+            "status",
+            "updated_at",
+        ],
+    )
+
+    return JsonResponse(
+        {
+            "referral": {
+                "referral_id": referral.referral_id,
+                "beneficiary_id": referral.beneficiary_id,
+                "referral_date": referral.referral_date,
+                "destination": referral.destination,
+                "reason": referral.reason,
+                "referred_by_id": referral.referred_by_id,
+                "status": referral.status,
+                "approved_by_id": referral.approved_by_id,
+                "approved_at": referral.approved_at,
+                "created_at": referral.created_at,
+                "updated_at": referral.updated_at,
+            }
+        }
     )
 
 

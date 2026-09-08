@@ -8,6 +8,7 @@ from core.views import (
     disability_assessments_collection,
     home_visits_collection,
     referrals_collection,
+    referral_submit,
     referral_follow_ups_collection,
     projects_collection,
     projects_detail_collection,
@@ -39,6 +40,10 @@ urlpatterns = [
     path(
         "referrals/<int:referral_id>/follow-ups/",
         referral_follow_ups_collection,
+    ),
+    path(
+        "referrals/<int:referral_id>/submit/",
+        referral_submit,
     ),
     path(
         "referrals/<int:referral_id>/approve/",

@@ -7,6 +7,7 @@ from django.test import RequestFactory, SimpleTestCase
 
 from core.views import (
     referral_create,
+    referral_submit,
     referrals_collection,
     referrals_list,
     referral_follow_up_create,
@@ -15,6 +16,275 @@ from core.views import (
 
 
 class ReferralsApiTests(SimpleTestCase):
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_submit_unauthenticated_request_returns_401(
+        self,
+        referral_get,
+        service,
+    ):
+        response = referral_submit(
+            self.make_request(
+                self.unauthenticated_user,
+                "post",
+            ),
+            7,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        referral_get.assert_not_called()
+        service.can_edit.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_submit_unauthorized_request_returns_403(
+        self,
+        referral_get,
+        service,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+            status="pending",
+        )
+
+        referral_get.return_value = referral
+        service.can_edit.return_value = False
+
+        response = referral_submit(
+            self.make_request(
+                self.authenticated_user,
+                "post",
+            ),
+            7,
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        referral_get.assert_called_once_with(
+            referral_id=7,
+        )
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            referral,
+            resource="referrals",
+            context=None,
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_submit_missing_referral_returns_404(
+        self,
+        referral_get,
+        service,
+    ):
+        service.can_edit.return_value = True
+
+        from core.models import Referrals
+
+        referral_get.side_effect = Referrals.DoesNotExist
+
+        response = referral_submit(
+            self.make_request(
+                self.authenticated_user,
+                "post",
+            ),
+            999,
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Referral not found"},
+        )
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            None,
+            resource="referrals",
+            context=None,
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_submit_already_submitted_returns_409(
+        self,
+        referral_get,
+        service,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+            status="submitted",
+        )
+
+        referral_get.return_value = referral
+        service.can_edit.return_value = True
+
+        response = referral_submit(
+            self.make_request(
+                self.authenticated_user,
+                "post",
+            ),
+            7,
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Referral is already submitted"},
+        )
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            referral,
+            resource="referrals",
+            context=None,
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_submit_non_pending_referral_returns_409(
+        self,
+        referral_get,
+        service,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+            status="approved",
+        )
+
+        referral_get.return_value = referral
+        service.can_edit.return_value = True
+
+        response = referral_submit(
+            self.make_request(
+                self.authenticated_user,
+                "post",
+            ),
+            7,
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "Referral cannot be submitted from status "
+                    "'approved'"
+                )
+            },
+        )
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            referral,
+            resource="referrals",
+            context=None,
+        )
+
+    @patch("django.utils.timezone.now")
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_submit_pending_referral_updates_status(
+        self,
+        referral_get,
+        service,
+        timezone_now,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+            beneficiary_id=10,
+            referral_date=date(2026, 9, 7),
+            destination="Health Centre",
+            reason="Medical assessment required.",
+            referred_by_id=42,
+            status="pending",
+            approved_by_id=None,
+            approved_at=None,
+            created_at="original-created-at",
+            updated_at="original-updated-at",
+        )
+
+        referral_get.return_value = referral
+        service.can_edit.return_value = True
+        timezone_now.return_value = "new-updated-at"
+
+        def save(**kwargs):
+            referral.save_kwargs = kwargs
+
+        referral.save = save
+
+        response = referral_submit(
+            self.make_request(
+                self.authenticated_user,
+                "post",
+            ),
+            7,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            referral.status,
+            "submitted",
+        )
+        self.assertEqual(
+            referral.updated_at,
+            "new-updated-at",
+        )
+
+        self.assertIsNone(
+            referral.approved_by_id,
+        )
+        self.assertIsNone(
+            referral.approved_at,
+        )
+
+        self.assertEqual(
+            referral.save_kwargs["update_fields"],
+            [
+                "status",
+                "updated_at",
+            ],
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "referral": {
+                    "referral_id": 7,
+                    "beneficiary_id": 10,
+                    "referral_date": "2026-09-07",
+                    "destination": "Health Centre",
+                    "reason": "Medical assessment required.",
+                    "referred_by_id": 42,
+                    "status": "submitted",
+                    "approved_by_id": None,
+                    "approved_at": None,
+                    "created_at": "original-created-at",
+                    "updated_at": "new-updated-at",
+                }
+            },
+        )
+
+        service.can_edit.assert_called_once_with(
+            self.authenticated_user,
+            referral,
+            resource="referrals",
+            context=None,
+        )
+
+
     @patch("core.views.ReferralFollowUps.objects.create")
     @patch("core.views.Referrals.objects.get")
     @patch("core.authorization.decorators.authorization_service")
@@ -384,7 +654,7 @@ class ReferralsApiTests(SimpleTestCase):
             destination="Health Centre",
             reason="Medical assessment required.",
             referred_by_id=42,
-            status="submitted",
+            status="pending",
             approved_by_id=None,
             approved_at=None,
             created_at="2026-09-07T00:00:00Z",
@@ -420,7 +690,7 @@ class ReferralsApiTests(SimpleTestCase):
                     "destination": "Health Centre",
                     "reason": "Medical assessment required.",
                     "referred_by_id": 42,
-                    "status": "submitted",
+                    "status": "pending",
                     "approved_by_id": None,
                     "approved_at": None,
                     "created_at": "2026-09-07T00:00:00Z",
@@ -435,7 +705,7 @@ class ReferralsApiTests(SimpleTestCase):
             destination="Health Centre",
             reason="Medical assessment required.",
             referred_by_id=42,
-            status="submitted",
+            status="pending",
             approved_by_id=None,
             approved_at=None,
             created_at=objects_create.call_args.kwargs["created_at"],
@@ -458,7 +728,7 @@ class ReferralsApiTests(SimpleTestCase):
             destination="Health Centre",
             reason="Status override test",
             referred_by_id=42,
-            status="submitted",
+            status="pending",
             approved_by_id=None,
             approved_at=None,
             created_at="2026-09-07T00:00:00Z",
@@ -489,12 +759,12 @@ class ReferralsApiTests(SimpleTestCase):
 
         self.assertEqual(
             response_data["referral"]["status"],
-            "submitted",
+            "pending",
         )
 
         self.assertEqual(
             objects_create.call_args.kwargs["status"],
-            "submitted",
+            "pending",
         )
 
     @patch("core.authorization.decorators.authorization_service")
