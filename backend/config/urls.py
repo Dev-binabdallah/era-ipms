@@ -15,6 +15,7 @@ from core.views import (
     project_assignment_create,
     project_assignment_update,
 )
+from core.referral_workflow import referral_approve
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,6 +39,10 @@ urlpatterns = [
     path(
         "referrals/<int:referral_id>/follow-ups/",
         referral_follow_ups_collection,
+    ),
+    path(
+        "referrals/<int:referral_id>/approve/",
+        referral_approve,
     ),
     path("projects/<int:project_id>/", projects_detail_collection),
     path(
