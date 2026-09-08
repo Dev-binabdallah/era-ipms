@@ -444,6 +444,19 @@ class AuthorizationService:
 
             return self.has_project_scope(user, project)
 
+        if resource_name in {"referral", "referrals"}:
+            beneficiary = getattr(record, "beneficiary", None)
+
+            if beneficiary is None:
+                return False
+
+            return self.has_scope(
+                user,
+                "beneficiaries",
+                record=beneficiary,
+                context=context,
+            )
+
         if resource_name in {"beneficiary", "beneficiaries"}:
             if record is None:
                 return False
@@ -533,15 +546,27 @@ class AuthorizationService:
 
             return False
 
+        if resource_name in {"follow_up", "follow_ups"}:
+            referral = record
+
+            if referral is None:
+                referral = (context or {}).get("referral")
+
+            if referral is None:
+                return False
+
+            return self.has_scope(
+                user,
+                "referrals",
+                record=referral,
+                context=context,
+            )
+
         if resource_name in {
             "disability_assessment",
             "disability_assessments",
             "home_visit",
             "home_visits",
-            "referral",
-            "referrals",
-            "follow_up",
-            "follow_ups",
             "referral_follow_up",
             "referral_follow_ups",
             "disability_service",

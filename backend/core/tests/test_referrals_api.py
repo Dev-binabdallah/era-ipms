@@ -9,10 +9,227 @@ from core.views import (
     referral_create,
     referrals_collection,
     referrals_list,
+    referral_follow_up_create,
+    referral_follow_ups_list,
 )
 
 
 class ReferralsApiTests(SimpleTestCase):
+    @patch("core.views.ReferralFollowUps.objects.create")
+    @patch("core.views.Referrals.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_follow_up_create_allows_authorized_user(
+        self,
+        service,
+        referral_get,
+        follow_up_create,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+        )
+
+        follow_up = SimpleNamespace(
+            follow_up_id=1,
+            referral_id=7,
+            follow_up_date=date(2026, 9, 8),
+            conducted_by_id=42,
+            outcome="Service received",
+            service_received=True,
+            remaining_needs=None,
+            next_action="Monitor",
+            created_at="2026-09-08T10:00:00Z",
+        )
+
+        referral_get.return_value = referral
+        service.can_add.return_value = True
+        follow_up_create.return_value = follow_up
+
+        request = self.factory.post(
+            "/referrals/7/follow-ups/",
+            data=json.dumps(
+                {
+                    "follow_up_date": "2026-09-08",
+                    "outcome": "Service received",
+                    "service_received": True,
+                    "next_action": "Monitor",
+                }
+            ),
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        response = referral_follow_up_create(
+            request,
+            7,
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        service.can_add.assert_called_once_with(
+            self.authenticated_user,
+            "follow_ups",
+            context={"referral": referral},
+        )
+
+        follow_up_create.assert_called_once()
+
+        create_kwargs = follow_up_create.call_args.kwargs
+
+        self.assertIs(
+            create_kwargs["referral"],
+            referral,
+        )
+        self.assertEqual(
+            create_kwargs["follow_up_date"],
+            date(2026, 9, 8),
+        )
+        self.assertEqual(
+            create_kwargs["conducted_by_id"],
+            42,
+        )
+        self.assertEqual(
+            create_kwargs["outcome"],
+            "Service received",
+        )
+        self.assertTrue(
+            create_kwargs["service_received"],
+        )
+        self.assertIsNone(
+            create_kwargs["remaining_needs"],
+        )
+        self.assertEqual(
+            create_kwargs["next_action"],
+            "Monitor",
+        )
+        self.assertIsNotNone(
+            create_kwargs["created_at"],
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_follow_up_create_denies_unauthorized_user(
+        self,
+        referral_get,
+        service,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+        )
+
+        referral_get.return_value = referral
+        service.can_add.return_value = False
+
+        request = self.factory.post(
+            "/referrals/7/follow-ups/",
+            data=json.dumps(
+                {
+                    "follow_up_date": "2026-09-08",
+                }
+            ),
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        response = referral_follow_up_create(
+            request,
+            7,
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        service.can_add.assert_called_once_with(
+            self.authenticated_user,
+            "follow_ups",
+            context={"referral": referral},
+        )
+
+    @patch("core.views.ReferralFollowUps.objects.filter")
+    @patch("core.views.Referrals.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_follow_ups_list_allows_authorized_user(
+        self,
+        service,
+        referral_get,
+        follow_ups_filter,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+        )
+
+        referral_get.return_value = referral
+        service.can_view.return_value = True
+
+        follow_ups_filter.return_value.values.return_value = [
+            {
+                "follow_up_id": 1,
+                "referral_id": 7,
+                "follow_up_date": date(2026, 9, 8),
+                "conducted_by_id": 42,
+                "outcome": "Service received",
+                "service_received": True,
+                "remaining_needs": None,
+                "next_action": "Monitor",
+                "created_at": "2026-09-08T10:00:00Z",
+            }
+        ]
+
+        request = self.make_request(
+            self.authenticated_user,
+            "get",
+        )
+
+        response = referral_follow_ups_list(
+            request,
+            7,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        service.can_view.assert_called_once_with(
+            self.authenticated_user,
+            referral,
+            resource="follow_ups",
+            context=None,
+        )
+
+        follow_ups_filter.assert_called_once_with(
+            referral_id=7,
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.get")
+    def test_follow_ups_list_denies_unauthorized_user(
+        self,
+        referral_get,
+        service,
+    ):
+        referral = SimpleNamespace(
+            referral_id=7,
+        )
+
+        referral_get.return_value = referral
+        service.can_view.return_value = False
+
+        request = self.make_request(
+            self.authenticated_user,
+            "get",
+        )
+
+        response = referral_follow_ups_list(
+            request,
+            7,
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        service.can_view.assert_called_once_with(
+            self.authenticated_user,
+            referral,
+            resource="follow_ups",
+            context=None,
+        )
+
+
     def setUp(self):
         self.factory = RequestFactory()
 

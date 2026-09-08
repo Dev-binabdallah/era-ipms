@@ -1016,3 +1016,58 @@ Referral approval authority and final status-transition rules were not hard-code
 
 ### Next step
 Proceed to the Referral approval/workflow milestone once the required approval authority and status-transition rules are confirmed.
+
+## 2026-09-08 — Referral Follow-Up Management API
+
+### Objective
+
+Extend the Referral Management API with referral follow-up creation and retrieval while enforcing the existing centralized authorization architecture and record-level access rules.
+
+### Work completed
+
+- Added `ReferralFollowUps` API support using the existing MariaDB/MySQL authoritative schema.
+- Added referral follow-up collection routing at:
+  `/referrals/<referral_id>/follow-ups/`
+- Implemented `POST /referrals/<referral_id>/follow-ups/` for authorized follow-up creation.
+- Implemented `GET /referrals/<referral_id>/follow-ups/` for authorized follow-up listing.
+- Added referral lookup and validation for referral IDs.
+- Added validation for JSON request bodies and required `follow_up_date`.
+- Added ISO date validation for follow-up dates.
+- Set `conducted_by` from the authenticated user rather than accepting it from the client.
+- Set `created_at` server-side.
+- Applied centralized `VIEW` and `ADD` authorization through `require_permission()`.
+- Added referral-aware record-level authorization for referral follow-ups.
+- Extended authorization scope handling so referrals inherit beneficiary record-level scope.
+- Extended follow-up authorization so follow-ups inherit the authorization scope of their parent referral.
+- Added focused tests for authorized and unauthorized follow-up creation and listing.
+- Preserved the existing authoritative MariaDB/MySQL schema; no database migration was introduced.
+
+### Verification
+
+- Django system check: passed.
+- Combined referral and authorization test suite: **96/96 passed**.
+- `git diff --check`: passed.
+- Working tree was clean after the Referral Follow-Up implementation was committed.
+- Commit created: `6ac492e Implement referral follow-up management API`.
+
+### Authorization decision
+
+Referral follow-ups are authorized through their parent referral rather than being treated as independently scoped records.
+
+The authorization chain is:
+
+`Referral Follow-Up → Referral → Beneficiary`
+
+This preserves the existing record-level authorization architecture and prevents a user from accessing a follow-up merely because they possess the general follow-up responsibility.
+
+### Current limitation
+
+A nonexistent parent referral may currently result in an authorization denial before the view-level existence check can return a `404` response. This behavior is intentionally left for a later refinement rather than mixing it into the completed Referral Follow-Up API milestone.
+
+### Database decision
+
+No database schema changes or migrations were required. The existing `referrals` and `referral_follow_ups` tables remain authoritative.
+
+### Next step
+
+Proceed to the Referral approval/workflow milestone only after the required referral approval authority and status-transition rules are explicitly confirmed.

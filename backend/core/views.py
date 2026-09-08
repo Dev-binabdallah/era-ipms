@@ -20,10 +20,28 @@ from core.models import (
     DisabilityAssessments,
     HomeVisits,
     Referrals,
+    ReferralFollowUps,
     Projects,
     UserProjectAssignments,
     Users,
 )
+
+
+def get_referral(request, referral_id, **kwargs):
+    try:
+        referral_id = int(referral_id)
+    except (TypeError, ValueError):
+        return None
+
+    if referral_id <= 0:
+        return None
+
+    try:
+        return Referrals.objects.get(
+            referral_id=referral_id,
+        )
+    except Referrals.DoesNotExist:
+        return None
 
 
 def auth_login(request):
@@ -703,6 +721,198 @@ def referrals_collection(request):
 
     if request.method == "GET":
         return referrals_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="follow_ups",
+    context_getter=lambda request, referral_id: {
+        "referral": get_referral(
+            request,
+            referral_id,
+        )
+    },
+)
+def referral_follow_up_create(request, referral_id):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        referral_id = int(referral_id)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "referral_id must be an integer"},
+            status=400,
+        )
+
+    if referral_id <= 0:
+        return JsonResponse(
+            {"error": "referral_id must be a positive integer"},
+            status=400,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    required_fields = (
+        "follow_up_date",
+    )
+
+    for field in required_fields:
+        value = payload.get(field)
+
+        if value in (None, ""):
+            return JsonResponse(
+                {"error": f"{field} is required"},
+                status=400,
+            )
+
+    try:
+        follow_up_date = date.fromisoformat(
+            str(payload["follow_up_date"])
+        )
+    except ValueError:
+        return JsonResponse(
+            {
+                "error": (
+                    "follow_up_date must use YYYY-MM-DD format"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        referral = Referrals.objects.get(
+            referral_id=referral_id,
+        )
+    except Referrals.DoesNotExist:
+        return JsonResponse(
+            {"error": "Referral not found"},
+            status=404,
+        )
+
+    now = timezone.now()
+
+    follow_up = ReferralFollowUps.objects.create(
+        referral=referral,
+        follow_up_date=follow_up_date,
+        conducted_by_id=request.user.user_id,
+        outcome=payload.get("outcome"),
+        service_received=payload.get(
+            "service_received",
+            False,
+        ),
+        remaining_needs=payload.get("remaining_needs"),
+        next_action=payload.get("next_action"),
+        created_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "follow_up": {
+                "follow_up_id": follow_up.follow_up_id,
+                "referral_id": follow_up.referral_id,
+                "follow_up_date": follow_up.follow_up_date,
+                "conducted_by_id": follow_up.conducted_by_id,
+                "outcome": follow_up.outcome,
+                "service_received": follow_up.service_received,
+                "remaining_needs": follow_up.remaining_needs,
+                "next_action": follow_up.next_action,
+                "created_at": follow_up.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="follow_ups",
+    record_getter=get_referral,
+)
+def referral_follow_ups_list(request, referral_id):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        referral_id = int(referral_id)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "referral_id must be an integer"},
+            status=400,
+        )
+
+    if referral_id <= 0:
+        return JsonResponse(
+            {"error": "referral_id must be a positive integer"},
+            status=400,
+        )
+
+    try:
+        Referrals.objects.get(
+            referral_id=referral_id,
+        )
+    except Referrals.DoesNotExist:
+        return JsonResponse(
+            {"error": "Referral not found"},
+            status=404,
+        )
+
+    follow_ups = list(
+        ReferralFollowUps.objects.filter(
+            referral_id=referral_id,
+        ).values(
+            "follow_up_id",
+            "referral_id",
+            "follow_up_date",
+            "conducted_by_id",
+            "outcome",
+            "service_received",
+            "remaining_needs",
+            "next_action",
+            "created_at",
+        )
+    )
+
+    return JsonResponse(
+        {"follow_ups": follow_ups}
+    )
+
+
+def referral_follow_ups_collection(request, referral_id):
+    if request.method == "POST":
+        return referral_follow_up_create(
+            request,
+            referral_id,
+        )
+
+    if request.method == "GET":
+        return referral_follow_ups_list(
+            request,
+            referral_id,
+        )
 
     return JsonResponse(
         {"error": "Method not allowed"},
