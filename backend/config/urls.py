@@ -6,6 +6,7 @@ from core.views import (
     auth_logout,
     beneficiaries_collection,
     disability_assessments_collection,
+    home_visits_collection,
     projects_collection,
     projects_detail_collection,
     project_assignments,
@@ -23,6 +24,10 @@ urlpatterns = [
     path(
         "disability-assessments/",
         disability_assessments_collection,
+    ),
+    path(
+        "home-visits/",
+        home_visits_collection,
     ),
     path("projects/<int:project_id>/", projects_detail_collection),
     path(

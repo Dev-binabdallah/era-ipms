@@ -18,6 +18,7 @@ from core.authorization.querysets import authorized_queryset
 from core.models import (
     Beneficiaries,
     DisabilityAssessments,
+    HomeVisits,
     Projects,
     UserProjectAssignments,
     Users,
@@ -410,6 +411,157 @@ def disability_assessments_list(request):
         {
             "assessments": assessments,
         }
+    )
+
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="home_visits",
+)
+def home_visit_create(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    required_fields = (
+        "beneficiary_id",
+        "visit_date",
+    )
+
+    for field in required_fields:
+        value = payload.get(field)
+
+        if value in (None, ""):
+            return JsonResponse(
+                {"error": f"{field} is required"},
+                status=400,
+            )
+
+    try:
+        beneficiary_id = int(payload["beneficiary_id"])
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "beneficiary_id must be an integer"},
+            status=400,
+        )
+
+    if beneficiary_id <= 0:
+        return JsonResponse(
+            {"error": "beneficiary_id must be a positive integer"},
+            status=400,
+        )
+
+    try:
+        visit_date = date.fromisoformat(
+            str(payload["visit_date"])
+        )
+    except ValueError:
+        return JsonResponse(
+            {
+                "error": "visit_date must use YYYY-MM-DD format",
+            },
+            status=400,
+        )
+
+    now = timezone.now()
+
+    visit = HomeVisits.objects.create(
+        beneficiary_id=beneficiary_id,
+        visit_date=visit_date,
+        conducted_by_id=request.user.user_id,
+        purpose=payload.get("purpose"),
+        observations=payload.get("observations"),
+        support_provided=payload.get("support_provided"),
+        follow_up_required=payload.get("follow_up_required", False),
+        next_action=payload.get("next_action"),
+        created_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "home_visit": {
+                "home_visit_id": visit.home_visit_id,
+                "beneficiary_id": visit.beneficiary_id,
+                "visit_date": visit.visit_date,
+                "conducted_by_id": visit.conducted_by_id,
+                "purpose": visit.purpose,
+                "observations": visit.observations,
+                "support_provided": visit.support_provided,
+                "follow_up_required": visit.follow_up_required,
+                "next_action": visit.next_action,
+                "created_at": visit.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="home_visits",
+)
+def home_visits_list(request):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    queryset = authorized_queryset(
+        request.user,
+        "home_visits",
+        HomeVisits.objects.all(),
+    )
+
+    visits = list(
+        queryset.values(
+            "home_visit_id",
+            "beneficiary_id",
+            "visit_date",
+            "conducted_by_id",
+            "purpose",
+            "observations",
+            "support_provided",
+            "follow_up_required",
+            "next_action",
+            "created_at",
+        )
+    )
+
+    return JsonResponse(
+        {
+            "home_visits": visits,
+        }
+    )
+
+
+def home_visits_collection(request):
+    if request.method == "POST":
+        return home_visit_create(request)
+
+    if request.method == "GET":
+        return home_visits_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
     )
 
 

@@ -412,3 +412,30 @@ schema remains authoritative, and Django models remain `managed = False`.
 Review the updated Git diff, stage the Disability Assessment Management API
 changes, commit and push the milestone, then continue with the next
 validated ERA-IPMS core module.
+
+## 2026-09-08 — Home Visit Management API
+
+### Objective
+Implement the Home Visit Management API using the existing MariaDB/MySQL authoritative schema and project authorization architecture.
+
+### Work completed
+- Added `HomeVisits` to the Django model layer as a `managed = False` model.
+- Added Home Visit collection routing at `/home-visits/`.
+- Implemented `GET /home-visits/` for authorized Home Visit listing.
+- Implemented `POST /home-visits/` for authorized Home Visit creation.
+- Applied the existing `VIEW` and `ADD` authorization permissions for `home_visits`.
+- Used `authorized_queryset()` for Home Visit retrieval.
+- Added validation for JSON payloads, required fields, beneficiary ID, and visit date format.
+- Added 11 focused Home Visit API tests covering authentication, authorization, successful GET/POST behavior, validation errors, and unsupported methods.
+
+### Verification
+- Django system check: passed.
+- Focused Home Visit API tests: 11/11 passed.
+- Full core test suite: 170/170 passed.
+- `git diff --check`: passed.
+
+### Database decision
+No database migration or schema change was required. The existing authoritative `home_visits` table is represented by a Django `managed = False` model.
+
+### Next step
+Review the complete Home Visit milestone changes, commit them, and push to GitHub.
