@@ -1071,3 +1071,75 @@ No database schema changes or migrations were required. The existing `referrals`
 ### Next step
 
 Proceed to the Referral approval/workflow milestone only after the required referral approval authority and status-transition rules are explicitly confirmed.
+
+
+## 2026-09-08 — Referral Submission Workflow (Step 14B)
+
+### Objective
+
+Separate referral creation from referral submission so that a newly created referral enters the `pending` state and must be explicitly submitted before it can proceed to approval.
+
+### Work completed
+
+- Changed referral creation so new referrals are created with `status="pending"` rather than `status="submitted"`.
+- Added the referral submission endpoint: `POST /referrals/<referral_id>/submit/`.
+- Applied the existing `PERMISSION_EDIT` authorization to referral submission.
+- Used the existing referral record as the record-level authorization context.
+- Restricted submission to referrals currently in the `pending` state.
+- Implemented the workflow transition: `pending -> submitted`.
+- Prevented repeated submission of an already submitted referral.
+- Rejected submission from other referral statuses with HTTP `409`.
+- Preserved `approved_by` and `approved_at` during submission so approval remains a separate action.
+- Updated `updated_at` when a referral is submitted.
+- Added six focused tests covering authentication, authorization, missing referrals, repeated submission, invalid source status, and successful submission.
+- Updated existing referral creation tests to expect the new initial `pending` status.
+
+### Authorization decision
+
+Referral submission uses the existing centralized authorization architecture:
+
+`PERMISSION_EDIT + referral record-level authorization`
+
+No new title-specific submission authority was introduced.
+
+### Status transition
+
+The implemented referral workflow now separates creation, submission, and approval:
+
+    Create Referral
+          |
+          v
+       pending
+          |
+          | Submit
+          v
+      submitted
+          |
+          | Approve
+          v
+       approved
+
+Referral approval remains a separate action governed by the existing `PERMISSION_APPROVE` authorization.
+
+### Tests and verification
+
+Local verification completed before committing:
+
+- Focused Referral API tests: **23/23 passed**.
+- Full Django `core` test suite: **199/199 passed**.
+- Django system check: **clean**.
+- `git diff --check`: **clean**.
+
+### Database decision
+
+No database schema changes or migrations were required. The existing authoritative referrals table already supports the required referral status and approval fields.
+
+### Implementation commit
+
+Implementation committed locally as:
+
+`7113db5 Implement referral submission workflow`
+
+### Next step
+
+Continue with the next validated referral workflow increment, while preserving the requirement that referral creation/submission and referral approval remain separate actions.
