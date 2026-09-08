@@ -14,6 +14,7 @@ from core.authorization.policy import (
     RESOURCE_RESPONSIBILITY_MAP,
     TITLE_RESPONSIBILITY_ELIGIBILITY,
 )
+from core.models import Beneficiaries
 
 
 class AuthorizationService:
@@ -448,6 +449,20 @@ class AuthorizationService:
             beneficiary = getattr(record, "beneficiary", None)
 
             if beneficiary is None:
+                beneficiary = (context or {}).get("beneficiary")
+
+            if beneficiary is None:
+                beneficiary_id = (context or {}).get("beneficiary_id")
+
+                if beneficiary_id is not None:
+                    try:
+                        beneficiary = Beneficiaries.objects.get(
+                            beneficiary_id=beneficiary_id,
+                        )
+                    except Beneficiaries.DoesNotExist:
+                        return False
+
+            if beneficiary is None:
                 return False
 
             return self.has_scope(
@@ -546,7 +561,12 @@ class AuthorizationService:
 
             return False
 
-        if resource_name in {"follow_up", "follow_ups"}:
+        if resource_name in {
+            "follow_up",
+            "follow_ups",
+            "referral_follow_up",
+            "referral_follow_ups",
+        }:
             referral = record
 
             if referral is None:
@@ -567,8 +587,6 @@ class AuthorizationService:
             "disability_assessments",
             "home_visit",
             "home_visits",
-            "referral_follow_up",
-            "referral_follow_ups",
             "disability_service",
             "disability_services",
             "community_awareness",

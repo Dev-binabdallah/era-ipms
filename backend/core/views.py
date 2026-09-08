@@ -27,6 +27,28 @@ from core.models import (
 )
 
 
+def get_referral_beneficiary_context(request, **kwargs):
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return {}
+
+    if not isinstance(payload, dict):
+        return {}
+
+    beneficiary_id = payload.get("beneficiary_id")
+
+    try:
+        beneficiary_id = int(beneficiary_id)
+    except (TypeError, ValueError):
+        return {}
+
+    if beneficiary_id <= 0:
+        return {}
+
+    return {"beneficiary_id": beneficiary_id}
+
+
 def get_referral(request, referral_id, **kwargs):
     try:
         referral_id = int(referral_id)
@@ -574,6 +596,7 @@ def home_visits_list(request):
 @require_permission(
     permission=PERMISSION_ADD,
     resource="referrals",
+    context_getter=get_referral_beneficiary_context,
 )
 def referral_create(request):
     if request.method != "POST":

@@ -635,7 +635,7 @@ class ReferralsApiTests(SimpleTestCase):
         service.can_add.assert_called_once_with(
             self.authenticated_user,
             "referrals",
-            context=None,
+            context={"beneficiary_id": 10},
         )
 
     @patch("core.views.Referrals.objects.create")

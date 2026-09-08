@@ -11,6 +11,7 @@ from core.authorization.constants import (
     RESPONSIBILITY_FINANCIAL_OPERATIONS,
     RESPONSIBILITY_PROJECT_COORDINATION,
     RESPONSIBILITY_PROJECT_ACTIVITIES,
+    RESPONSIBILITY_REFERRALS_FOLLOW_UP,
 )
 from core.authorization.service import AuthorizationService
 
@@ -439,6 +440,19 @@ class AuthorizationServiceResourceMappingTests(SimpleTestCase):
             RESPONSIBILITY_PROJECT_COORDINATION,
         )
 
+    def test_referral_follow_up_resource_names_require_referrals_follow_up(self):
+        for resource in (
+            "follow_up",
+            "follow_ups",
+            "referral_follow_up",
+            "referral_follow_ups",
+        ):
+            with self.subTest(resource=resource):
+                self.assertEqual(
+                    self.service.get_required_responsibility(resource),
+                    RESPONSIBILITY_REFERRALS_FOLLOW_UP,
+                )
+
     def test_unknown_resource_has_no_requirement(self):
         self.assertIsNone(
             self.service.get_required_responsibility(
@@ -852,6 +866,78 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
             )
         )
 
+    def test_referral_follow_up_aliases_inherit_referral_scope(self):
+        beneficiary = SimpleNamespace(
+            created_by=self.user,
+            disability_assessments=[],
+            home_visits=[],
+        )
+
+        referral = SimpleNamespace(
+            beneficiary=beneficiary,
+        )
+
+        self.user.title.title_name = "Member"
+
+        for resource in (
+            "follow_up",
+            "follow_ups",
+            "referral_follow_up",
+            "referral_follow_ups",
+        ):
+            with self.subTest(resource=resource):
+                self.assertTrue(
+                    self.service.has_scope(
+                        self.user,
+                        resource,
+                        record=referral,
+                    )
+                )
+
+    def test_referral_follow_up_aliases_deny_unrelated_referral(self):
+        beneficiary = SimpleNamespace(
+            created_by=SimpleNamespace(user_id=2),
+            disability_assessments=[],
+            home_visits=[],
+        )
+
+        referral = SimpleNamespace(
+            beneficiary=beneficiary,
+        )
+
+        self.user.title.title_name = "Member"
+
+        for resource in (
+            "follow_up",
+            "follow_ups",
+            "referral_follow_up",
+            "referral_follow_ups",
+        ):
+            with self.subTest(resource=resource):
+                self.assertFalse(
+                    self.service.has_scope(
+                        self.user,
+                        resource,
+                        record=referral,
+                    )
+                )
+
+    def test_referral_follow_up_aliases_require_referral(self):
+        self.user.title.title_name = "Member"
+
+        for resource in (
+            "follow_up",
+            "follow_ups",
+            "referral_follow_up",
+            "referral_follow_ups",
+        ):
+            with self.subTest(resource=resource):
+                self.assertFalse(
+                    self.service.has_scope(
+                        self.user,
+                        resource,
+                    )
+                )
 
     """
     Step 13.12 tests: project/activity scope authorization.
