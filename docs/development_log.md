@@ -985,3 +985,34 @@ Beneficiary-centered resources that do not have an approved project/activity rel
 **Step 13.16 — Authorization-aware querysets and data filtering.**
 
 The next step will address filtering querysets so users receive only records within their authorized project/activity scope, rather than relying solely on per-request boundary checks.
+
+## 2026-09-08 — Referral Management API
+
+### Objective
+Implement the Referral Management API using the existing MariaDB/MySQL authoritative schema and project authorization architecture.
+
+### Work completed
+- Added Referral API support using the existing `Referrals` Django model.
+- Added referral collection routing at `/referrals/`.
+- Implemented `GET /referrals/` for authorized referral listing.
+- Implemented `POST /referrals/` for authorized referral creation.
+- Applied the existing `VIEW` and `ADD` authorization permissions for referrals.
+- Used `authorized_queryset()` for referral retrieval.
+- Added validation for JSON payloads, required fields, beneficiary ID, and referral date format.
+- Set referral status server-side to `submitted` during creation so clients cannot arbitrarily set workflow status.
+- Added 13 focused Referral API tests covering authentication, authorization, successful GET/POST behavior, validation errors, unsupported methods, and server-controlled referral status.
+
+### Verification
+- Django system check: passed.
+- Focused Referral API tests: 13/13 passed.
+- Full core test suite: 183/183 passed.
+- `git diff --check`: passed.
+
+### Database decision
+No database migration or schema change was required. The existing authoritative `referrals` table is represented by the existing Django model.
+
+### Workflow decision
+Referral approval authority and final status-transition rules were not hard-coded because the current authoritative workflow documentation does not yet define them sufficiently. The approval workflow should be implemented only after those authorities and transitions are explicitly confirmed.
+
+### Next step
+Proceed to the Referral approval/workflow milestone once the required approval authority and status-transition rules are confirmed.

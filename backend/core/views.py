@@ -19,6 +19,7 @@ from core.models import (
     Beneficiaries,
     DisabilityAssessments,
     HomeVisits,
+    Referrals,
     Projects,
     UserProjectAssignments,
     Users,
@@ -549,6 +550,163 @@ def home_visits_list(request):
         {
             "home_visits": visits,
         }
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="referrals",
+)
+def referral_create(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    required_fields = (
+        "beneficiary_id",
+        "referral_date",
+        "destination",
+    )
+
+    for field in required_fields:
+        value = payload.get(field)
+        if value in (None, ""):
+            return JsonResponse(
+                {"error": f"{field} is required"},
+                status=400,
+            )
+
+    try:
+        beneficiary_id = int(payload["beneficiary_id"])
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "beneficiary_id must be an integer"},
+            status=400,
+        )
+
+    if beneficiary_id <= 0:
+        return JsonResponse(
+            {
+                "error": (
+                    "beneficiary_id must be a positive integer"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        referral_date = date.fromisoformat(
+            str(payload["referral_date"])
+        )
+    except ValueError:
+        return JsonResponse(
+            {
+                "error": (
+                    "referral_date must use YYYY-MM-DD format"
+                )
+            },
+            status=400,
+        )
+
+    now = timezone.now()
+
+    referral = Referrals.objects.create(
+        beneficiary_id=beneficiary_id,
+        referral_date=referral_date,
+        destination=payload["destination"],
+        reason=payload.get("reason"),
+        referred_by_id=request.user.user_id,
+        status="submitted",
+        approved_by_id=None,
+        approved_at=None,
+        created_at=now,
+        updated_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "referral": {
+                "referral_id": referral.referral_id,
+                "beneficiary_id": referral.beneficiary_id,
+                "referral_date": referral.referral_date,
+                "destination": referral.destination,
+                "reason": referral.reason,
+                "referred_by_id": referral.referred_by_id,
+                "status": referral.status,
+                "approved_by_id": referral.approved_by_id,
+                "approved_at": referral.approved_at,
+                "created_at": referral.created_at,
+                "updated_at": referral.updated_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="referrals",
+)
+def referrals_list(request):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    queryset = authorized_queryset(
+        request.user,
+        "referrals",
+        Referrals.objects.all(),
+    )
+
+    referrals = list(
+        queryset.values(
+            "referral_id",
+            "beneficiary_id",
+            "referral_date",
+            "destination",
+            "reason",
+            "referred_by_id",
+            "status",
+            "approved_by_id",
+            "approved_at",
+            "created_at",
+            "updated_at",
+        )
+    )
+
+    return JsonResponse(
+        {"referrals": referrals}
+    )
+
+
+def referrals_collection(request):
+    if request.method == "POST":
+        return referral_create(request)
+
+    if request.method == "GET":
+        return referrals_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
     )
 
 
