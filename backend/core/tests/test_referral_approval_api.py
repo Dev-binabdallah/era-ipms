@@ -1,6 +1,6 @@
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
@@ -19,10 +19,7 @@ class ReferralApprovalApiTests(SimpleTestCase):
         )
 
     def make_request(self, user, method="post", referral_id=7):
-        request = getattr(
-            self.factory,
-            method,
-        )(
+        request = getattr(self.factory, method)(
             f"/referrals/{referral_id}/approve/",
         )
         request.user = user
@@ -84,6 +81,7 @@ class ReferralApprovalApiTests(SimpleTestCase):
             approved_at=None,
             created_at="2026-09-08T09:00:00Z",
             updated_at="2026-09-08T09:00:00Z",
+            save=Mock(),
         )
         referral_get.return_value = referral
         service.can_approve.return_value = True
@@ -99,7 +97,14 @@ class ReferralApprovalApiTests(SimpleTestCase):
         self.assertEqual(referral.approved_by_id, 42)
         self.assertEqual(referral.approved_at, now)
         self.assertEqual(referral.updated_at, now)
-        referral.save.assert_not_called() if hasattr(referral, "assert_not_called") else None
+        referral.save.assert_called_once_with(
+            update_fields=(
+                "status",
+                "approved_by",
+                "approved_at",
+                "updated_at",
+            )
+        )
 
     @patch("core.authorization.decorators.authorization_service")
     @patch("core.referral_workflow.Referrals.objects.get")
