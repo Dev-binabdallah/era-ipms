@@ -439,3 +439,50 @@ No database migration or schema change was required. The existing authoritative 
 
 ### Next step
 Review the complete Home Visit milestone changes, commit them, and push to GitHub.
+
+## 2026-09-09 — Activity Management API
+
+### Objective
+
+Implement the Activity creation API using the existing MariaDB/MySQL authoritative
+schema and project-scoped authorization architecture.
+
+### Work completed
+
+- Added Activity creation at `POST /activities/`.
+- Added project-based authorization for Activity creation.
+- Required `ADD` permission and `PROJECT_ACTIVITIES` responsibility.
+- Required the authenticated user to have an active assignment to the parent project.
+- Added validation for JSON payloads, project ID, activity name, responsible user ID,
+  and activity date.
+- Validated that the responsible user exists and is active.
+- Added a dedicated Activity creation authorization decorator because the Activity
+  record does not exist at authorization time.
+- Added Activity creation authorization service tests covering permission,
+  responsibility, and project-scope requirements.
+- Added Activity creation decorator tests covering authentication, authorization,
+  project resolution, and invalid project input.
+- Added Activity API tests covering authentication, authorization, validation,
+  successful creation, and responsible-user validation.
+- Added the Activity creation route to the Django URL configuration.
+- Did not introduce a database migration or alter the authoritative MariaDB schema.
+
+### Verification
+
+- Activity API tests — 10/10 PASSED
+- Activity creation decorator tests — 7/7 PASSED
+- Activity authorization service tests — 4/4 PASSED
+- Full `core` test suite — 226/226 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+
+No database migration or schema change was required. The existing authoritative
+`activities` table is represented by the existing Django `managed = False` model.
+
+### Next step
+
+Review the complete Activity Management milestone, verify the development log,
+then stage and commit the validated changes before continuing with the next
+ERA-IPMS core module.

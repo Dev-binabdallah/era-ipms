@@ -11,11 +11,13 @@ from core.authorization.constants import (
     PERMISSION_VIEW,
 )
 from core.authorization.decorators import (
+    require_activity_creation,
     require_permission,
     require_project_assignment_management,
 )
 from core.authorization.querysets import authorized_queryset
 from core.models import (
+    Activities,
     Beneficiaries,
     DisabilityAssessments,
     HomeVisits,
@@ -1087,6 +1089,126 @@ def beneficiaries_list(request):
             "beneficiaries": beneficiaries,
         }
     )
+
+@require_activity_creation
+def activities_create(request, project):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    activity_name = str(payload.get("activity_name", "")).strip()
+
+    if not activity_name:
+        return JsonResponse(
+            {"error": "activity_name is required"},
+            status=400,
+        )
+
+    responsible_user_id = payload.get("responsible_user_id")
+
+    if responsible_user_id in (None, ""):
+        return JsonResponse(
+            {"error": "responsible_user_id is required"},
+            status=400,
+        )
+
+    try:
+        responsible_user_id = int(responsible_user_id)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "responsible_user_id must be an integer"},
+            status=400,
+        )
+
+    if responsible_user_id <= 0:
+        return JsonResponse(
+            {"error": "responsible_user_id must be a positive integer"},
+            status=400,
+        )
+
+    activity_date = payload.get("activity_date")
+
+    if activity_date in (None, ""):
+        activity_date = None
+    else:
+        try:
+            activity_date = date.fromisoformat(str(activity_date))
+        except ValueError:
+            return JsonResponse(
+                {
+                    "error": (
+                        "activity_date must use YYYY-MM-DD format"
+                    )
+                },
+                status=400,
+            )
+
+    try:
+        responsible_user = Users.objects.get(
+            user_id=responsible_user_id,
+        )
+    except Users.DoesNotExist:
+        return JsonResponse(
+            {"error": "Responsible user not found"},
+            status=404,
+        )
+
+    if not responsible_user.is_active:
+        return JsonResponse(
+            {"error": "Responsible user is inactive"},
+            status=400,
+        )
+
+    now = timezone.now()
+
+    activity = Activities.objects.create(
+        project=project,
+        activity_name=activity_name,
+        activity_date=activity_date,
+        location=payload.get("location"),
+        responsible_user=responsible_user,
+        description=payload.get("description"),
+        status=payload.get("status"),
+        results=payload.get("results"),
+        created_at=now,
+        updated_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "activity": {
+                "activity_id": activity.activity_id,
+                "project_id": activity.project_id,
+                "activity_name": activity.activity_name,
+                "activity_date": activity.activity_date,
+                "location": activity.location,
+                "responsible_user_id": activity.responsible_user_id,
+                "description": activity.description,
+                "status": activity.status,
+                "results": activity.results,
+                "created_at": activity.created_at,
+                "updated_at": activity.updated_at,
+            }
+        },
+        status=201,
+    )
+
 
 def projects_collection(request):
     if request.method == "POST":

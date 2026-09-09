@@ -123,6 +123,99 @@ def require_permission(
     return decorator
 
 
+def require_activity_creation(view_func):
+    """
+    Enforce authorization for creating an activity under a project.
+
+    Authentication failures return HTTP 401.
+    Invalid project input returns HTTP 400.
+    Missing projects return HTTP 404.
+    Authorization failures return HTTP 403.
+
+    Activity creation uses the dedicated AuthorizationService decision
+    because the activity does not exist yet and authorization must be
+    evaluated against its parent project.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        user = getattr(request, "user", None)
+
+        if not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"authorized": False},
+                status=401,
+            )
+
+        import json
+
+        try:
+            payload = json.loads(request.body or "{}")
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"error": "Invalid JSON"},
+                status=400,
+            )
+
+        if not isinstance(payload, dict):
+            return JsonResponse(
+                {"error": "JSON body must be an object"},
+                status=400,
+            )
+
+        project_id = payload.get("project_id")
+
+        if project_id in (None, ""):
+            return JsonResponse(
+                {"error": "project_id is required"},
+                status=400,
+            )
+
+        try:
+            project_id = int(project_id)
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"error": "project_id must be an integer"},
+                status=400,
+            )
+
+        if project_id <= 0:
+            return JsonResponse(
+                {"error": "project_id must be a positive integer"},
+                status=400,
+            )
+
+        from core.models import Projects
+
+        try:
+            project = Projects.objects.get(
+                project_id=project_id,
+            )
+        except Projects.DoesNotExist:
+            return JsonResponse(
+                {"error": "Project not found"},
+                status=404,
+            )
+
+        if not authorization_service.can_add_activity(
+            user,
+            project,
+        ):
+            return JsonResponse(
+                {"authorized": False},
+                status=403,
+            )
+
+        return view_func(
+            request,
+            project,
+            *args,
+            **kwargs,
+        )
+
+    return wrapped_view
+
+
 def require_project_assignment_management(view_func):
     """
     Enforce authorization for project assignment management.

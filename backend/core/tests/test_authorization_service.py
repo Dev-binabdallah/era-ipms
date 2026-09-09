@@ -1158,6 +1158,78 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
         )
 
 
+    def test_activity_add_is_allowed_with_project_scope(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_ADD},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.can_add_activity(
+                user,
+                project,
+            )
+        )
+
+    def test_activity_add_requires_project_scope(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_ADD},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+        )
+
+        self.assertFalse(
+            self.service.can_add_activity(
+                user,
+                project,
+            )
+        )
+
+    def test_activity_add_requires_add_permission(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_VIEW},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.can_add_activity(
+                user,
+                project,
+            )
+        )
+
+    def test_activity_add_requires_activity_responsibility(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_ADD},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.can_add_activity(
+                user,
+                project,
+            )
+        )
+
+
     def make_poultry_group(self, group_id, project):
         return SimpleNamespace(
             poultry_group_id=group_id,

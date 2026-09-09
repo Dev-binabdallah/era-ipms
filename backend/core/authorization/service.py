@@ -7,6 +7,7 @@ from core.authorization.constants import (
     PERMISSION_EXPORT,
     PERMISSION_MANAGE,
     PERMISSION_VIEW,
+    RESPONSIBILITY_PROJECT_ACTIVITIES,
     RESPONSIBILITY_PROJECT_COORDINATION,
     RESPONSIBILITIES,
 )
@@ -233,6 +234,28 @@ class AuthorizationService:
             project=project,
             is_active=True,
         ).exists()
+
+    def can_add_activity(self, user, project):
+        """
+        Determine whether an active user may create an activity
+        under a project they are actively assigned to.
+
+        Activity creation requires ADD permission,
+        PROJECT_ACTIVITIES responsibility, and active project scope.
+        An existing activity assignment is intentionally not required
+        because the activity does not exist yet.
+        """
+
+        if not self.has_permission(user, PERMISSION_ADD):
+            return False
+
+        if not self.has_responsibility(
+            user,
+            RESPONSIBILITY_PROJECT_ACTIVITIES,
+        ):
+            return False
+
+        return self.has_project_scope(user, project)
 
     def has_activity_scope(self, user, activity):
         """
