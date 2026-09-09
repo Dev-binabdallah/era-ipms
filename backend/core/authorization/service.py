@@ -257,6 +257,49 @@ class AuthorizationService:
 
         return self.has_project_scope(user, project)
 
+    def can_assign_activity(self, user, activity):
+        """
+        Determine whether a user may assign an activity to another user.
+
+        Activity assignment is a management operation reserved for
+        Programme Coordinators. It requires an active user, an active
+        title, MANAGE permission, PROJECT_ACTIVITIES responsibility,
+        and active scope over the activity's parent project.
+
+        Existing activity assignment is intentionally not required
+        because this operation creates or changes that assignment.
+        """
+        if not getattr(user, "is_authenticated", False):
+            return False
+
+        if not getattr(user, "is_active", False):
+            return False
+
+        title = getattr(user, "title", None)
+        if title is None:
+            return False
+
+        if not getattr(title, "is_active", False):
+            return False
+
+        if getattr(title, "title_name", None) != "Programme Coordinator":
+            return False
+
+        if not self.has_permission(user, PERMISSION_MANAGE):
+            return False
+
+        if not self.has_responsibility(
+            user,
+            RESPONSIBILITY_PROJECT_ACTIVITIES,
+        ):
+            return False
+
+        project = getattr(activity, "project", None)
+        if project is None:
+            return False
+
+        return self.has_project_scope(user, project)
+
     def has_activity_scope(self, user, activity):
         """
         Determine whether an active user is assigned to an activity and

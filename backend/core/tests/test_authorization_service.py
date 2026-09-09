@@ -6,6 +6,8 @@ from django.test import SimpleTestCase
 from core.authorization.constants import (
     PERMISSION_ADD,
     PERMISSION_APPROVE,
+    PERMISSION_EDIT,
+    PERMISSION_MANAGE,
     PERMISSION_VIEW,
     RESPONSIBILITY_BENEFICIARY_REGISTRATION,
     RESPONSIBILITY_FINANCIAL_OPERATIONS,
@@ -1437,3 +1439,158 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
                 record=record,
             )
         )
+
+    def test_programme_coordinator_can_assign_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_activity_assignment_requires_manage_permission(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_EDIT},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_activity_assignment_requires_activity_responsibility(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities=set(),
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_activity_assignment_requires_parent_project_scope(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_director_cannot_assign_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.title.title_name = "Director"
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_member_cannot_assign_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_EDIT},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.title.title_name = "Member"
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_inactive_user_cannot_assign_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.is_active = False
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_inactive_title_cannot_assign_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.title.is_active = False
+
+        self.assertFalse(
+            self.service.can_assign_activity(
+                user,
+                activity,
+            )
+        )
+

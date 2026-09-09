@@ -486,3 +486,13 @@ No database migration or schema change was required. The existing authoritative
 Review the complete Activity Management milestone, verify the development log,
 then stage and commit the validated changes before continuing with the next
 ERA-IPMS core module.
+
+## Activity Assignment Authorization
+
+- Added `AuthorizationService.can_assign_activity()` to enforce authorization for activity assignment.
+- Restricted activity assignment to active users with an active `Programme Coordinator` title.
+- Required `MANAGE` permission and `PROJECT_ACTIVITIES` responsibility.
+- Required active project scope over the activity's parent project.
+- Intentionally did not require an existing activity assignment because the operation creates or changes the assignment.
+- Added authorization tests covering successful assignment authorization and denial for missing permission, missing responsibility, missing project scope, incorrect title, inactive user, and inactive title.
+- Full test suite verified with `python backend/manage.py test core.tests -v 2`: 234 tests passed.
