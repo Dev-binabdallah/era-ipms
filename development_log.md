@@ -508,3 +508,35 @@ ERA-IPMS core module.
 - Implemented PATCH status updates while preventing modification of other assignment fields.
 - Added 18 activity assignment API tests covering authorization, validation, creation, reactivation, listing, updating, error handling, and method restrictions.
 - Full regression verified with `python backend/manage.py test core.tests -v 2`: 252 tests passed.
+
+## 2026-09-09 — Referral Approval Authorization Verification
+
+### Objective
+Verify referral approval authorization against the authoritative referral workflow,
+role permissions, beneficiary scope rules, and existing approval endpoint.
+
+### Work completed
+- Confirmed the User Roles and Permissions documentation requires referral approval to be performed by an authorised person with the appropriate `APPROVE` permission.
+- Confirmed Members may create and submit referrals but do not receive approval authority automatically.
+- Verified the existing authorization service applies referral responsibility, permission, and beneficiary scope checks.
+- Added authorization service tests confirming an authorized Director can approve referrals, including referrals for unrelated beneficiaries.
+- Added tests confirming Members and Programme Coordinators without `APPROVE` permission cannot approve referrals.
+- Reviewed the referral approval endpoint tests and confirmed the existing workflow transition is `submitted -> approved`.
+- Reviewed the requirements and workflow documentation and retained the existing `pending -> submitted -> approved` implementation because the requirements explicitly include `Submitted`, while the workflow documentation does not define a sufficiently precise replacement transition.
+- Confirmed no production code or database schema changes were required for this verification.
+
+### Verification
+- Referral authorization service tests — 88/88 PASSED
+- Referral approval API tests — 6/6 PASSED
+- Full `core` test suite — 256/256 PASSED
+- Django system check — PASSED
+
+### Documentation decision
+The requirements list `Pending`, `Submitted`, and `Approved` as supported referral statuses,
+while the workflow diagram shows `Submit -> Pending -> Authorised Reviewer`. The documentation
+does not provide enough additional detail to justify changing the implemented `pending -> submitted
+-> approved` lifecycle, so no status-transition change was made.
+
+### Next step
+Review the updated development log and Git diff, then stage, commit, and push the validated
+referral approval authorization tests before continuing with the next ERA-IPMS workflow milestone.

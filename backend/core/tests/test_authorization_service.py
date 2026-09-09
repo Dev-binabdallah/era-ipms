@@ -700,6 +700,106 @@ class AuthorizationServiceIntegrationTests(SimpleTestCase):
             )
         )
 
+    def test_director_can_approve_referral(self):
+        user = self.make_user(
+            title_name="Director",
+            permissions={PERMISSION_APPROVE},
+            responsibilities={
+                RESPONSIBILITY_REFERRALS_FOLLOW_UP,
+            },
+        )
+
+        referral = SimpleNamespace(
+            beneficiary=SimpleNamespace(
+                created_by=user,
+                disability_assessments=[],
+                home_visits=[],
+            )
+        )
+
+        self.assertTrue(
+            self.service.can_approve(
+                user,
+                referral,
+                resource="referrals",
+            )
+        )
+
+    def test_director_can_approve_unrelated_referral(self):
+        user = self.make_user(
+            title_name="Director",
+            permissions={PERMISSION_APPROVE},
+            responsibilities={
+                RESPONSIBILITY_REFERRALS_FOLLOW_UP,
+            },
+        )
+
+        referral = SimpleNamespace(
+            beneficiary=SimpleNamespace(
+                created_by=SimpleNamespace(user_id=999),
+                disability_assessments=[],
+                home_visits=[],
+            )
+        )
+
+        self.assertTrue(
+            self.service.can_approve(
+                user,
+                referral,
+                resource="referrals",
+            )
+        )
+
+    def test_member_cannot_approve_referral_without_approve_permission(self):
+        user = self.make_user(
+            title_name="Member",
+            permissions=set(),
+            responsibilities={
+                RESPONSIBILITY_REFERRALS_FOLLOW_UP,
+            },
+        )
+
+        referral = SimpleNamespace(
+            beneficiary=SimpleNamespace(
+                created_by=user,
+                disability_assessments=[],
+                home_visits=[],
+            )
+        )
+
+        self.assertFalse(
+            self.service.can_approve(
+                user,
+                referral,
+                resource="referrals",
+            )
+        )
+
+    def test_programme_coordinator_cannot_approve_referral_without_approve_permission(self):
+        user = self.make_user(
+            title_name="Programme Coordinator",
+            permissions=set(),
+            responsibilities={
+                RESPONSIBILITY_REFERRALS_FOLLOW_UP,
+            },
+        )
+
+        referral = SimpleNamespace(
+            beneficiary=SimpleNamespace(
+                created_by=user,
+                disability_assessments=[],
+                home_visits=[],
+            )
+        )
+
+        self.assertFalse(
+            self.service.can_approve(
+                user,
+                referral,
+                resource="referrals",
+            )
+        )
+
     def test_resource_aware_approve_requires_permission_and_responsibility(self):
         user = self.make_user(
             permissions={PERMISSION_APPROVE},
