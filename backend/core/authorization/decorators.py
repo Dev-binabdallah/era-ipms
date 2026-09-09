@@ -216,6 +216,61 @@ def require_activity_creation(view_func):
     return wrapped_view
 
 
+def require_activity_assignment_management(view_func):
+    """
+    Enforce authorization for activity assignment management.
+
+    Authentication failures return HTTP 401.
+    Authorization failures return HTTP 403.
+    Missing activities return HTTP 404.
+
+    Activity assignment management uses the dedicated
+    AuthorizationService decision because the operation creates or
+    changes activity assignment and therefore cannot require
+    pre-existing activity assignment.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(request, activity_id, *args, **kwargs):
+        user = getattr(request, "user", None)
+
+        if not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"authorized": False},
+                status=401,
+            )
+
+        from core.models import Activities
+
+        try:
+            activity = Activities.objects.get(
+                activity_id=activity_id,
+            )
+        except Activities.DoesNotExist:
+            return JsonResponse(
+                {"error": "Activity not found"},
+                status=404,
+            )
+
+        if not authorization_service.can_assign_activity(
+            user,
+            activity,
+        ):
+            return JsonResponse(
+                {"authorized": False},
+                status=403,
+            )
+
+        return view_func(
+            request,
+            activity,
+            *args,
+            **kwargs,
+        )
+
+    return wrapped_view
+
+
 def require_project_assignment_management(view_func):
     """
     Enforce authorization for project assignment management.

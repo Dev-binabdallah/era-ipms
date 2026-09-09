@@ -496,3 +496,15 @@ ERA-IPMS core module.
 - Intentionally did not require an existing activity assignment because the operation creates or changes the assignment.
 - Added authorization tests covering successful assignment authorization and denial for missing permission, missing responsibility, missing project scope, incorrect title, inactive user, and inactive title.
 - Full test suite verified with `python backend/manage.py test core.tests -v 2`: 234 tests passed.
+
+## Activity Assignment Workflow
+
+- Added activity assignment management endpoints for listing, creating, reactivating, and updating activity assignments.
+- Added dedicated activity-assignment authorization enforcement at the view boundary.
+- Restricted activity assignment management to authorized Programme Coordinators with the required MANAGE permission, PROJECT_ACTIVITIES responsibility, and active parent-project scope.
+- Added activity assignment routes under the activity resource.
+- Implemented inactive-target-user validation and 404 handling for missing activities, users, and assignments.
+- Implemented reactivation of existing assignments using status='assigned', with updated assignment timestamp and assigning user.
+- Implemented PATCH status updates while preventing modification of other assignment fields.
+- Added 18 activity assignment API tests covering authorization, validation, creation, reactivation, listing, updating, error handling, and method restrictions.
+- Full regression verified with `python backend/manage.py test core.tests -v 2`: 252 tests passed.

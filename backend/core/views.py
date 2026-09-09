@@ -12,12 +12,14 @@ from core.authorization.constants import (
 )
 from core.authorization.decorators import (
     require_activity_creation,
+    require_activity_assignment_management,
     require_permission,
     require_project_assignment_management,
 )
 from core.authorization.querysets import authorized_queryset
 from core.models import (
     Activities,
+    ActivityAssignments,
     Beneficiaries,
     DisabilityAssessments,
     HomeVisits,
@@ -1475,6 +1477,222 @@ def _assignment_payload(assignment):
         "assigned_by_id": assignment.assigned_by_id,
         "is_active": assignment.is_active,
     }
+
+
+def _activity_assignment_payload(assignment):
+    return {
+        "activity_assignment_id": assignment.activity_assignment_id,
+        "activity_id": assignment.activity_id,
+        "user_id": assignment.user_id,
+        "assigned_at": assignment.assigned_at,
+        "assigned_by_id": assignment.assigned_by_id,
+        "status": assignment.status,
+    }
+
+
+@require_activity_assignment_management
+def activity_assignments(request, activity):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    assignments = ActivityAssignments.objects.filter(
+        activity=activity,
+    )
+
+    return JsonResponse(
+        {
+            "assignments": [
+                _activity_assignment_payload(assignment)
+                for assignment in assignments
+            ]
+        }
+    )
+
+
+@require_activity_assignment_management
+def activity_assignment_create(request, activity):
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    if "user_id" not in payload:
+        return JsonResponse(
+            {"error": "user_id is required"},
+            status=400,
+        )
+
+    try:
+        user_id = int(payload["user_id"])
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "user_id must be an integer"},
+            status=400,
+        )
+
+    if user_id <= 0:
+        return JsonResponse(
+            {"error": "user_id must be a positive integer"},
+            status=400,
+        )
+
+    try:
+        target_user = Users.objects.get(
+            user_id=user_id,
+        )
+    except Users.DoesNotExist:
+        return JsonResponse(
+            {"error": "Target user not found"},
+            status=404,
+        )
+
+    if not target_user.is_active:
+        return JsonResponse(
+            {"error": "Target user is inactive"},
+            status=400,
+        )
+
+    assignment = ActivityAssignments.objects.filter(
+        user=target_user,
+        activity=activity,
+    ).first()
+
+    now = timezone.now()
+
+    if assignment is not None:
+        assignment.status = "assigned"
+        assignment.assigned_at = now
+        assignment.assigned_by = request.user
+        assignment.save(
+            update_fields=[
+                "status",
+                "assigned_at",
+                "assigned_by",
+            ],
+        )
+
+        return JsonResponse(
+            {
+                "assignment": _activity_assignment_payload(
+                    assignment,
+                )
+            }
+        )
+
+    assignment = ActivityAssignments.objects.create(
+        activity=activity,
+        user=target_user,
+        assigned_at=now,
+        assigned_by=request.user,
+        status="assigned",
+    )
+
+    return JsonResponse(
+        {
+            "assignment": _activity_assignment_payload(
+                assignment,
+            )
+        },
+        status=201,
+    )
+
+
+@require_activity_assignment_management
+def activity_assignment_update(
+    request,
+    activity,
+    assignment_id,
+):
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        assignment = ActivityAssignments.objects.get(
+            activity_assignment_id=assignment_id,
+            activity=activity,
+        )
+    except ActivityAssignments.DoesNotExist:
+        return JsonResponse(
+            {"error": "Activity assignment not found"},
+            status=404,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    if not payload:
+        return JsonResponse(
+            {"error": "Request body is required"},
+            status=400,
+        )
+
+    unexpected_keys = set(payload) - {"status"}
+
+    if unexpected_keys:
+        return JsonResponse(
+            {"error": "Only status can be modified"},
+            status=400,
+        )
+
+    if "status" not in payload:
+        return JsonResponse(
+            {"error": "status is required"},
+            status=400,
+        )
+
+    status_value = payload["status"]
+
+    if not isinstance(status_value, str) or not status_value.strip():
+        return JsonResponse(
+            {"error": "status must be a non-empty string"},
+            status=400,
+        )
+
+    assignment.status = status_value.strip()
+
+    assignment.save(
+        update_fields=["status"],
+    )
+
+    return JsonResponse(
+        {
+            "assignment": _activity_assignment_payload(
+                assignment,
+            )
+        }
+    )
 
 
 @require_project_assignment_management
