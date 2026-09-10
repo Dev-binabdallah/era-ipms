@@ -1143,3 +1143,63 @@ Implementation committed locally as:
 ### Next step
 
 Continue with the next validated referral workflow increment, while preserving the requirement that referral creation/submission and referral approval remain separate actions.
+
+
+## 2026-09-10 — Disability Assessment Beneficiary Validation
+
+### Objective
+
+Harden disability assessment creation by ensuring that every assessment references an existing beneficiary before the assessment record is created.
+
+### Work completed
+
+- Added explicit beneficiary existence validation to disability assessment creation.
+- The API now looks up the beneficiary using the supplied `beneficiary_id` before creating the assessment.
+- Added HTTP `404` handling when the beneficiary does not exist.
+- Standardized the error response as:
+
+      {"error": "Beneficiary not found"}
+
+- Changed assessment creation to use the validated beneficiary object rather than assigning an unvalidated foreign-key ID.
+- Updated the existing successful disability assessment creation test to mock and verify beneficiary lookup.
+- Added a regression test covering creation with a missing beneficiary.
+- Preserved the existing permission check before beneficiary validation.
+- No database schema or migration changes were required.
+
+### Validation decision
+
+Beneficiary existence is now explicitly validated at the API boundary before a disability assessment can be created.
+
+This prevents invalid beneficiary references from reaching the assessment creation operation and provides a clear client-facing `404` response.
+
+### Tests and verification
+
+Local verification completed:
+
+- Missing-beneficiary regression test: **1/1 passed**.
+- Complete disability assessment API tests: **12/12 passed**.
+- Full Django `core` test suite: **257/257 passed**.
+- Django system check: **clean**.
+- `git diff --check`: **clean**.
+
+The full `core` suite increased from 256 to 257 tests because of the new regression test, with no existing test failures.
+
+### Database decision
+
+No database schema changes or migrations were required. The existing `beneficiaries` and `disability_assessments` tables remain authoritative.
+
+### Implementation status
+
+The disability assessment creation endpoint and its tests are validated and ready to be committed together with this development-log update.
+
+### Next step
+
+Continue API validation hardening with the next beneficiary-related creation endpoint, applying the same controlled process:
+
+1. Add a regression test.
+2. Verify the test fails for the expected reason.
+3. Implement the smallest production change.
+4. Run focused tests.
+5. Run the full `core` suite.
+6. Update the development log.
+7. Commit the complete verified increment.

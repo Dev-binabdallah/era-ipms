@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.test import RequestFactory, SimpleTestCase
 
+from core.models import Beneficiaries
 from core.views import disability_assessments_collection
 
 
@@ -39,15 +40,22 @@ class DisabilityAssessmentsApiTests(SimpleTestCase):
 
     @patch("core.authorization.decorators.authorization_service")
     @patch("core.views.DisabilityAssessments.objects.create")
+    @patch("core.views.Beneficiaries.objects.get")
     @patch("django.utils.timezone.now")
     def test_post_authorized_creates_assessment(
         self,
         timezone_now,
+        beneficiary_get,
         assessment_create,
         service,
     ):
         service.can_add.return_value = True
         timezone_now.return_value = "created-at"
+
+        beneficiary = SimpleNamespace(
+            beneficiary_id=10,
+        )
+        beneficiary_get.return_value = beneficiary
 
         assessment = SimpleNamespace(
             assessment_id=1,
@@ -100,8 +108,12 @@ class DisabilityAssessmentsApiTests(SimpleTestCase):
             context=None,
         )
 
-        assessment_create.assert_called_once_with(
+        beneficiary_get.assert_called_once_with(
             beneficiary_id=10,
+        )
+
+        assessment_create.assert_called_once_with(
+            beneficiary=beneficiary,
             assessment_date=date(2026, 9, 7),
             assessment_type="Initial",
             disability_type="Physical",
@@ -256,6 +268,46 @@ class DisabilityAssessmentsApiTests(SimpleTestCase):
                 "error": "assessment_date must use YYYY-MM-DD format",
             },
         )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.DisabilityAssessments.objects.create")
+    @patch("core.views.Beneficiaries.objects.get")
+    def test_post_missing_beneficiary_returns_404(
+        self,
+        beneficiary_get,
+        assessment_create,
+        service,
+    ):
+        service.can_add.return_value = True
+        beneficiary_get.side_effect = Beneficiaries.DoesNotExist
+
+        request = self.make_post_request(
+            self.authenticated_user,
+            json.dumps({
+                "beneficiary_id": 999,
+                "assessment_date": "2026-09-07",
+            }),
+        )
+
+        response = disability_assessments_collection(request)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Beneficiary not found"},
+        )
+
+        service.can_add.assert_called_once_with(
+            self.authenticated_user,
+            "disability_assessments",
+            context=None,
+        )
+
+        beneficiary_get.assert_called_once_with(
+            beneficiary_id=999,
+        )
+
+        assessment_create.assert_not_called()
 
     @patch("core.authorization.decorators.authorization_service")
     @patch("core.views.authorized_queryset")

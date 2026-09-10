@@ -390,10 +390,20 @@ def disability_assessment_create(request):
             status=400,
         )
 
+    try:
+        beneficiary = Beneficiaries.objects.get(
+            beneficiary_id=beneficiary_id,
+        )
+    except Beneficiaries.DoesNotExist:
+        return JsonResponse(
+            {"error": "Beneficiary not found"},
+            status=404,
+        )
+
     now = timezone.now()
 
     assessment = DisabilityAssessments.objects.create(
-        beneficiary_id=beneficiary_id,
+        beneficiary=beneficiary,
         assessment_date=assessment_date,
         assessment_type=payload.get("assessment_type"),
         disability_type=payload.get("disability_type"),
