@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.test import RequestFactory, SimpleTestCase
 
+from core.models import Beneficiaries
 from core.views import (
     referral_create,
     referral_submit,
@@ -16,6 +17,45 @@ from core.views import (
 
 
 class ReferralsApiTests(SimpleTestCase):
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.create")
+    @patch("core.views.Beneficiaries.objects.get")
+    def test_create_missing_beneficiary_returns_404(
+        self,
+        beneficiary_get,
+        objects_create,
+        service,
+    ):
+        service.can_add.return_value = True
+        beneficiary_get.side_effect = Beneficiaries.DoesNotExist
+
+        request = self.factory.post(
+            "/referrals/",
+            data=json.dumps(
+                {
+                    "beneficiary_id": 999,
+                    "referral_date": "2026-09-10",
+                    "destination": "Health Centre",
+                }
+            ),
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        response = referral_create(request)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Beneficiary not found"},
+        )
+
+        service.can_add.assert_called_once()
+        beneficiary_get.assert_called_once_with(
+            beneficiary_id=999,
+        )
+        objects_create.assert_not_called()
 
     @patch("core.authorization.decorators.authorization_service")
     @patch("core.views.Referrals.objects.get")
@@ -638,14 +678,18 @@ class ReferralsApiTests(SimpleTestCase):
             context={"beneficiary_id": 10},
         )
 
-    @patch("core.views.Referrals.objects.create")
     @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Referrals.objects.create")
+    @patch("core.views.Beneficiaries.objects.get")
     def test_authorized_post_creates_referral(
         self,
-        service,
+        beneficiary_get,
         objects_create,
+        service,
     ):
         service.can_add.return_value = True
+        beneficiary = SimpleNamespace(beneficiary_id=25)
+        beneficiary_get.return_value = beneficiary
 
         referral = SimpleNamespace(
             referral_id=10,
@@ -700,7 +744,7 @@ class ReferralsApiTests(SimpleTestCase):
         )
 
         objects_create.assert_called_once_with(
-            beneficiary_id=25,
+            beneficiary=beneficiary,
             referral_date=date(2026, 9, 7),
             destination="Health Centre",
             reason="Medical assessment required.",
@@ -714,12 +758,16 @@ class ReferralsApiTests(SimpleTestCase):
 
     @patch("core.views.Referrals.objects.create")
     @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.Beneficiaries.objects.get")
     def test_authorized_post_ignores_client_supplied_status(
         self,
+        beneficiary_get,
         service,
         objects_create,
     ):
         service.can_add.return_value = True
+        beneficiary = SimpleNamespace(beneficiary_id=25)
+        beneficiary_get.return_value = beneficiary
 
         referral = SimpleNamespace(
             referral_id=11,

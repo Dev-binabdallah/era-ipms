@@ -1263,3 +1263,33 @@ Continue API validation hardening with the next beneficiary-related creation end
 5. Run the full `core` suite.
 6. Update the development log.
 7. Commit the complete verified increment.
+
+## 2026-09-10 — Referral Beneficiary Validation
+
+### Objective
+Ensure referral creation only proceeds when the referenced beneficiary exists.
+
+### Work Completed
+- Added beneficiary existence validation to the referral creation endpoint.
+- `beneficiary_id` is resolved through `Beneficiaries.objects.get()`.
+- A missing beneficiary now returns HTTP `404` with `{"error": "Beneficiary not found"}`.
+- Referral creation now passes the validated beneficiary object to `Referrals.objects.create()`.
+- Added a regression test covering referral creation with a non-existent beneficiary.
+- Updated successful referral creation tests to mock the beneficiary lookup and verify the validated beneficiary object is used.
+- Confirmed client-supplied referral status continues to be ignored and the initial status remains `pending`.
+
+### Validation
+- Referral API tests: **24/24 passed**
+- Full `core` test suite: **259/259 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Database Decision
+No database schema change was required.
+
+### Implementation Status
+**Complete.**
+
+### Next Step
+Proceed to beneficiary validation for the next applicable API creation endpoint only after this change is committed and pushed.
+

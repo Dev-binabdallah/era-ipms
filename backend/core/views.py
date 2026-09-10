@@ -689,10 +689,20 @@ def referral_create(request):
             status=400,
         )
 
+    try:
+        beneficiary = Beneficiaries.objects.get(
+            beneficiary_id=beneficiary_id,
+        )
+    except Beneficiaries.DoesNotExist:
+        return JsonResponse(
+            {"error": "Beneficiary not found"},
+            status=404,
+        )
+
     now = timezone.now()
 
     referral = Referrals.objects.create(
-        beneficiary_id=beneficiary_id,
+        beneficiary=beneficiary,
         referral_date=referral_date,
         destination=payload["destination"],
         reason=payload.get("reason"),
