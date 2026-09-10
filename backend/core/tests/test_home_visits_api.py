@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.test import RequestFactory, SimpleTestCase
 
+from core.models import Beneficiaries
 from core.views import (
     home_visit_create,
     home_visits_collection,
@@ -150,13 +151,20 @@ class HomeVisitsApiTests(SimpleTestCase):
         )
 
     @patch("core.views.HomeVisits.objects.create")
+    @patch("core.views.Beneficiaries.objects.get")
     @patch("core.authorization.decorators.authorization_service")
     def test_authorized_post_creates_home_visit(
         self,
         service,
+        beneficiary_get,
         objects_create,
     ):
         service.can_add.return_value = True
+
+        beneficiary = SimpleNamespace(
+            beneficiary_id=25,
+        )
+        beneficiary_get.return_value = beneficiary
 
         home_visit = SimpleNamespace(
             home_visit_id=10,
@@ -211,8 +219,12 @@ class HomeVisitsApiTests(SimpleTestCase):
             },
         )
 
-        objects_create.assert_called_once_with(
+        beneficiary_get.assert_called_once_with(
             beneficiary_id=25,
+        )
+
+        objects_create.assert_called_once_with(
+            beneficiary=beneficiary,
             visit_date=date(2026, 9, 7),
             conducted_by_id=42,
             purpose="Household assessment",
@@ -222,6 +234,50 @@ class HomeVisitsApiTests(SimpleTestCase):
             next_action="Schedule follow-up visit.",
             created_at=objects_create.call_args.kwargs["created_at"],
         )
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.views.HomeVisits.objects.create")
+    @patch("core.views.Beneficiaries.objects.get")
+    def test_post_missing_beneficiary_returns_404(
+        self,
+        beneficiary_get,
+        objects_create,
+        service,
+    ):
+        service.can_add.return_value = True
+        beneficiary_get.side_effect = Beneficiaries.DoesNotExist
+
+        request = self.factory.post(
+            "/home-visits/",
+            data=json.dumps(
+                {
+                    "beneficiary_id": 999,
+                    "visit_date": "2026-09-07",
+                }
+            ),
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        response = home_visit_create(request)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Beneficiary not found"},
+        )
+
+        service.can_add.assert_called_once_with(
+            self.authenticated_user,
+            "home_visits",
+            context=None,
+        )
+
+        beneficiary_get.assert_called_once_with(
+            beneficiary_id=999,
+        )
+
+        objects_create.assert_not_called()
 
     @patch("core.authorization.decorators.authorization_service")
     def test_invalid_json_returns_400(self, service):

@@ -1203,3 +1203,63 @@ Continue API validation hardening with the next beneficiary-related creation end
 5. Run the full `core` suite.
 6. Update the development log.
 7. Commit the complete verified increment.
+
+
+## 2026-09-10 — Home Visit Beneficiary Validation
+
+### Objective
+
+Harden home visit creation by ensuring that every home visit references an existing beneficiary before the home visit record is created.
+
+### Work completed
+
+- Added explicit beneficiary existence validation to home visit creation.
+- The API now looks up the beneficiary using the supplied `beneficiary_id` before creating the home visit.
+- Added HTTP `404` handling when the beneficiary does not exist.
+- Standardized the error response as:
+
+      {"error": "Beneficiary not found"}
+
+- Changed home visit creation to use the validated beneficiary object rather than assigning an unvalidated foreign-key ID.
+- Updated the existing successful home visit creation test to mock and verify beneficiary lookup.
+- Added a regression test covering creation with a missing beneficiary.
+- Preserved the existing permission check before beneficiary validation.
+- No database schema or migration changes were required.
+
+### Validation decision
+
+Beneficiary existence is now explicitly validated at the API boundary before a home visit can be created.
+
+This prevents invalid beneficiary references from reaching the home visit creation operation and provides a clear client-facing `404` response.
+
+### Tests and verification
+
+Local verification completed:
+
+- Missing-beneficiary regression test: **1/1 passed**.
+- Complete home visit API tests: **12/12 passed**.
+- Full Django `core` test suite: **258/258 passed**.
+- Django system check: **clean**.
+- `git diff --check`: **clean**.
+
+The full `core` suite increased from 257 to 258 tests because of the new regression test, with no existing test failures.
+
+### Database decision
+
+No database schema changes or migrations were required. The existing `beneficiaries` and `home_visits` tables remain authoritative.
+
+### Implementation status
+
+The home visit creation endpoint and its tests are validated and ready to be committed together with this development-log update.
+
+### Next step
+
+Continue API validation hardening with the next beneficiary-related creation endpoint, applying the same controlled process:
+
+1. Add a regression test.
+2. Verify the test fails for the expected reason.
+3. Implement the smallest production change.
+4. Run focused tests.
+5. Run the full `core` suite.
+6. Update the development log.
+7. Commit the complete verified increment.

@@ -535,10 +535,20 @@ def home_visit_create(request):
             status=400,
         )
 
+    try:
+        beneficiary = Beneficiaries.objects.get(
+            beneficiary_id=beneficiary_id,
+        )
+    except Beneficiaries.DoesNotExist:
+        return JsonResponse(
+            {"error": "Beneficiary not found"},
+            status=404,
+        )
+
     now = timezone.now()
 
     visit = HomeVisits.objects.create(
-        beneficiary_id=beneficiary_id,
+        beneficiary=beneficiary,
         visit_date=visit_date,
         conducted_by_id=request.user.user_id,
         purpose=payload.get("purpose"),
