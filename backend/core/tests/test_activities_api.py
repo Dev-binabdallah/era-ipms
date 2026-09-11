@@ -256,6 +256,67 @@ class ActivitiesApiTests(SimpleTestCase):
             },
         )
 
+    @patch("core.views.Users.objects.get")
+    @patch("core.views.Activities.objects.create")
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Projects.objects.get")
+    def test_create_invalid_status_returns_400(
+        self,
+        project_get,
+        service,
+        activity_create,
+        user_get,
+    ):
+        project_get.return_value = SimpleNamespace(
+            project_id=1,
+        )
+        service.can_add_activity.return_value = True
+        user_get.return_value = SimpleNamespace(
+            user_id=20,
+            is_active=True,
+        )
+        activity_create.return_value = SimpleNamespace(
+            activity_id=5,
+            project_id=1,
+            activity_name="Community Training",
+            activity_date=None,
+            location=None,
+            responsible_user_id=20,
+            description=None,
+            status="Invalid Status",
+            results=None,
+            created_at="2026-09-11T10:00:00Z",
+            updated_at="2026-09-11T10:00:00Z",
+        )
+
+        request = self.make_post_request(
+            self.authenticated_user,
+            body=json.dumps(
+                {
+                    "project_id": 1,
+                    "activity_name": "Community Training",
+                    "responsible_user_id": 20,
+                    "status": "Invalid Status",
+                }
+            ).encode(),
+        )
+
+        response = activities_create(request)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "status must be one of: "
+                    "Planned, Ongoing, Pending, Completed, Cancelled"
+                )
+            },
+        )
+
+        activity_create.assert_not_called()
+
+
     @patch("django.utils.timezone.now")
     @patch("core.views.Activities.objects.create")
     @patch("core.views.Users.objects.get")

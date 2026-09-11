@@ -1264,6 +1264,40 @@ Continue API validation hardening with the next beneficiary-related creation end
 6. Update the development log.
 7. Commit the complete verified increment.
 
+## 2026-09-11 — Activity Status Validation
+
+### Objective
+Ensure activity creation accepts only documented activity status values.
+
+### Work Completed
+- Added validation for the activity `status` field during activity creation.
+- Allowed statuses are:
+  - `Planned`
+  - `Ongoing`
+  - `Pending`
+  - `Completed`
+  - `Cancelled`
+- Invalid status values now return HTTP `400`.
+- Activity creation now uses the validated `activity_status` value.
+- Preserved nullable status behavior when no status is supplied.
+- Added a regression test covering an invalid activity status.
+- Confirmed invalid activity status does not call `Activities.objects.create()`.
+
+### Validation
+- Activity API tests: **11/11 passed**
+- Full `core` test suite: **260/260 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Database Decision
+No database schema change was required.
+
+### Implementation Status
+**Complete.**
+
+### Next Step
+Proceed to the next applicable API validation increment only after this change is committed and pushed.
+
 ## 2026-09-10 — Referral Beneficiary Validation
 
 ### Objective

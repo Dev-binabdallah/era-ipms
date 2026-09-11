@@ -1207,6 +1207,28 @@ def activities_create(request, project):
             status=400,
         )
 
+    activity_status = payload.get("status")
+
+    if activity_status is not None:
+        allowed_statuses = {
+            "Planned",
+            "Ongoing",
+            "Pending",
+            "Completed",
+            "Cancelled",
+        }
+
+        if activity_status not in allowed_statuses:
+            return JsonResponse(
+                {
+                    "error": (
+                        "status must be one of: "
+                        "Planned, Ongoing, Pending, Completed, Cancelled"
+                    )
+                },
+                status=400,
+            )
+
     now = timezone.now()
 
     activity = Activities.objects.create(
@@ -1216,7 +1238,7 @@ def activities_create(request, project):
         location=payload.get("location"),
         responsible_user=responsible_user,
         description=payload.get("description"),
-        status=payload.get("status"),
+        status=activity_status,
         results=payload.get("results"),
         created_at=now,
         updated_at=now,
