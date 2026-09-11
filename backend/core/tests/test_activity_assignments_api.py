@@ -675,6 +675,54 @@ class ActivityAssignmentsApiTests(SimpleTestCase):
             {"error": "status must be a non-empty string"},
         )
 
+    @patch("core.views.ActivityAssignments.objects.get")
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_invalid_status_returns_400(
+        self,
+        service,
+        activity_get,
+        assignment_get,
+    ):
+        service.can_assign_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        assignment = SimpleNamespace(
+            activity_assignment_id=5,
+            activity_id=1,
+            user_id=20,
+            assigned_at="2026-09-08T10:00:00Z",
+            assigned_by_id=10,
+            status="assigned",
+            save=Mock(),
+        )
+
+        assignment_get.return_value = assignment
+
+        response = activity_assignment_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"status":"unknown"}',
+            ),
+            1,
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "status must be one of: "
+                    "assigned, completed, cancelled"
+                )
+            },
+        )
+
+        self.assertEqual(assignment.status, "assigned")
+        assignment.save.assert_not_called()
+
+
     @patch("core.models.Activities.objects.get")
     @patch("core.authorization.decorators.authorization_service")
     def test_update_unauthorized_returns_403(

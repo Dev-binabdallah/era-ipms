@@ -540,3 +540,37 @@ does not provide enough additional detail to justify changing the implemented `p
 ### Next step
 Review the updated development log and Git diff, then stage, commit, and push the validated
 referral approval authorization tests before continuing with the next ERA-IPMS workflow milestone.
+
+## 2026-09-11 — Activity Assignment Status Validation
+
+### Objective
+Ensure activity assignment status updates accept only documented controlled status values.
+
+### Work completed
+- Added validation for the activity assignment `status` field during status updates.
+- Allowed assignment statuses are:
+  - `assigned`
+  - `completed`
+  - `cancelled`
+- Rejected missing, empty, non-string, and unsupported status values.
+- Preserved the existing restriction that only the `status` field can be modified through the assignment update endpoint.
+- Added a regression test confirming an unsupported status returns HTTP `400`.
+- Confirmed an invalid status does not modify the assignment or call `save()`.
+
+### Verification
+- Activity Assignment API tests — 19/19 PASSED
+- Full `core` test suite — 261/261 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+No database migration or schema change was required. The existing
+`activity_assignments.status` column already supports the controlled status values.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final Git diff, then stage, commit, and push the validated
+activity assignment status changes before continuing with the next
+ERA-IPMS API validation increment.

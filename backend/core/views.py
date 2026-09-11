@@ -1732,7 +1732,25 @@ def activity_assignment_update(
             status=400,
         )
 
-    assignment.status = status_value.strip()
+    status_value = status_value.strip()
+    allowed_statuses = {
+        "assigned",
+        "completed",
+        "cancelled",
+    }
+
+    if status_value not in allowed_statuses:
+        return JsonResponse(
+            {
+                "error": (
+                    "status must be one of: "
+                    "assigned, completed, cancelled"
+                )
+            },
+            status=400,
+        )
+
+    assignment.status = status_value
 
     assignment.save(
         update_fields=["status"],
