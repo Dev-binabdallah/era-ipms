@@ -611,3 +611,48 @@ authorization regression coverage only.
 ### Next step
 Review the development log and final Git diff, then stage the authorization
 tests and `development_log.md` together for commit.
+
+## 2026-09-13 — Project Assignment Management API
+
+### Objective
+Implement and validate the project assignment management API with dedicated
+authorization, project scoping, and safe assignment lifecycle handling.
+
+### Work completed
+- Added a dedicated project assignment management authorization path through
+  `AuthorizationService.can_manage_project_assignments()`.
+- Required the `MANAGE` permission and `PROJECT_COORDINATION` responsibility
+  for project assignment management.
+- Intentionally did not require existing project membership because the
+  operation may create the first project assignment.
+- Added protected project assignment endpoints for:
+  - listing project assignments;
+  - creating or reactivating a project assignment; and
+  - updating the assignment active state.
+- Ensured assignment updates are scoped to the requested project so an
+  assignment belonging to another project cannot be modified through the
+  endpoint.
+- Rejected inactive target users when creating project assignments.
+- Reactivated an existing inactive user-project assignment instead of creating
+  a duplicate assignment, consistent with the database unique constraint.
+- Restricted assignment PATCH operations to the `is_active` field.
+- Added API regression coverage for authorization, creation, reactivation,
+  listing, deactivation, invalid target users, and project-scoped updates.
+
+### Verification
+- Project API tests — 38/38 PASSED
+- Full `core` test suite — 267/267 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+No database migration or schema change was required. The implementation
+uses the existing `user_project_assignments` schema and its unique
+`(user_id, project_id)` constraint.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final Git diff and development log, then stage the project
+assignment implementation and `development_log.md` together for commit.
