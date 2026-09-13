@@ -300,6 +300,61 @@ class AuthorizationService:
 
         return self.has_project_scope(user, project)
 
+    def can_edit_activity(self, user, activity):
+        """
+        Determine whether a user may edit an existing activity.
+
+        Programme Coordinators manage activities within projects they
+        actively manage. Members may edit only activities assigned to
+        them and within their active project scope.
+
+        Programme Coordinator activity management requires MANAGE
+        permission, PROJECT_ACTIVITIES responsibility, and active
+        project scope.
+
+        Member activity editing requires EDIT permission,
+        PROJECT_ACTIVITIES responsibility, and active activity scope.
+        """
+
+        if not getattr(user, "is_authenticated", False):
+            return False
+
+        if not getattr(user, "is_active", False):
+            return False
+
+        title = getattr(user, "title", None)
+        if title is None:
+            return False
+
+        if not getattr(title, "is_active", False):
+            return False
+
+        if not self.has_responsibility(
+            user,
+            RESPONSIBILITY_PROJECT_ACTIVITIES,
+        ):
+            return False
+
+        title_name = getattr(title, "title_name", None)
+
+        if title_name == "Programme Coordinator":
+            if not self.has_permission(user, PERMISSION_MANAGE):
+                return False
+
+            project = getattr(activity, "project", None)
+            if project is None:
+                return False
+
+            return self.has_project_scope(user, project)
+
+        if title_name == "Member":
+            if not self.has_permission(user, PERMISSION_EDIT):
+                return False
+
+            return self.has_activity_scope(user, activity)
+
+        return False
+
     def has_activity_scope(self, user, activity):
         """
         Determine whether an active user is assigned to an activity and

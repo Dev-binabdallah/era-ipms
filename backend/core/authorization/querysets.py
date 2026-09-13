@@ -142,12 +142,27 @@ def authorized_queryset(user, resource, queryset):
         ).distinct()
 
     if resource_name in ACTIVITY_RESOURCES:
-        return queryset.filter(
-            project__user_assignments__user=user,
-            project__user_assignments__is_active=True,
-            assignments__user=user,
-            assignments__status="assigned",
-        ).distinct()
+        title_name = getattr(
+            getattr(user, "title", None),
+            "title_name",
+            "",
+        )
+
+        if title_name == "Programme Coordinator":
+            return queryset.filter(
+                project__user_assignments__user=user,
+                project__user_assignments__is_active=True,
+            ).distinct()
+
+        if title_name == "Member":
+            return queryset.filter(
+                project__user_assignments__user=user,
+                project__user_assignments__is_active=True,
+                assignments__user=user,
+                assignments__status="assigned",
+            ).distinct()
+
+        return queryset.none()
 
     if resource_name in ACTIVITY_PARTICIPANT_RESOURCES:
         return queryset.filter(

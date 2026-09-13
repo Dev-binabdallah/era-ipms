@@ -1,3 +1,55 @@
+## 2026-09-13 — Activity Edit Authorization and Role-Based Activity Querysets
+
+### Objective
+Add dedicated authorization for editing activities and correct activity queryset
+scoping so Programme Coordinators and Members receive access according to their
+roles and assignment scope.
+
+### Work completed
+- Added `AuthorizationService.can_edit_activity()` for existing activity edits.
+- Required active authentication and an active user title before activity editing.
+- Required the `PROJECT_ACTIVITIES` responsibility for activity editing.
+- Allowed Programme Coordinators to edit activities when they have:
+  - the `MANAGE` permission; and
+  - active scope over the activity's parent project.
+- Allowed Members to edit activities when they have:
+  - the `EDIT` permission; and
+  - active scope over the activity; including an active assignment to that
+    activity and active scope over its parent project.
+- Denied activity editing for Directors and unsupported roles through the
+  dedicated activity edit authorization path.
+- Denied activity editing for inactive users and inactive titles.
+- Updated `authorized_queryset()` for activities so:
+  - Programme Coordinators receive activities within their active project scope;
+  - Members receive only activities within their active project scope and with
+    an active assignment to the activity; and
+  - other roles receive an empty queryset.
+- Added authorization regression tests covering Programme Coordinator,
+  Member, Director, inactive-user, inactive-title, permission, responsibility,
+  project-scope, and activity-assignment cases.
+- Added queryset regression tests covering Programme Coordinator project scope,
+  Member activity assignment scope, and unsupported roles.
+
+### Verification
+- Authorization service tests — 105/105 PASSED
+- Authorization queryset tests — 18/18 PASSED
+- Activity API tests — 11/11 PASSED
+- Activity assignment API tests — 19/19 PASSED
+- Full `core` test suite — 280/280 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+No database migration or schema change was required. This increment changes
+authorization logic and queryset filtering only.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the development log and final Git diff, then stage the activity
+authorization changes and `development_log.md` together for commit.
+
 
 ## 2026-09-07 — Authentication API Contract
 

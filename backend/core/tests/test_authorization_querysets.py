@@ -148,7 +148,7 @@ class AuthorizedQuerysetTests(SimpleTestCase):
     @patch(
         "core.authorization.querysets.authorization_service"
     )
-    def test_activity_queryset_requires_project_and_activity_assignment(
+    def test_programme_coordinator_activity_queryset_requires_project_scope(
         self,
         service,
     ):
@@ -157,6 +157,38 @@ class AuthorizedQuerysetTests(SimpleTestCase):
             RESPONSIBILITY_PROJECT_ACTIVITIES
         )
         service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(
+            title_name="Programme Coordinator"
+        )
+
+        result = authorized_queryset(
+            self.user,
+            "activity",
+            self.queryset,
+        )
+
+        self.queryset.filter.assert_called_once_with(
+            project__user_assignments__user=self.user,
+            project__user_assignments__is_active=True,
+        )
+        self.filtered_queryset.distinct.assert_called_once_with()
+        self.assertIs(result, self.filtered_queryset)
+
+    @patch(
+        "core.authorization.querysets.authorization_service"
+    )
+    def test_member_activity_queryset_requires_project_and_activity_assignment(
+        self,
+        service,
+    ):
+        service.has_permission.return_value = True
+        service.get_required_responsibility.return_value = (
+            RESPONSIBILITY_PROJECT_ACTIVITIES
+        )
+        service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(title_name="Member")
 
         result = authorized_queryset(
             self.user,
@@ -171,6 +203,31 @@ class AuthorizedQuerysetTests(SimpleTestCase):
             assignments__status="assigned",
         )
         self.filtered_queryset.distinct.assert_called_once_with()
+        self.assertIs(result, self.filtered_queryset)
+
+    @patch(
+        "core.authorization.querysets.authorization_service"
+    )
+    def test_other_role_gets_no_activity_queryset(
+        self,
+        service,
+    ):
+        service.has_permission.return_value = True
+        service.get_required_responsibility.return_value = (
+            RESPONSIBILITY_PROJECT_ACTIVITIES
+        )
+        service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(title_name="Director")
+
+        result = authorized_queryset(
+            self.user,
+            "activity",
+            self.queryset,
+        )
+
+        self.queryset.none.assert_called_once_with()
+        self.queryset.filter.assert_not_called()
         self.assertIs(result, self.filtered_queryset)
 
     @patch(

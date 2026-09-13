@@ -1761,6 +1761,224 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
             )
         )
 
+    def test_programme_coordinator_can_edit_activity_with_manage_and_project_scope(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertTrue(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_programme_coordinator_cannot_edit_activity_without_manage_permission(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_EDIT},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_programme_coordinator_cannot_edit_activity_without_project_scope(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[],
+        )
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_member_can_edit_assigned_activity_with_edit_permission(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_EDIT},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+            activity_assignments=[activity],
+        )
+        user.title.title_name = "Member"
+
+        self.assertTrue(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_member_cannot_edit_unassigned_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_EDIT},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+            activity_assignments=[],
+        )
+        user.title.title_name = "Member"
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_member_cannot_edit_activity_without_edit_permission(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_VIEW},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+            activity_assignments=[activity],
+        )
+        user.title.title_name = "Member"
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_member_cannot_edit_activity_without_project_scope(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_EDIT},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[],
+            activity_assignments=[activity],
+        )
+        user.title.title_name = "Member"
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_director_cannot_edit_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.title.title_name = "Director"
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_inactive_user_cannot_edit_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.is_active = False
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_inactive_title_cannot_edit_activity(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_ACTIVITIES,
+            },
+            project_assignments=[project],
+        )
+        user.title.is_active = False
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
+    def test_activity_edit_requires_activity_responsibility(self):
+        project = self.make_project(1)
+        activity = self.make_activity(10, project)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities=set(),
+            project_assignments=[project],
+        )
+
+        self.assertFalse(
+            self.service.can_edit_activity(
+                user,
+                activity,
+            )
+        )
+
     def test_inactive_user_cannot_assign_activity(self):
         project = self.make_project(1)
         activity = self.make_activity(10, project)
