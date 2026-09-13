@@ -826,6 +826,10 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
     def make_user(
         self,
         *,
+        authenticated=True,
+        active=True,
+        title_name="Programme Coordinator",
+        title_active=True,
         permissions=None,
         responsibilities=None,
         project_assignments=None,
@@ -878,14 +882,14 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
         )
 
         title = SimpleNamespace(
-            title_name="Programme Coordinator",
-            is_active=True,
+            title_name=title_name,
+            is_active=title_active,
             title_permissions=title_permissions,
         )
 
         return SimpleNamespace(
-            is_authenticated=True,
-            is_active=True,
+            is_authenticated=authenticated,
+            is_active=active,
             title=title,
             responsibility_assignments=responsibility_manager,
             project_assignments=project_manager,
@@ -1259,6 +1263,109 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
             )
         )
 
+
+    def test_project_assignment_management_is_allowed_with_manage_and_coordination(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+        )
+
+        self.assertTrue(
+            self.service.can_manage_project_assignments(
+                user,
+                project,
+            )
+        )
+
+    def test_project_assignment_management_does_not_require_existing_project_scope(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+            project_assignments=[],
+        )
+
+        self.assertTrue(
+            self.service.can_manage_project_assignments(
+                user,
+                project,
+            )
+        )
+
+    def test_project_assignment_management_requires_manage_permission(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_VIEW},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+        )
+
+        self.assertFalse(
+            self.service.can_manage_project_assignments(
+                user,
+                project,
+            )
+        )
+
+    def test_project_assignment_management_requires_coordination_responsibility(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            permissions={PERMISSION_MANAGE},
+            responsibilities=set(),
+        )
+
+        self.assertFalse(
+            self.service.can_manage_project_assignments(
+                user,
+                project,
+            )
+        )
+
+    def test_inactive_user_cannot_manage_project_assignments(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            active=False,
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+        )
+
+        self.assertFalse(
+            self.service.can_manage_project_assignments(
+                user,
+                project,
+            )
+        )
+
+    def test_inactive_title_cannot_manage_project_assignments(self):
+        project = self.make_project(1)
+
+        user = self.make_user(
+            title_active=False,
+            permissions={PERMISSION_MANAGE},
+            responsibilities={
+                RESPONSIBILITY_PROJECT_COORDINATION,
+            },
+        )
+
+        self.assertFalse(
+            self.service.can_manage_project_assignments(
+                user,
+                project,
+            )
+        )
 
     def test_activity_add_is_allowed_with_project_scope(self):
         project = self.make_project(1)

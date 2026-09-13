@@ -574,3 +574,40 @@ No database migration or schema change was required. The existing
 Review the final Git diff, then stage, commit, and push the validated
 activity assignment status changes before continuing with the next
 ERA-IPMS API validation increment.
+
+## 2026-09-13 — Project Assignment Management Authorization Tests
+
+### Objective
+Add focused authorization regression coverage for project assignment management.
+
+### Work completed
+- Added tests for `AuthorizationService.can_manage_project_assignments()`.
+- Confirmed project assignment management is allowed when the user has:
+  - the `MANAGE` permission; and
+  - the `PROJECT_COORDINATION` responsibility.
+- Confirmed project assignment management does not require an existing assignment
+  to the project being managed.
+- Confirmed access is denied when the required `MANAGE` permission is missing.
+- Confirmed access is denied when the required `PROJECT_COORDINATION`
+  responsibility is missing.
+- Confirmed inactive users cannot manage project assignments.
+- Confirmed users with inactive titles cannot manage project assignments.
+- Updated the shared authorization scope test helper so tests can explicitly
+  represent authenticated state, user activity, title name, and title activity.
+
+### Verification
+- Authorization scope tests — 48/48 PASSED
+- Full `core` test suite — 267/267 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+No database migration or schema change was required. This increment adds
+authorization regression coverage only.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the development log and final Git diff, then stage the authorization
+tests and `development_log.md` together for commit.
