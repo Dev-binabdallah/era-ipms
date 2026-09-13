@@ -1,11 +1,11 @@
 import json
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
-from core.views import activities_create
+from core.views import activity_update, activities_create
 
 
 class ActivitiesApiTests(SimpleTestCase):
@@ -443,4 +443,549 @@ class ActivitiesApiTests(SimpleTestCase):
         self.assertEqual(
             create_kwargs["updated_at"],
             "2026-09-08T10:00:00Z",
+        )
+
+
+
+class ActivityUpdateApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.authenticated_user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=10,
+        )
+
+        self.unauthenticated_user = SimpleNamespace(
+            is_authenticated=False,
+        )
+
+        self.activity = SimpleNamespace(
+            activity_id=5,
+            project_id=1,
+            activity_name="Community Training",
+            activity_date=date(2026, 9, 8),
+            location="Mombasa",
+            responsible_user_id=20,
+            description="Training session",
+            status="Planned",
+            results=None,
+            created_at="2026-09-08T10:00:00Z",
+            updated_at="2026-09-08T10:00:00Z",
+            save=Mock(),
+        )
+
+    def make_patch_request(
+        self,
+        user,
+        path="/activities/5/",
+        body=b"{}",
+    ):
+        request = self.factory.patch(
+            path,
+            data=body,
+            content_type="application/json",
+        )
+        request.user = user
+        return request
+
+    def test_update_unauthenticated_request_returns_401(self):
+        response = activity_update(
+            self.make_patch_request(
+                self.unauthenticated_user,
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_missing_activity_returns_404(
+        self,
+        service,
+        activity_get,
+    ):
+        from core.models import Activities
+
+        activity_get.side_effect = Activities.DoesNotExist
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"activity_name":"Updated Training"}',
+            ),
+            999,
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Activity not found"},
+        )
+
+        service.can_edit_activity.assert_not_called()
+
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_unauthorized_returns_403(
+        self,
+        service,
+        activity_get,
+    ):
+        service.can_edit_activity.return_value = False
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"activity_name":"Updated Training"}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        service.can_edit_activity.assert_called_once_with(
+            self.authenticated_user,
+            self.activity,
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_protected_fields_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=(
+                    b'{"activity_name":"Updated Training",'
+                    b'"project_id":99,"created_at":"changed"}'
+                ),
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Protected fields cannot be modified",
+                "fields": ["created_at", "project_id"],
+            },
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_unknown_fields_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"activity_name":"Updated Training","invalid_field":"x"}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Unknown fields",
+                "fields": ["invalid_field"],
+            },
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_empty_payload_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b"{}",
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "At least one editable field is required"
+                )
+            },
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_invalid_json_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b"{invalid-json",
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Invalid JSON"},
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_non_object_json_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'["invalid"]',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "JSON body must be an object"},
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_blank_activity_name_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"activity_name":"   "}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "activity_name is required"},
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_invalid_date_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"activity_date":"2026-99-99"}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "activity_date must use YYYY-MM-DD format"
+                )
+            },
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_invalid_status_returns_400(
+        self,
+        activity_get,
+        service,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"status":"Invalid Status"}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "status must be one of: "
+                    "Planned, Ongoing, Pending, Completed, Cancelled"
+                )
+            },
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.views.Users.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    @patch("django.utils.timezone.now")
+    def test_update_authorized_updates_activity(
+        self,
+        timezone_now,
+        activity_get,
+        service,
+        user_get,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        responsible_user = SimpleNamespace(
+            user_id=30,
+            is_active=True,
+        )
+        user_get.return_value = responsible_user
+        timezone_now.return_value = "2026-09-13T12:00:00Z"
+
+        request = self.make_patch_request(
+            self.authenticated_user,
+            body=json.dumps(
+                {
+                    "activity_name": "Updated Training",
+                    "activity_date": "2026-09-13",
+                    "location": "Garissa",
+                    "responsible_user_id": 20,
+                    "description": "Updated description",
+                    "status": "Ongoing",
+                    "results": "Started successfully",
+                }
+            ).encode(),
+        )
+
+        response = activity_update(request, 5)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "activity": {
+                    "activity_id": 5,
+                    "project_id": 1,
+                    "activity_name": "Updated Training",
+                    "activity_date": "2026-09-13",
+                    "location": "Garissa",
+                    "responsible_user_id": 20,
+                    "description": "Updated description",
+                    "status": "Ongoing",
+                    "results": "Started successfully",
+                    "created_at": "2026-09-08T10:00:00Z",
+                    "updated_at": "2026-09-13T12:00:00Z",
+                }
+            },
+        )
+
+        service.can_edit_activity.assert_called_once_with(
+            self.authenticated_user,
+            self.activity,
+        )
+
+        self.assertEqual(
+            self.activity.activity_name,
+            "Updated Training",
+        )
+        self.assertEqual(
+            self.activity.activity_date,
+            date(2026, 9, 13),
+        )
+        self.assertEqual(
+            self.activity.location,
+            "Garissa",
+        )
+        self.assertEqual(
+            self.activity.responsible_user,
+            responsible_user,
+        )
+        self.assertEqual(
+            self.activity.description,
+            "Updated description",
+        )
+        self.assertEqual(
+            self.activity.status,
+            "Ongoing",
+        )
+        self.assertEqual(
+            self.activity.results,
+            "Started successfully",
+        )
+        self.assertEqual(
+            self.activity.updated_at,
+            "2026-09-13T12:00:00Z",
+        )
+
+        self.activity.save.assert_called_once_with(
+            update_fields=[
+                "activity_name",
+                "activity_date",
+                "location",
+                "responsible_user",
+                "description",
+                "status",
+                "results",
+                "updated_at",
+            ],
+        )
+
+    @patch("core.views.Users.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_missing_responsible_user_returns_404(
+        self,
+        activity_get,
+        service,
+        user_get,
+    ):
+        from core.models import Users
+
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+        user_get.side_effect = Users.DoesNotExist
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"responsible_user_id":999}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Responsible user not found"},
+        )
+
+        self.activity.save.assert_not_called()
+
+    @patch("core.views.Users.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    @patch("core.models.Activities.objects.get")
+    def test_update_inactive_responsible_user_returns_400(
+        self,
+        activity_get,
+        service,
+        user_get,
+    ):
+        service.can_edit_activity.return_value = True
+        activity_get.return_value = self.activity
+        user_get.return_value = SimpleNamespace(
+            user_id=30,
+            is_active=False,
+        )
+
+        response = activity_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"responsible_user_id":30}',
+            ),
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Responsible user is inactive"},
+        )
+
+        self.activity.save.assert_not_called()
+
+    def test_update_method_restriction(self):
+        with patch(
+            "core.models.Activities.objects.get",
+            return_value=self.activity,
+        ), patch(
+            "core.authorization.decorators.authorization_service"
+        ) as service:
+            service.can_edit_activity.return_value = True
+
+            request = self.factory.post(
+                "/activities/5/",
+                data=b'{"activity_name":"Updated"}',
+                content_type="application/json",
+            )
+            request.user = self.authenticated_user
+
+            response = activity_update(
+                request,
+                5,
+            )
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
         )

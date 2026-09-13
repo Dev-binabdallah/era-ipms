@@ -5,6 +5,7 @@ from core.views import (
     auth_me,
     auth_logout,
     activities_create,
+    activity_update,
     activity_assignments,
     activity_assignment_create,
     activity_assignment_update,
@@ -28,6 +29,10 @@ urlpatterns = [
     path("auth/me/", auth_me),
     path("auth/logout/", auth_logout),
     path("activities/", activities_create),
+    path(
+        "activities/<int:activity_id>/",
+        activity_update,
+    ),
     path(
         "activities/<int:activity_id>/assignments/",
         activity_assignments,

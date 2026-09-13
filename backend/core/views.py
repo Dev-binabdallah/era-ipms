@@ -13,6 +13,7 @@ from core.authorization.constants import (
 from core.authorization.decorators import (
     require_activity_creation,
     require_activity_assignment_management,
+    require_activity_edit,
     require_permission,
     require_project_assignment_management,
 )
@@ -1121,6 +1122,258 @@ def beneficiaries_list(request):
             "beneficiaries": beneficiaries,
         }
     )
+
+@require_activity_edit
+def activity_update(request, activity):
+    """
+    Update an existing activity.
+
+    Authorization is enforced by require_activity_edit.
+    Only activity fields owned by this endpoint may be modified.
+    The parent project and audit timestamps are protected.
+    """
+
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    protected_fields = {
+        "activity_id",
+        "project",
+        "project_id",
+        "created_at",
+        "updated_at",
+        "responsible_user",
+    }
+
+    attempted_protected = sorted(
+        protected_fields.intersection(payload.keys())
+    )
+
+    if attempted_protected:
+        return JsonResponse(
+            {
+                "error": "Protected fields cannot be modified",
+                "fields": attempted_protected,
+            },
+            status=400,
+        )
+
+    editable_fields = {
+        "activity_name",
+        "activity_date",
+        "location",
+        "responsible_user_id",
+        "description",
+        "status",
+        "results",
+    }
+
+    unknown_fields = sorted(
+        set(payload.keys()) - editable_fields
+    )
+
+    if unknown_fields:
+        return JsonResponse(
+            {
+                "error": "Unknown fields",
+                "fields": unknown_fields,
+            },
+            status=400,
+        )
+
+    if not payload:
+        return JsonResponse(
+            {"error": "At least one editable field is required"},
+            status=400,
+        )
+
+    update_fields = []
+
+    if "activity_name" in payload:
+        activity_name = str(
+            payload.get("activity_name", "")
+        ).strip()
+
+        if not activity_name:
+            return JsonResponse(
+                {"error": "activity_name is required"},
+                status=400,
+            )
+
+        activity.activity_name = activity_name
+        update_fields.append("activity_name")
+
+    if "activity_date" in payload:
+        activity_date = payload.get("activity_date")
+
+        if activity_date in (None, ""):
+            activity_date = None
+        else:
+            try:
+                activity_date = date.fromisoformat(
+                    str(activity_date)
+                )
+            except ValueError:
+                return JsonResponse(
+                    {
+                        "error": (
+                            "activity_date must use "
+                            "YYYY-MM-DD format"
+                        )
+                    },
+                    status=400,
+                )
+
+        activity.activity_date = activity_date
+        update_fields.append("activity_date")
+
+    if "location" in payload:
+        activity.location = payload.get("location")
+        update_fields.append("location")
+
+    if "responsible_user_id" in payload:
+        responsible_user_id = payload.get(
+            "responsible_user_id"
+        )
+
+        if responsible_user_id in (None, ""):
+            return JsonResponse(
+                {
+                    "error": (
+                        "responsible_user_id is required"
+                    )
+                },
+                status=400,
+            )
+
+        try:
+            responsible_user_id = int(
+                responsible_user_id
+            )
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {
+                    "error": (
+                        "responsible_user_id must be "
+                        "an integer"
+                    )
+                },
+                status=400,
+            )
+
+        if responsible_user_id <= 0:
+            return JsonResponse(
+                {
+                    "error": (
+                        "responsible_user_id must be "
+                        "a positive integer"
+                    )
+                },
+                status=400,
+            )
+
+        try:
+            responsible_user = Users.objects.get(
+                user_id=responsible_user_id,
+            )
+        except Users.DoesNotExist:
+            return JsonResponse(
+                {"error": "Responsible user not found"},
+                status=404,
+            )
+
+        if not responsible_user.is_active:
+            return JsonResponse(
+                {
+                    "error": (
+                        "Responsible user is inactive"
+                    )
+                },
+                status=400,
+            )
+
+        activity.responsible_user = responsible_user
+        update_fields.append("responsible_user")
+
+    if "description" in payload:
+        activity.description = payload.get("description")
+        update_fields.append("description")
+
+    if "status" in payload:
+        activity_status = payload.get("status")
+
+        allowed_statuses = {
+            "Planned",
+            "Ongoing",
+            "Pending",
+            "Completed",
+            "Cancelled",
+        }
+
+        if activity_status is not None and (
+            activity_status not in allowed_statuses
+        ):
+            return JsonResponse(
+                {
+                    "error": (
+                        "status must be one of: "
+                        "Planned, Ongoing, Pending, "
+                        "Completed, Cancelled"
+                    )
+                },
+                status=400,
+            )
+
+        activity.status = activity_status
+        update_fields.append("status")
+
+    if "results" in payload:
+        activity.results = payload.get("results")
+        update_fields.append("results")
+
+    activity.updated_at = timezone.now()
+    update_fields.append("updated_at")
+
+    activity.save(update_fields=update_fields)
+
+    return JsonResponse(
+        {
+            "activity": {
+                "activity_id": activity.activity_id,
+                "project_id": activity.project_id,
+                "activity_name": activity.activity_name,
+                "activity_date": activity.activity_date,
+                "location": activity.location,
+                "responsible_user_id": (
+                    activity.responsible_user_id
+                ),
+                "description": activity.description,
+                "status": activity.status,
+                "results": activity.results,
+                "created_at": activity.created_at,
+                "updated_at": activity.updated_at,
+            }
+        },
+        status=200,
+    )
+
 
 @require_activity_creation
 def activities_create(request, project):

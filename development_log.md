@@ -708,3 +708,52 @@ uses the existing `user_project_assignments` schema and its unique
 ### Next step
 Review the final Git diff and development log, then stage the project
 assignment implementation and `development_log.md` together for commit.
+
+## 2026-09-13 — Activity Edit API Endpoint and Authorization Enforcement
+
+### Objective
+Implement and validate the protected Activity Edit API endpoint using the
+dedicated activity edit authorization path.
+
+### Work completed
+- Added a dedicated `require_activity_edit` decorator.
+- Enforced `AuthorizationService.can_edit_activity()` before an existing
+  activity can be modified.
+- Added explicit HTTP behavior for:
+  - unauthenticated requests — `401`;
+  - unauthorized activity edits — `403`; and
+  - missing activities — `404`.
+- Added `PATCH /activities/<activity_id>/` for updating existing activities.
+- Restricted updates to approved editable activity fields.
+- Protected the activity ID, parent project, audit timestamps, and direct
+  responsible-user object field from modification.
+- Added validation for:
+  - activity name;
+  - activity date format;
+  - responsible user ID;
+  - responsible user existence and active status; and
+  - controlled activity status values.
+- Updated the activity `updated_at` timestamp on successful edits.
+- Registered the Activity Edit endpoint in the main URL configuration.
+- Added API regression tests covering authorization, protected fields,
+  unknown fields, invalid JSON, validation failures, responsible-user
+  validation, method restrictions, and successful authorized updates.
+
+### Verification
+- Activity API tests — 26/26 PASSED
+- Full `core` test suite — 295/295 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+No database migration or schema change was required. The implementation
+updates the existing `activities` model fields and uses the existing
+responsible-user relationship.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final development log and staged Git diff, then commit and push
+the validated Activity Edit API implementation together with
+`development_log.md`.
