@@ -1,7 +1,7 @@
 import json
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
@@ -12,6 +12,7 @@ from core.views import (
     referrals_collection,
     referrals_list,
     referral_follow_up_create,
+    referral_follow_ups_collection,
     referral_follow_ups_list,
 )
 
@@ -539,6 +540,85 @@ class ReferralsApiTests(SimpleTestCase):
             context=None,
         )
 
+    @patch("core.views.referral_follow_ups_list")
+    @patch("core.views.referral_follow_up_create")
+    def test_follow_up_collection_dispatches_get_to_list(
+        self,
+        follow_up_create,
+        follow_ups_list,
+    ):
+        follow_ups_list.return_value = Mock(status_code=200)
+
+        request = self.factory.get(
+            "/referrals/7/follow-ups/",
+        )
+        request.user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=42,
+        )
+
+        response = referral_follow_ups_collection(
+            request,
+            7,
+        )
+
+        self.assertIs(response, follow_ups_list.return_value)
+        follow_ups_list.assert_called_once_with(
+            request,
+            7,
+        )
+        follow_up_create.assert_not_called()
+
+    @patch("core.views.referral_follow_ups_list")
+    @patch("core.views.referral_follow_up_create")
+    def test_follow_up_collection_dispatches_post_to_create(
+        self,
+        follow_up_create,
+        follow_ups_list,
+    ):
+        request = self.factory.post(
+            "/referrals/7/follow-ups/",
+            data=b'{"follow_up_date":"2026-09-14"}',
+            content_type="application/json",
+        )
+        request.user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=42,
+        )
+
+        follow_up_create.return_value = Mock(status_code=201)
+
+        response = referral_follow_ups_collection(
+            request,
+            7,
+        )
+
+        self.assertIs(response, follow_up_create.return_value)
+        follow_up_create.assert_called_once_with(
+            request,
+            7,
+        )
+        follow_ups_list.assert_not_called()
+
+    def test_follow_up_collection_rejects_unsupported_method(self):
+        request = self.factory.put(
+            "/referrals/7/follow-ups/",
+        )
+        request.user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=42,
+        )
+
+        response = referral_follow_ups_collection(
+            request,
+            7,
+        )
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
 
     def setUp(self):
         self.factory = RequestFactory()
@@ -558,6 +638,48 @@ class ReferralsApiTests(SimpleTestCase):
         )
         request.user = user
         return request
+
+    @patch("core.views.referrals_list")
+    @patch("core.views.referral_create")
+    def test_collection_dispatches_get_to_list(
+        self,
+        referral_create,
+        referrals_list,
+    ):
+        referrals_list.return_value = Mock(status_code=200)
+
+        request = self.make_request(
+            self.authenticated_user,
+            "get",
+        )
+
+        response = referrals_collection(request)
+
+        self.assertIs(response, referrals_list.return_value)
+        referrals_list.assert_called_once_with(request)
+        referral_create.assert_not_called()
+
+    @patch("core.views.referrals_list")
+    @patch("core.views.referral_create")
+    def test_collection_dispatches_post_to_create(
+        self,
+        referral_create,
+        referrals_list,
+    ):
+        request = self.factory.post(
+            "/referrals/",
+            data=b'{"beneficiary_id":10}',
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        referral_create.return_value = Mock(status_code=201)
+
+        response = referrals_collection(request)
+
+        self.assertIs(response, referral_create.return_value)
+        referral_create.assert_called_once_with(request)
+        referrals_list.assert_not_called()
 
     @patch("core.authorization.decorators.authorization_service")
     def test_unauthenticated_request_returns_401(self, service):

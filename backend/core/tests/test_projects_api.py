@@ -6,6 +6,7 @@ from django.test import RequestFactory, SimpleTestCase
 
 from core.models import Projects, UserProjectAssignments
 from core.views import (
+    projects_collection,
     projects_create,
     projects_detail,
     projects_list,
@@ -563,6 +564,57 @@ class ProjectsApiTests(SimpleTestCase):
             ]
         )
         self.assertEqual(project_get.call_count, 2)
+
+    @patch("core.views.projects_list")
+    @patch("core.views.projects_create")
+    def test_collection_dispatches_get_to_list(
+        self,
+        projects_create,
+        projects_list,
+    ):
+        projects_list.return_value = Mock(status_code=200)
+
+        request = self.make_request(self.authenticated_user)
+
+        response = projects_collection(request)
+
+        self.assertIs(response, projects_list.return_value)
+        projects_list.assert_called_once_with(request)
+        projects_create.assert_not_called()
+
+    @patch("core.views.projects_list")
+    @patch("core.views.projects_create")
+    def test_collection_dispatches_post_to_create(
+        self,
+        projects_create,
+        projects_list,
+    ):
+        request = self.factory.post(
+            "/projects/",
+            data=b'{"project_name":"Test Project"}',
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        projects_create.return_value = Mock(status_code=201)
+
+        response = projects_collection(request)
+
+        self.assertIs(response, projects_create.return_value)
+        projects_create.assert_called_once_with(request)
+        projects_list.assert_not_called()
+
+    def test_collection_rejects_unsupported_method(self):
+        request = self.factory.put("/projects/")
+        request.user = self.authenticated_user
+
+        response = projects_collection(request)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
 
     def test_unauthenticated_request_returns_401(self):
         response = projects_list(

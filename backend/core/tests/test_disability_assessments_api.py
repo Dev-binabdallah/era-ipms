@@ -1,12 +1,16 @@
 import json
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
 from core.models import Beneficiaries
-from core.views import disability_assessments_collection
+from core.views import (
+    disability_assessments_collection,
+    disability_assessments_list,
+    disability_assessment_create,
+)
 
 
 class DisabilityAssessmentsApiTests(SimpleTestCase):
@@ -37,6 +41,43 @@ class DisabilityAssessmentsApiTests(SimpleTestCase):
         )
         request.user = user
         return request
+
+    @patch("core.views.disability_assessments_list")
+    @patch("core.views.disability_assessment_create")
+    def test_collection_dispatches_get_to_list(
+        self,
+        assessment_create,
+        assessments_list,
+    ):
+        assessments_list.return_value = Mock(status_code=200)
+
+        request = self.make_get_request(self.authenticated_user)
+
+        response = disability_assessments_collection(request)
+
+        self.assertIs(response, assessments_list.return_value)
+        assessments_list.assert_called_once_with(request)
+        assessment_create.assert_not_called()
+
+    @patch("core.views.disability_assessments_list")
+    @patch("core.views.disability_assessment_create")
+    def test_collection_dispatches_post_to_create(
+        self,
+        assessment_create,
+        assessments_list,
+    ):
+        request = self.make_post_request(
+            self.authenticated_user,
+            b'{"beneficiary_id":10}',
+        )
+
+        assessment_create.return_value = Mock(status_code=201)
+
+        response = disability_assessments_collection(request)
+
+        self.assertIs(response, assessment_create.return_value)
+        assessment_create.assert_called_once_with(request)
+        assessments_list.assert_not_called()
 
     @patch("core.authorization.decorators.authorization_service")
     @patch("core.views.DisabilityAssessments.objects.create")

@@ -1,7 +1,7 @@
 import json
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
@@ -26,6 +26,45 @@ class BeneficiariesApiTests(SimpleTestCase):
         )
         request.user = user
         return request
+
+    @patch("core.views.beneficiaries_list")
+    @patch("core.views.beneficiary_create")
+    def test_collection_dispatches_get_to_list(
+        self,
+        beneficiary_create,
+        beneficiaries_list,
+    ):
+        beneficiaries_list.return_value = Mock(status_code=200)
+
+        request = self.make_request(self.authenticated_user)
+
+        response = beneficiaries_collection(request)
+
+        self.assertIs(response, beneficiaries_list.return_value)
+        beneficiaries_list.assert_called_once_with(request)
+        beneficiary_create.assert_not_called()
+
+    @patch("core.views.beneficiaries_list")
+    @patch("core.views.beneficiary_create")
+    def test_collection_dispatches_post_to_create(
+        self,
+        beneficiary_create,
+        beneficiaries_list,
+    ):
+        request = self.factory.post(
+            "/beneficiaries/",
+            data=b'{"beneficiary_code":"BEN-001"}',
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        beneficiary_create.return_value = Mock(status_code=201)
+
+        response = beneficiaries_collection(request)
+
+        self.assertIs(response, beneficiary_create.return_value)
+        beneficiary_create.assert_called_once_with(request)
+        beneficiaries_list.assert_not_called()
 
     def test_unauthenticated_request_returns_401(self):
         response = beneficiaries_list(

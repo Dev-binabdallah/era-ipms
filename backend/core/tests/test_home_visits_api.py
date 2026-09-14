@@ -1,7 +1,7 @@
 import json
 from datetime import date
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
@@ -32,6 +32,45 @@ class HomeVisitsApiTests(SimpleTestCase):
         )
         request.user = user
         return request
+
+    @patch("core.views.home_visits_list")
+    @patch("core.views.home_visit_create")
+    def test_collection_dispatches_get_to_list(
+        self,
+        home_visit_create,
+        home_visits_list,
+    ):
+        home_visits_list.return_value = Mock(status_code=200)
+
+        request = self.make_request(self.authenticated_user)
+
+        response = home_visits_collection(request)
+
+        self.assertIs(response, home_visits_list.return_value)
+        home_visits_list.assert_called_once_with(request)
+        home_visit_create.assert_not_called()
+
+    @patch("core.views.home_visits_list")
+    @patch("core.views.home_visit_create")
+    def test_collection_dispatches_post_to_create(
+        self,
+        home_visit_create,
+        home_visits_list,
+    ):
+        request = self.factory.post(
+            "/home-visits/",
+            data=b'{"beneficiary_id":10}',
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        home_visit_create.return_value = Mock(status_code=201)
+
+        response = home_visits_collection(request)
+
+        self.assertIs(response, home_visit_create.return_value)
+        home_visit_create.assert_called_once_with(request)
+        home_visits_list.assert_not_called()
 
     @patch("core.authorization.decorators.authorization_service")
     def test_unauthenticated_request_returns_401(self, service):

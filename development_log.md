@@ -802,3 +802,44 @@ responsible-user relationship.
 Review the final development log and staged Git diff, then commit and push
 the validated Activity Edit API implementation together with
 `development_log.md`.
+
+## 2026-09-14 — Collection Dispatcher Regression Test Coverage
+
+### Objective
+Strengthen API regression coverage for collection endpoints by explicitly
+verifying that HTTP methods dispatch to the correct list or create handler.
+
+### Work Completed
+- Added explicit GET dispatcher tests for collection endpoints:
+  - projects;
+  - beneficiaries;
+  - disability assessments;
+  - home visits;
+  - referrals; and
+  - referral follow-ups.
+- Added explicit POST dispatcher tests for the same collection endpoints.
+- Added explicit unsupported-method (`405`) coverage for:
+  - projects; and
+  - referral follow-ups.
+- Verified that each dispatcher calls only the expected delegated handler
+  and passes the original request and referral ID where applicable.
+- Added the missing `referral_follow_ups_collection` test import.
+- No production application code was changed.
+
+### Validation
+- Targeted API tests: **141/141 passed**
+- Full `core` test suite: **315/315 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Database Decision
+No database schema changes or migrations were required. This increment
+contains test-only changes.
+
+### Implementation Status
+**Complete.**
+
+### Next Step
+Review the updated development log and complete staged-diff verification,
+then commit the dispatcher regression coverage and `development_log.md`
+together.
