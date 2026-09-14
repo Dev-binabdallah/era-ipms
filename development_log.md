@@ -1,3 +1,33 @@
+## 2026-09-14 — Activity Collection Authentication Boundary Tests
+
+### Objective
+Strengthen regression coverage at the activity collection API boundary by
+verifying that unauthenticated requests are still rejected when requests
+enter through the collection dispatcher.
+
+### Work Completed
+- Added a GET collection-boundary test for `/activities/` verifying that an
+  unauthenticated request returns HTTP 401.
+- Added a POST collection-boundary test for `/activities/` verifying that an
+  unauthenticated request returns HTTP 401.
+- Tests execute the real `activities_collection` dispatcher rather than
+  mocking the delegated handlers, confirming that the dispatcher preserves
+  the existing authorization path.
+- Confirmed that no production application code was changed.
+
+### Validation
+- Activity API tests: **34/34 passed**
+- Full `core` test suite: **317/317 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Database Decision
+No database schema changes or migrations were required. This increment
+contains test-only changes.
+
+### Implementation Status
+**Complete.**
+
 ## 2026-09-14 — Activity List API Endpoint
 
 ### Objective

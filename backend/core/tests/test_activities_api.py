@@ -606,6 +606,35 @@ class ActivityListApiTests(SimpleTestCase):
         activities_create.assert_called_once_with(request)
         activities_list.assert_not_called()
 
+    def test_collection_get_unauthenticated_request_returns_401(self):
+        response = activities_collection(
+            self.make_get_request(
+                self.unauthenticated_user,
+            )
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    def test_collection_post_unauthenticated_request_returns_401(self):
+        request = self.factory.post(
+            "/activities/",
+            data=b"{}",
+            content_type="application/json",
+        )
+        request.user = self.unauthenticated_user
+
+        response = activities_collection(request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
     def test_collection_rejects_unsupported_method(self):
         request = self.factory.put("/activities/")
         request.user = self.authenticated_user
