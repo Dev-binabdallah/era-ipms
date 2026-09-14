@@ -1375,6 +1375,40 @@ def activity_update(request, activity):
     )
 
 
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="activities",
+)
+def activities_list(request):
+    queryset = authorized_queryset(
+        request.user,
+        "activities",
+        Activities.objects.all(),
+    )
+
+    activities = list(
+        queryset.values(
+            "activity_id",
+            "project_id",
+            "activity_name",
+            "activity_date",
+            "location",
+            "responsible_user_id",
+            "description",
+            "status",
+            "results",
+            "created_at",
+            "updated_at",
+        )
+    )
+
+    return JsonResponse(
+        {
+            "activities": activities,
+        }
+    )
+
+
 @require_activity_creation
 def activities_create(request, project):
     if request.method != "POST":
@@ -1514,6 +1548,19 @@ def activities_create(request, project):
             }
         },
         status=201,
+    )
+
+
+def activities_collection(request):
+    if request.method == "POST":
+        return activities_create(request)
+
+    if request.method == "GET":
+        return activities_list(request)
+
+    return JsonResponse(
+        {"error": "Method not allowed"},
+        status=405,
     )
 
 

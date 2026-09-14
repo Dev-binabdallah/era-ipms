@@ -5,7 +5,12 @@ from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
-from core.views import activity_update, activities_create
+from core.views import (
+    activity_update,
+    activities_collection,
+    activities_create,
+    activities_list,
+)
 
 
 class ActivitiesApiTests(SimpleTestCase):
@@ -445,6 +450,173 @@ class ActivitiesApiTests(SimpleTestCase):
             "2026-09-08T10:00:00Z",
         )
 
+
+
+class ActivityListApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.authenticated_user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=10,
+        )
+
+        self.unauthenticated_user = SimpleNamespace(
+            is_authenticated=False,
+        )
+
+    def make_get_request(
+        self,
+        user,
+        path="/activities/",
+    ):
+        request = self.factory.get(path)
+        request.user = user
+        return request
+
+    def test_list_unauthenticated_request_returns_401(self):
+        response = activities_list(
+            self.make_get_request(
+                self.unauthenticated_user,
+            )
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_list_unauthorized_request_returns_403(self, service):
+        service.can_view.return_value = False
+
+        response = activities_list(
+            self.make_get_request(
+                self.authenticated_user,
+            )
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        service.can_view.assert_called_once_with(
+            self.authenticated_user,
+            None,
+            resource="activities",
+            context=None,
+        )
+
+    @patch("core.views.Activities.objects.all")
+    @patch("core.views.authorized_queryset")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_list_authorized_request_uses_authorized_queryset(
+        self,
+        service,
+        authorized_queryset,
+        objects_all,
+    ):
+        service.can_view.return_value = True
+
+        activities = [
+            {
+                "activity_id": 1,
+                "project_id": 10,
+                "activity_name": "Community Training",
+                "activity_date": "2026-09-13",
+                "location": "Mombasa",
+                "responsible_user_id": 20,
+                "description": "Training session",
+                "status": "Planned",
+                "results": None,
+                "created_at": "2026-09-13T10:00:00Z",
+                "updated_at": "2026-09-13T10:00:00Z",
+            },
+        ]
+
+        queryset = SimpleNamespace(
+            values=lambda *args: activities,
+        )
+
+        authorized_queryset.return_value = queryset
+        objects_all.return_value = SimpleNamespace()
+
+        response = activities_list(
+            self.make_get_request(
+                self.authenticated_user,
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "activities": activities,
+            },
+        )
+
+        objects_all.assert_called_once_with()
+        authorized_queryset.assert_called_once_with(
+            self.authenticated_user,
+            "activities",
+            objects_all.return_value,
+        )
+
+    @patch("core.views.activities_list")
+    @patch("core.views.activities_create")
+    def test_collection_dispatches_get_to_list(
+        self,
+        activities_create,
+        activities_list,
+    ):
+        activities_list.return_value = Mock(status_code=200)
+
+        request = self.make_get_request(
+            self.authenticated_user,
+        )
+
+        response = activities_collection(request)
+
+        self.assertIs(response, activities_list.return_value)
+        activities_list.assert_called_once_with(request)
+        activities_create.assert_not_called()
+
+    @patch("core.views.activities_list")
+    @patch("core.views.activities_create")
+    def test_collection_dispatches_post_to_create(
+        self,
+        activities_create,
+        activities_list,
+    ):
+        request = self.factory.post(
+            "/activities/",
+            data=b'{"project_id":1}',
+            content_type="application/json",
+        )
+        request.user = self.authenticated_user
+
+        activities_create.return_value = Mock(status_code=201)
+
+        response = activities_collection(request)
+
+        self.assertIs(response, activities_create.return_value)
+        activities_create.assert_called_once_with(request)
+        activities_list.assert_not_called()
+
+    def test_collection_rejects_unsupported_method(self):
+        request = self.factory.put("/activities/")
+        request.user = self.authenticated_user
+
+        response = activities_collection(request)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
 
 
 class ActivityUpdateApiTests(SimpleTestCase):

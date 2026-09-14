@@ -1,3 +1,48 @@
+## 2026-09-14 — Activity List API Endpoint
+
+### Objective
+Implement and validate the protected Activity List API endpoint while
+preserving the existing Activity Creation API behavior.
+
+### Work completed
+- Added `GET /activities/` through a dedicated `activities_list()` endpoint.
+- Protected activity listing with the existing `PERMISSION_VIEW` authorization
+  path for the `activities` resource.
+- Applied `authorized_queryset()` to activity listing so returned activities
+  remain restricted by the user's authorization scope.
+- Added an `activities_collection()` dispatcher for the `/activities/`
+  collection endpoint:
+  - `GET` requests are routed to `activities_list()`;
+  - `POST` requests continue to use the existing `activities_create()` flow;
+  - unsupported methods return HTTP `405`.
+- Updated the main URL configuration to route `/activities/` through the
+  collection dispatcher.
+- Added API regression tests covering:
+  - unauthenticated activity listing;
+  - unauthorized activity listing;
+  - authorized activity listing and queryset authorization;
+  - GET collection dispatch;
+  - POST collection dispatch; and
+  - unsupported collection methods.
+
+### Verification
+- Full Django `core` test suite — **301/301 PASSED**
+- Django system check — **PASSED**
+- `git diff --check` — **PASSED**
+
+### Database decision
+No database migration or schema change was required. The endpoint reads from
+the existing `activities` table and uses the existing authorization/queryset
+infrastructure.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the development-log update and final Git diff, then stage the Activity
+List API implementation, its tests, and `development_log.md` together for
+commit.
+
 ## 2026-09-13 — Activity Edit Authorization and Role-Based Activity Querysets
 
 ### Objective
