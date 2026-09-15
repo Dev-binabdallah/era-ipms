@@ -980,11 +980,20 @@ Authorization remains centralized in `AuthorizationService`. The Django boundary
 
 Beneficiary-centered resources that do not have an approved project/activity relationship cannot inherit project scope from the current schema. They remain outside project-derived record-level scope until an explicit domain relationship is approved.
 
-### Next Step
+### Step 13.16 Status
 
-**Step 13.16 — Authorization-aware querysets and data filtering.**
+**Completed.**
 
-The next step will address filtering querysets so users receive only records within their authorized project/activity scope, rather than relying solely on per-request boundary checks.
+The existing `authorized_queryset()` implementation provides authorization-aware
+queryset filtering based on authentication, VIEW permission, responsibility,
+project/activity scope, and resource-specific record relationships.
+
+Dedicated queryset tests cover the main authorization and filtering branches.
+
+### Verification
+
+* Authorization queryset test suite: **18 tests passed**.
+* Django system check: **clean**.
 
 ## 2026-09-08 — Referral Management API
 
