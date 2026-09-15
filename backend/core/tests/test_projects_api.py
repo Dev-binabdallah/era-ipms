@@ -1370,6 +1370,100 @@ class ProjectAssignmentsApiTests(SimpleTestCase):
             project=project,
         )
 
+    def test_create_unauthenticated_returns_401(self):
+        response = project_assignment_create(
+            self.make_post_request(
+                self.unauthenticated_user,
+                body=b'{"user_id":20}',
+            ),
+            1,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_unauthorized_returns_403(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_manage_project_assignments.return_value = False
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        response = project_assignment_create(
+            self.make_post_request(
+                self.authenticated_user,
+                body=b'{"user_id":20}',
+            ),
+            1,
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        service.can_manage_project_assignments.assert_called_once_with(
+            self.authenticated_user,
+            project,
+        )
+
+    def test_update_unauthenticated_returns_401(self):
+        response = project_assignment_update(
+            self.make_patch_request(
+                self.unauthenticated_user,
+                body=b'{"is_active":false}',
+            ),
+            1,
+            5,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.views.Projects.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_unauthorized_returns_403(
+        self,
+        service,
+        project_get,
+    ):
+        service.can_manage_project_assignments.return_value = False
+
+        project = SimpleNamespace(project_id=1)
+        project_get.return_value = project
+
+        response = project_assignment_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"is_active":false}',
+            ),
+            1,
+            5,
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        service.can_manage_project_assignments.assert_called_once_with(
+            self.authenticated_user,
+            project,
+        )
+
     @patch("core.views.Users.objects.get")
     @patch("core.views.Projects.objects.get")
     @patch("core.authorization.decorators.authorization_service")

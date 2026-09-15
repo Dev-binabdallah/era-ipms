@@ -1,3 +1,39 @@
+## 2026-09-15 — Assignment Authorization Boundary Tests
+
+### Objective
+Strengthen regression coverage for activity and project assignment
+authorization boundaries.
+
+### Work Completed
+- Added an unauthenticated activity assignment creation test verifying
+  HTTP 401.
+- Added an unauthenticated activity assignment update test verifying
+  HTTP 401.
+- Added an unauthenticated project assignment creation test verifying
+  HTTP 401.
+- Added an unauthorized project assignment creation test verifying
+  HTTP 403.
+- Added an unauthenticated project assignment update test verifying
+  HTTP 401.
+- Added an unauthorized project assignment update test verifying
+  HTTP 403.
+- Confirmed that the tests exercise the existing authorization decorators
+  without changing production authorization logic.
+
+### Validation
+- Activity assignment API tests: passed
+- Project API tests: passed
+- Full `core` test suite: passed
+- Django system check: clean
+- `git diff --check`: clean
+
+### Database Decision
+No database schema changes or migrations were required. This increment
+contains test-only changes.
+
+### Implementation Status
+**Complete.**
+
 ## 2026-09-14 — Activity Collection Authentication Boundary Tests
 
 ### Objective

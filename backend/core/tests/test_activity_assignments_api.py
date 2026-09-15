@@ -181,6 +181,37 @@ class ActivityAssignmentsApiTests(SimpleTestCase):
             activity=self.activity,
         )
 
+    def test_create_unauthenticated_returns_401(self):
+        response = activity_assignment_create(
+            self.make_post_request(
+                self.unauthenticated_user,
+                body=b'{"user_id":20}',
+            ),
+            1,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    def test_update_unauthenticated_returns_401(self):
+        response = activity_assignment_update(
+            self.make_patch_request(
+                self.unauthenticated_user,
+                body=b'{"status":"completed"}',
+            ),
+            1,
+            5,
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
     @patch("core.views.ActivityAssignments.objects.create")
     @patch("core.views.ActivityAssignments.objects.filter")
     @patch("core.views.Users.objects.get")
