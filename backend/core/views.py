@@ -2350,3 +2350,110 @@ def poultry_groups_list(request):
     )
 
     return JsonResponse({"poultry_groups": list(groups)})
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="poultry_stock_movements",
+)
+def poultry_stock_movement_create(request):
+    """Create a stock movement for a poultry group the user can access."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    poultry_group_id = payload.get("poultry_group_id")
+    movement_date = payload.get("movement_date")
+    movement_type = payload.get("movement_type")
+    quantity = payload.get("quantity")
+
+    if (
+        poultry_group_id is None
+        or movement_date in (None, "")
+        or movement_type in (None, "")
+        or quantity is None
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "poultry_group_id, movement_date, movement_type, "
+                    "and quantity are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        poultry_group = PoultryGroups.objects.select_related(
+            "project"
+        ).get(poultry_group_id=poultry_group_id)
+    except PoultryGroups.DoesNotExist:
+        return JsonResponse({"error": "Poultry group not found"}, status=404)
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        poultry_group.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this poultry group"},
+            status=403,
+        )
+
+    movement = PoultryStockMovements.objects.create(
+        poultry_group=poultry_group,
+        movement_date=movement_date,
+        movement_type=movement_type,
+        quantity=quantity,
+        description=payload.get("description"),
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "poultry_stock_movement": {
+                "movement_id": movement.movement_id,
+                "poultry_group_id": movement.poultry_group_id,
+                "movement_date": movement.movement_date,
+                "movement_type": movement.movement_type,
+                "quantity": movement.quantity,
+                "description": movement.description,
+                "recorded_by": movement.recorded_by_id,
+                "created_at": movement.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="poultry_stock_movements",
+)
+def poultry_stock_movements_list(request):
+    """List stock movements within the user's authorized poultry scope."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    movements = authorized_queryset(
+        request.user,
+        "poultry_stock_movements",
+        PoultryStockMovements.objects.all(),
+    ).values(
+        "movement_id",
+        "poultry_group_id",
+        "movement_date",
+        "movement_type",
+        "quantity",
+        "description",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"poultry_stock_movements": list(movements)}
+    )

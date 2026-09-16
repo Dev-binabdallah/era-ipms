@@ -910,6 +910,42 @@ Review the updated development log and complete staged-diff verification,
 then commit the dispatcher regression coverage and `development_log.md`
 together.
 
+## 2026-09-14 — Poultry Stock Movement API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing poultry stock movements while enforcing the existing poultry responsibility and project-scope authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /poultry-stock-movements/create/` endpoint for creating poultry stock movements.
+- Added a protected `GET /poultry-stock-movements/` endpoint for listing poultry stock movements.
+- Enforced the existing `POULTRY_OPERATIONS` responsibility through the authorization system.
+- Required the appropriate `ADD` permission when creating a stock movement.
+- Required the appropriate `VIEW` permission when listing stock movements.
+- Added poultry group lookup before creating a stock movement.
+- Added project-scope validation to ensure the selected poultry group belongs to a project within the user's authorized scope.
+- Used the existing authorized queryset mechanism to restrict stock movement listings to the user's authorized poultry and project scope.
+- Added validation for required `poultry_group_id`, `movement_date`, `movement_type`, and `quantity` fields.
+- Added `404` handling when the requested poultry group does not exist.
+- Added `405` handling for unsupported HTTP methods.
+- Added `400` handling for invalid JSON and missing required data.
+- Added stock movement API regression tests covering authorized creation, missing poultry groups, missing required data, project-scope restrictions, authentication, authorization, and authorized listing.
+- Verified the targeted stock movement test suite with 9 passing tests.
+- Verified the complete `core` test suite with 340 passing tests.
+- Verified Django system checks with no issues.
+- Verified the working tree changes with `git diff --check`.
+
+### Verification
+
+- `python backend/manage.py test core -v 2` → 340 tests passed.
+- `python backend/manage.py check` → no issues.
+- `git diff --check` → clean.
+
+### Review
+
+The implementation uses the existing authorization and queryset patterns and keeps the stock movement endpoints simple and consistent with the poultry group API. No unrelated project changes were included in this increment.
+
 ## 2026-09-14 — Poultry Group API Endpoints
 
 ### Objective
