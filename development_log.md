@@ -909,3 +909,61 @@ contains test-only changes.
 Review the updated development log and complete staged-diff verification,
 then commit the dispatcher regression coverage and `development_log.md`
 together.
+
+## 2026-09-14 — Poultry Group API Endpoints
+
+### Objective
+
+Implement the first poultry operational API endpoints for creating and listing poultry groups while enforcing the existing poultry responsibility and project-scope authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /poultry-groups/create/` endpoint for creating poultry groups.
+- Added a protected `GET /poultry-groups/` endpoint for listing poultry groups.
+- Enforced the existing `POULTRY_OPERATIONS` responsibility through the authorization system.
+- Required the appropriate `ADD` permission when creating a poultry group.
+- Required the appropriate `VIEW` permission when listing poultry groups.
+- Added project-scope validation before poultry group creation.
+- Used the existing authorized queryset mechanism to restrict poultry group listings to projects within the user's authorized scope.
+- Added validation for required `project_id` and `group_name` fields.
+- Added `404` handling when the requested project does not exist.
+- Added `405` handling for unsupported HTTP methods.
+- Added `400` handling for invalid JSON.
+- Added `409` handling when a poultry group with the same name already exists in the same project.
+- Added API regression tests covering:
+  - unauthenticated requests;
+  - unauthorized requests;
+  - authorized poultry group creation;
+  - project-scope restrictions;
+  - authorized poultry group listing; and
+  - duplicate poultry group creation.
+- No database schema or migration changes were required because the existing `poultry_groups` table and its unique `(project_id, group_name)` constraint already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Poultry API tests: **8/8 passed**
+- Full Django `core` test suite: **331/331 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Poultry group operations continue to use the existing authorization architecture rather than introducing a separate poultry-specific permission system.
+
+The poultry group resource is mapped to the existing `POULTRY_OPERATIONS` responsibility, and project scope is inherited from the poultry group's parent project.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `poultry_groups` table remains authoritative, including its unique constraint preventing duplicate group names within the same project.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Review the updated development log and complete the final Git staging and verification process. The poultry API implementation and the corresponding development-log update should be committed together.

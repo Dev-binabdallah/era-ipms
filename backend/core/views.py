@@ -2,6 +2,7 @@ import json
 from datetime import date
 
 from django.contrib.auth import authenticate, login, logout
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -18,6 +19,7 @@ from core.authorization.decorators import (
     require_project_assignment_management,
 )
 from core.authorization.querysets import authorized_queryset
+from core.authorization.service import authorization_service
 from core.models import (
     Activities,
     ActivityAssignments,
@@ -27,6 +29,12 @@ from core.models import (
     Referrals,
     ReferralFollowUps,
     Projects,
+    PoultryGroups,
+    PoultryStockMovements,
+    EggProduction,
+    FeedRecords,
+    PoultryHealthRecords,
+    PoultrySales,
     UserProjectAssignments,
     Users,
 )
@@ -2247,3 +2255,98 @@ def project_assignment_update(
             "assignment": _assignment_payload(assignment),
         }
     )
+
+
+@require_permission(permission=PERMISSION_ADD, resource="poultry_groups")
+def poultry_group_create(request):
+    """Create a poultry group inside a project the user can access."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    project_id = payload.get("project_id")
+    group_name = payload.get("group_name")
+
+    if not project_id or not group_name:
+        return JsonResponse(
+            {"error": "project_id and group_name are required"},
+            status=400,
+        )
+
+    try:
+        project = Projects.objects.get(project_id=project_id)
+    except Projects.DoesNotExist:
+        return JsonResponse({"error": "Project not found"}, status=404)
+
+    if not authorization_service.has_project_scope(request.user, project):
+        return JsonResponse(
+            {"error": "You are not authorized to use this project"},
+            status=403,
+        )
+
+    try:
+        group = PoultryGroups.objects.create(
+            project=project,
+            group_name=group_name,
+            poultry_category=payload.get("poultry_category"),
+            breed_or_type=payload.get("breed_or_type"),
+            start_date=payload.get("start_date"),
+            status=payload.get("status", "active"),
+            description=payload.get("description"),
+            created_at=timezone.now(),
+            updated_at=timezone.now(),
+        )
+    except IntegrityError:
+        return JsonResponse(
+            {
+                "error": (
+                    "A poultry group with this name already exists "
+                    "in this project"
+                )
+            },
+            status=409,
+        )
+
+    return JsonResponse(
+        {
+            "poultry_group": {
+                "poultry_group_id": group.poultry_group_id,
+                "project_id": group.project_id,
+                "group_name": group.group_name,
+                "poultry_category": group.poultry_category,
+                "breed_or_type": group.breed_or_type,
+                "start_date": group.start_date,
+                "status": group.status,
+                "description": group.description,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(permission=PERMISSION_VIEW, resource="poultry_groups")
+def poultry_groups_list(request):
+    """List poultry groups within the user's authorized project scope."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    groups = authorized_queryset(
+        request.user,
+        "poultry_groups",
+        PoultryGroups.objects.all(),
+    ).values(
+        "poultry_group_id",
+        "project_id",
+        "group_name",
+        "poultry_category",
+        "breed_or_type",
+        "start_date",
+        "status",
+        "description",
+    )
+
+    return JsonResponse({"poultry_groups": list(groups)})

@@ -17,6 +17,8 @@ from core.views import (
     referral_follow_ups_collection,
     projects_collection,
     projects_detail_collection,
+    poultry_group_create,
+    poultry_groups_list,
     project_assignments,
     project_assignment_create,
     project_assignment_update,
@@ -46,6 +48,8 @@ urlpatterns = [
         activity_assignment_update,
     ),
     path("projects/", projects_collection),
+    path("poultry-groups/", poultry_groups_list),
+    path("poultry-groups/create/", poultry_group_create),
     path("beneficiaries/", beneficiaries_collection),
     path(
         "disability-assessments/",
