@@ -1430,3 +1430,57 @@ The existing `poultry_groups` table remains authoritative, including its unique 
 ### Next Step
 
 Review the updated development log and complete the final Git staging and verification process. The poultry API implementation and the corresponding development-log update should be committed together.
+
+## 2026-09-17 — Egg Production API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing egg production for poultry groups while using the existing poultry responsibility, permission, and project-scope authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /egg-production/create/` endpoint for recording egg production.
+- Added a protected `GET /egg-production/` endpoint for listing egg production records.
+- Required the existing `ADD` permission when recording egg production.
+- Required the existing `VIEW` permission when listing egg production.
+- Used the existing `egg_production` resource authorization and poultry project-scope rules.
+- Added poultry group lookup before recording egg production.
+- Added project-scope validation to ensure the selected poultry group belongs to a project within the user's authorized scope.
+- Added validation for required `poultry_group_id`, `production_date`, `eggs_produced`, `eggs_used`, and `eggs_sold` fields.
+- Added `404` handling when the requested poultry group does not exist.
+- Added `400` handling for missing or invalid egg production data.
+- Added validation to prevent negative egg quantities.
+- Added validation to prevent eggs used and sold from being greater than eggs produced.
+- Calculated `eggs_remaining` automatically from the production, used, and sold quantities.
+- Recorded the user responsible for entering the production record.
+- Added API regression tests covering authentication, authorization, project scope, validation, creation, and authorized listing.
+- No database schema or migration changes were required because the existing `egg_production` table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Egg Production API tests: **12/12 passed**
+- Full Django `core` test suite: **352/352 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Egg production operations continue to use the existing authorization architecture.
+
+The `egg_production` resource uses the existing `POULTRY_OPERATIONS` responsibility, and production records inherit project scope through their related poultry group.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `egg_production` table remains authoritative, including its relationship to `poultry_groups` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Review the final changes, stage the Egg Production API implementation and development-log updates together, and complete the Git commit after final verification.

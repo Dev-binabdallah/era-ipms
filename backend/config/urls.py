@@ -21,6 +21,8 @@ from core.views import (
     poultry_groups_list,
     poultry_stock_movement_create,
     poultry_stock_movements_list,
+    egg_production_create,
+    egg_production_list,
     project_assignments,
     project_assignment_create,
     project_assignment_update,
@@ -54,6 +56,8 @@ urlpatterns = [
     path("poultry-groups/create/", poultry_group_create),
     path("poultry-stock-movements/", poultry_stock_movements_list),
     path("poultry-stock-movements/create/", poultry_stock_movement_create),
+    path("egg-production/", egg_production_list),
+    path("egg-production/create/", egg_production_create),
     path("beneficiaries/", beneficiaries_collection),
     path(
         "disability-assessments/",
