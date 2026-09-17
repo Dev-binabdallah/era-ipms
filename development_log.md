@@ -1163,3 +1163,58 @@ The existing `poultry_health_records` table remains authoritative, including its
 ### Next Step
 
 Stage the Poultry Health Records API implementation and both development-log updates together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-17 - Poultry Sales API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing poultry sales while using the existing poultry responsibility, permission, and project-scope authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /poultry-sales/create/` endpoint for recording poultry sales.
+- Added a protected `GET /poultry-sales/` endpoint for listing poultry sales.
+- Required the existing `ADD` permission when creating poultry sales.
+- Required the existing `VIEW` permission when listing poultry sales.
+- Used the existing `poultry_sales` resource authorization and poultry project-scope rules.
+- Added poultry group lookup before creating a poultry sale.
+- Added project-scope validation to ensure the selected poultry group belongs to a project within the user's authorized scope.
+- Added validation for required `poultry_group_id`, `sale_date`, and `quantity` fields.
+- Added validation to ensure quantity is an integer and cannot be negative.
+- Added validation for optional `unit_price` and `total_amount` values.
+- Added validation to prevent negative unit prices and total amounts.
+- Added `404` handling when the requested poultry group does not exist.
+- Added `400` handling for missing or invalid poultry sale data.
+- Recorded the user responsible for entering the poultry sale.
+- Added API regression tests covering authorization, project scope, validation, creation, listing, and HTTP methods.
+- No database schema or migration changes were required because the existing poultry sales table and Django model already support the implementation.
+- Did not automatically calculate `total_amount` because the existing schema allows `unit_price` and `total_amount` to be stored independently and no existing business rule requires automatic calculation.
+
+### Validation
+
+Local verification completed:
+
+- Poultry Sales API tests: **14/14 passed**
+- Full Django `core` test suite: **391/391 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Poultry sale operations continue to use the existing authorization architecture.
+
+The `poultry_sales` resource uses the existing `POULTRY_OPERATIONS` responsibility, and sales inherit project scope through their related poultry group.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `poultry_sales` table remains authoritative, including its relationship to `poultry_groups` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Poultry Sales API implementation and both development-log updates together, review the staged changes, and complete the Git commit after final verification.

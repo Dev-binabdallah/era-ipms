@@ -2889,6 +2889,186 @@ def poultry_health_record_create(request):
 
 
 @require_permission(
+    permission=PERMISSION_ADD,
+    resource="poultry_sales",
+)
+def poultry_sale_create(request):
+    """Create a sale for a poultry group the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    poultry_group_id = payload.get("poultry_group_id")
+    sale_date = payload.get("sale_date")
+    quantity = payload.get("quantity")
+
+    if (
+        poultry_group_id is None
+        or sale_date in (None, "")
+        or quantity is None
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "poultry_group_id, sale_date, and quantity "
+                    "are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        poultry_group = PoultryGroups.objects.select_related(
+            "project"
+        ).get(
+            poultry_group_id=poultry_group_id,
+        )
+    except PoultryGroups.DoesNotExist:
+        return JsonResponse(
+            {"error": "Poultry group not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        poultry_group.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this poultry group"},
+            status=403,
+        )
+
+    try:
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "quantity must be an integer"},
+            status=400,
+        )
+
+    if quantity < 0:
+        return JsonResponse(
+            {"error": "quantity cannot be negative"},
+            status=400,
+        )
+
+    try:
+        unit_price = payload.get("unit_price")
+        total_amount = payload.get("total_amount")
+
+        if unit_price not in (None, ""):
+            unit_price = Decimal(str(unit_price))
+        else:
+            unit_price = None
+
+        if total_amount not in (None, ""):
+            total_amount = Decimal(str(total_amount))
+        else:
+            total_amount = None
+    except (InvalidOperation, TypeError, ValueError):
+        return JsonResponse(
+            {
+                "error": (
+                    "unit_price and total_amount must be valid numbers"
+                )
+            },
+            status=400,
+        )
+
+    if unit_price is not None and unit_price < 0:
+        return JsonResponse(
+            {"error": "unit_price cannot be negative"},
+            status=400,
+        )
+
+    if total_amount is not None and total_amount < 0:
+        return JsonResponse(
+            {"error": "total_amount cannot be negative"},
+            status=400,
+        )
+
+    sale = PoultrySales.objects.create(
+        poultry_group=poultry_group,
+        sale_date=sale_date,
+        quantity=quantity,
+        unit_price=unit_price,
+        total_amount=total_amount,
+        buyer_description=payload.get("buyer_description"),
+        notes=payload.get("notes"),
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "poultry_sale": {
+                "poultry_sale_id": sale.poultry_sale_id,
+                "poultry_group_id": sale.poultry_group_id,
+                "sale_date": sale.sale_date,
+                "quantity": sale.quantity,
+                "unit_price": sale.unit_price,
+                "total_amount": sale.total_amount,
+                "buyer_description": sale.buyer_description,
+                "notes": sale.notes,
+                "recorded_by": sale.recorded_by_id,
+                "created_at": sale.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="poultry_sales",
+)
+def poultry_sales_list(request):
+    """List sales within the user's authorized poultry scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    sales = authorized_queryset(
+        request.user,
+        "poultry_sales",
+        PoultrySales.objects.all(),
+    ).values(
+        "poultry_sale_id",
+        "poultry_group_id",
+        "sale_date",
+        "quantity",
+        "unit_price",
+        "total_amount",
+        "buyer_description",
+        "notes",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"poultry_sales": list(sales)}
+    )
+
+
+@require_permission(
     permission=PERMISSION_VIEW,
     resource="poultry_health_records",
 )

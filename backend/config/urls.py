@@ -27,6 +27,8 @@ from core.views import (
     feed_records_list,
     poultry_health_record_create,
     poultry_health_records_list,
+    poultry_sale_create,
+    poultry_sales_list,
     project_assignments,
     project_assignment_create,
     project_assignment_update,
@@ -66,6 +68,8 @@ urlpatterns = [
     path("feed-records/create/", feed_record_create),
     path("poultry-health-records/", poultry_health_records_list),
     path("poultry-health-records/create/", poultry_health_record_create),
+    path("poultry-sales/", poultry_sales_list),
+    path("poultry-sales/create/", poultry_sale_create),
     path("beneficiaries/", beneficiaries_collection),
     path(
         "disability-assessments/",
