@@ -2773,3 +2773,150 @@ def poultry_stock_movements_list(request):
     return JsonResponse(
         {"poultry_stock_movements": list(movements)}
     )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="poultry_health_records",
+)
+def poultry_health_record_create(request):
+    """Create a health record for a poultry group the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    poultry_group_id = payload.get("poultry_group_id")
+    record_date = payload.get("record_date")
+    condition_type = payload.get("condition_type")
+    number_affected = payload.get("number_affected")
+
+    if (
+        poultry_group_id is None
+        or record_date in (None, "")
+        or condition_type in (None, "")
+        or number_affected is None
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "poultry_group_id, record_date, condition_type, "
+                    "and number_affected are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        poultry_group = PoultryGroups.objects.select_related(
+            "project"
+        ).get(
+            poultry_group_id=poultry_group_id,
+        )
+    except PoultryGroups.DoesNotExist:
+        return JsonResponse(
+            {"error": "Poultry group not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        poultry_group.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this poultry group"},
+            status=403,
+        )
+
+    try:
+        number_affected = int(number_affected)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "number_affected must be an integer"},
+            status=400,
+        )
+
+    if number_affected < 0:
+        return JsonResponse(
+            {"error": "number_affected cannot be negative"},
+            status=400,
+        )
+
+    record = PoultryHealthRecords.objects.create(
+        poultry_group=poultry_group,
+        record_date=record_date,
+        condition_type=condition_type,
+        number_affected=number_affected,
+        description=payload.get("description"),
+        action_taken=payload.get("action_taken"),
+        outcome=payload.get("outcome"),
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "poultry_health_record": {
+                "health_record_id": record.health_record_id,
+                "poultry_group_id": record.poultry_group_id,
+                "record_date": record.record_date,
+                "condition_type": record.condition_type,
+                "number_affected": record.number_affected,
+                "description": record.description,
+                "action_taken": record.action_taken,
+                "outcome": record.outcome,
+                "recorded_by": record.recorded_by_id,
+                "created_at": record.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="poultry_health_records",
+)
+def poultry_health_records_list(request):
+    """List health records within the user's authorized poultry scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    records = authorized_queryset(
+        request.user,
+        "poultry_health_records",
+        PoultryHealthRecords.objects.all(),
+    ).values(
+        "health_record_id",
+        "poultry_group_id",
+        "record_date",
+        "condition_type",
+        "number_affected",
+        "description",
+        "action_taken",
+        "outcome",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"poultry_health_records": list(records)}
+    )

@@ -1110,3 +1110,56 @@ The existing feed records table remains authoritative, including its relationshi
 ### Next Step
 
 Review the final Feed Records API changes, stage the API implementation and both development-log updates together, and complete the Git commit after final verification.
+
+## 2026-09-17 - Poultry Health Records API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing poultry health records while using the existing poultry responsibility, permission, and project-scope authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /poultry-health-records/create/` endpoint for recording poultry health records.
+- Added a protected `GET /poultry-health-records/` endpoint for listing poultry health records.
+- Required the existing `ADD` permission when creating health records.
+- Required the existing `VIEW` permission when listing health records.
+- Used the existing `poultry_health_records` resource authorization and poultry project-scope rules.
+- Added poultry group lookup before creating a health record.
+- Added project-scope validation to ensure the selected poultry group belongs to a project within the user's authorized scope.
+- Added validation for required `poultry_group_id`, `record_date`, `condition_type`, and `number_affected` fields.
+- Added validation to ensure `number_affected` is an integer and cannot be negative.
+- Added support for optional `description`, `action_taken`, and `outcome` fields.
+- Recorded the user responsible for entering the health record.
+- Added `404` handling when the requested poultry group does not exist.
+- Added `400` handling for missing, invalid, or negative health record data.
+- Added API regression tests covering authorization, project scope, validation, creation, listing, and HTTP methods.
+- No database schema or migration changes were required because the existing poultry health records table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Poultry Health Records API tests: **12/12 passed**
+- Full Django `core` test suite: **377/377 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Poultry health record operations continue to use the existing authorization architecture.
+
+The `poultry_health_records` resource uses the existing `POULTRY_OPERATIONS` responsibility, and health records inherit project scope through their related poultry group.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `poultry_health_records` table remains authoritative, including its relationship to `poultry_groups` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Poultry Health Records API implementation and both development-log updates together, review the staged changes, and complete the Git commit after final verification.
