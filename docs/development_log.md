@@ -1484,3 +1484,56 @@ The existing `egg_production` table remains authoritative, including its relatio
 ### Next Step
 
 Review the final changes, stage the Egg Production API implementation and development-log updates together, and complete the Git commit after final verification.
+
+## 2026-09-17 — Feed Records API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing feed records for poultry groups while using the existing poultry responsibility, permission, and project-scope authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /feed-records/create/` endpoint for recording feed records.
+- Added a protected `GET /feed-records/` endpoint for listing feed records.
+- Required the existing `ADD` permission when creating feed records.
+- Required the existing `VIEW` permission when listing feed records.
+- Used the existing `feed_records` resource authorization and poultry project-scope rules.
+- Added poultry group lookup before creating a feed record.
+- Added project-scope validation to ensure the selected poultry group belongs to a project within the user's authorized scope.
+- Added validation for required `poultry_group_id`, `record_date`, and `quantity` fields.
+- Added validation for numeric quantity and cost values.
+- Added validation to prevent negative quantity and cost values.
+- Added `404` handling when the requested poultry group does not exist.
+- Added `400` handling for missing or invalid feed record data.
+- Recorded the user responsible for entering the feed record.
+- Added API regression tests covering authentication, authorization, project scope, validation, creation, and authorized listing.
+- No database schema or migration changes were required because the existing feed records table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Feed Records API tests: **13/13 passed**
+- Full Django `core` test suite: **365/365 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Feed record operations continue to use the existing authorization architecture.
+
+The `feed_records` resource uses the existing `POULTRY_OPERATIONS` responsibility, and feed records inherit project scope through their related poultry group.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing feed records table remains authoritative, including its relationship to `poultry_groups` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Review the final Feed Records API changes, stage the API implementation and both development-log updates together, and complete the Git commit after final verification.

@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
@@ -2427,6 +2428,156 @@ def poultry_stock_movement_create(request):
             }
         },
         status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="feed_records",
+)
+def feed_record_create(request):
+    """Create a feed record for a poultry group the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    poultry_group_id = payload.get("poultry_group_id")
+    record_date = payload.get("record_date")
+    quantity = payload.get("quantity")
+
+    if (
+        poultry_group_id is None
+        or record_date in (None, "")
+        or quantity is None
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "poultry_group_id, record_date, and quantity "
+                    "are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        poultry_group = PoultryGroups.objects.select_related(
+            "project"
+        ).get(
+            poultry_group_id=poultry_group_id,
+        )
+    except PoultryGroups.DoesNotExist:
+        return JsonResponse(
+            {"error": "Poultry group not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        poultry_group.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this poultry group"},
+            status=403,
+        )
+
+    try:
+        quantity = Decimal(str(quantity))
+        cost = Decimal(str(payload.get("cost", "0")))
+    except (InvalidOperation, TypeError, ValueError):
+        return JsonResponse(
+            {
+                "error": "quantity and cost must be valid numbers"
+            },
+            status=400,
+        )
+
+    if quantity < 0 or cost < 0:
+        return JsonResponse(
+            {
+                "error": "quantity and cost cannot be negative"
+            },
+            status=400,
+        )
+
+    record = FeedRecords.objects.create(
+        poultry_group=poultry_group,
+        record_date=record_date,
+        feed_source=payload.get("feed_source"),
+        feed_description=payload.get("feed_description"),
+        quantity=quantity,
+        unit=payload.get("unit"),
+        cost=cost,
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "feed_record": {
+                "feed_record_id": record.feed_record_id,
+                "poultry_group_id": record.poultry_group_id,
+                "record_date": record.record_date,
+                "feed_source": record.feed_source,
+                "feed_description": record.feed_description,
+                "quantity": record.quantity,
+                "unit": record.unit,
+                "cost": record.cost,
+                "recorded_by": record.recorded_by_id,
+                "created_at": record.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="feed_records",
+)
+def feed_records_list(request):
+    """List feed records within the user's authorized poultry scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    records = authorized_queryset(
+        request.user,
+        "feed_records",
+        FeedRecords.objects.all(),
+    ).values(
+        "feed_record_id",
+        "poultry_group_id",
+        "record_date",
+        "feed_source",
+        "feed_description",
+        "quantity",
+        "unit",
+        "cost",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"feed_records": list(records)}
     )
 
 
