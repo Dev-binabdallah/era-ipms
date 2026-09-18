@@ -34,6 +34,7 @@ from core.models import (
     PoultryStockMovements,
     EggProduction,
     FeedRecords,
+    FarmCrops,
     PoultryHealthRecords,
     PoultrySales,
     UserProjectAssignments,
@@ -3099,4 +3100,147 @@ def poultry_health_records_list(request):
 
     return JsonResponse(
         {"poultry_health_records": list(records)}
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="farm_crops",
+)
+def farm_crop_create(request):
+    """Create a farm crop for a project the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    project_id = payload.get("project_id")
+    crop_name = payload.get("crop_name")
+
+    if project_id is None or crop_name in (None, ""):
+        return JsonResponse(
+            {
+                "error": "project_id and crop_name are required"
+            },
+            status=400,
+        )
+
+    crop_name = str(crop_name).strip()
+
+    if not crop_name:
+        return JsonResponse(
+            {"error": "crop_name cannot be empty"},
+            status=400,
+        )
+
+    try:
+        project = Projects.objects.get(
+            project_id=project_id,
+        )
+    except Projects.DoesNotExist:
+        return JsonResponse(
+            {"error": "Project not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this project"},
+            status=403,
+        )
+
+    planting_date = payload.get("planting_date")
+
+    if planting_date in (None, ""):
+        planting_date = None
+    else:
+        try:
+            planting_date = date.fromisoformat(str(planting_date))
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {
+                    "error": (
+                        "planting_date must be in YYYY-MM-DD format"
+                    )
+                },
+                status=400,
+            )
+
+    crop = FarmCrops.objects.create(
+        project=project,
+        crop_name=crop_name,
+        description=payload.get("description"),
+        planting_date=planting_date,
+        status=payload.get("status") or "active",
+        recorded_by=request.user,
+        created_at=timezone.now(),
+        updated_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "farm_crop": {
+                "crop_id": crop.crop_id,
+                "project_id": crop.project_id,
+                "crop_name": crop.crop_name,
+                "description": crop.description,
+                "planting_date": crop.planting_date,
+                "status": crop.status,
+                "recorded_by": crop.recorded_by_id,
+                "created_at": crop.created_at,
+                "updated_at": crop.updated_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="farm_crops",
+)
+def farm_crops_list(request):
+    """List farm crops within the user's authorized project scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    crops = authorized_queryset(
+        request.user,
+        "farm_crops",
+        FarmCrops.objects.all(),
+    ).values(
+        "crop_id",
+        "project_id",
+        "crop_name",
+        "description",
+        "planting_date",
+        "status",
+        "recorded_by_id",
+        "created_at",
+        "updated_at",
+    )
+
+    return JsonResponse(
+        {"farm_crops": list(crops)}
     )

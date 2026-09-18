@@ -1218,3 +1218,56 @@ The existing `poultry_sales` table remains authoritative, including its relation
 ### Next Step
 
 Stage the Poultry Sales API implementation and both development-log updates together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-18 - Farm Crops API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing farm crops while using the existing permission, project-scope, and authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /farm-crops/create/` endpoint for recording farm crops.
+- Added a protected `GET /farm-crops/` endpoint for listing farm crops.
+- Required the existing `ADD` permission when creating farm crops.
+- Required the existing `VIEW` permission when listing farm crops.
+- Used the existing `farm_crops` resource authorization and project-scope rules.
+- Added project lookup before creating a farm crop.
+- Added project-scope validation to ensure the selected project is within the user's authorized scope.
+- Added validation for required `project_id` and `crop_name` fields.
+- Added validation to prevent an empty crop name.
+- Added validation for the optional `planting_date` field using `YYYY-MM-DD` format.
+- Added handling for invalid JSON requests.
+- Recorded the user responsible for entering the farm crop.
+- Added URL routes for farm crop creation and listing.
+- Added API regression tests covering authentication, permissions, project scope, validation, creation, listing, and HTTP methods.
+- No database schema or migration changes were required because the existing `farm_crops` table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Farm Crops API tests: **13/13 passed**
+- Full Django `core` test suite: **404/404 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Farm crop operations use the existing authorization architecture.
+
+The `farm_crops` resource uses the existing project-scoped authorization rules, and farm crops are accessible only within projects available to the user.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `farm_crops` table remains authoritative, including its relationship to `projects` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Farm Crops API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
