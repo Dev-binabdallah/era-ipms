@@ -1574,3 +1574,34 @@ No database migration or schema change was required. The API uses the existing `
 
 ### Next step
 Review the final Git diff and stage the M&E indicator record implementation, tests, and `development_log.md` together for commit.
+
+## 2026-09-19 — M&E Indicator List API
+
+### Objective
+Implement the API endpoint for listing M&E indicators within the user's authorized project scope.
+
+### Work completed
+- Added protected endpoint:
+  - `GET /me-indicators/`
+- Added `me_indicators_list` to `backend/core/views.py`.
+- Reused the existing `me_indicators` VIEW permission and authorization rules.
+- Used `authorized_queryset` to return only indicators within the user's authorized project scope.
+- Added the indicator fields needed by the API response.
+- Added the endpoint to `backend/config/urls.py`.
+- Added 4 focused tests covering authentication, VIEW permission, HTTP method validation, and successful authorized listing.
+- Corrected the list permission test to use the existing `can_view()` authorization pattern.
+
+### Verification
+- M&E Indicator API tests: 17/17 PASSED
+- Full `core` test suite: 492/492 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The API uses the existing `me_indicators` database table and `MeIndicators` model.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final Git diff and stage the M&E indicator list implementation, tests, and `development_log.md` together for commit.

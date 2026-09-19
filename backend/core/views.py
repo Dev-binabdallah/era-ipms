@@ -3543,6 +3543,43 @@ def harvests_list(request):
 
 
 @require_permission(
+    permission=PERMISSION_VIEW,
+    resource="me_indicators",
+)
+def me_indicators_list(request):
+    """List M&E indicators within the user's authorized project scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    indicators = authorized_queryset(
+        request.user,
+        "me_indicators",
+        MeIndicators.objects.all(),
+    ).values(
+        "indicator_id",
+        "project_id",
+        "indicator_name",
+        "description",
+        "target_value",
+        "unit",
+        "start_date",
+        "end_date",
+        "status",
+        "created_by_id",
+        "created_at",
+        "updated_at",
+    )
+
+    return JsonResponse(
+        {"me_indicators": list(indicators)},
+        status=200,
+    )
+
+
+@require_permission(
     permission=PERMISSION_ADD,
     resource="me_indicators",
 )
