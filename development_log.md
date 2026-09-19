@@ -1496,3 +1496,49 @@ The existing `financial_transactions` table remains authoritative, including its
 ### Next Step
 
 Stage the Financial Transactions API implementation, authorization updates, regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-19 — M&E Indicator Creation API
+
+### Objective
+Implement the API endpoint for creating Monitoring and Evaluation (M&E)
+indicators for authorized projects.
+
+### Work completed
+- Added the `MeIndicators` model import to `backend/core/views.py`.
+- Added the protected M&E indicator creation endpoint:
+  - `POST /me-indicators/create/`
+- Required the `ADD` permission for the `me_indicators` resource.
+- Required the requesting user to have access to the selected project.
+- Added validation for:
+  - indicator name;
+  - project ID;
+  - target value;
+  - start date;
+  - end date;
+  - date range;
+  - unit;
+  - description;
+  - status.
+- Added creation audit information using the authenticated user and
+  creation/update timestamps.
+- Added the created indicator details to the API response.
+- Added 13 focused API tests covering authentication, authorization,
+  validation, project scope, and successful creation.
+- Added the new endpoint to `backend/config/urls.py`.
+
+### Verification
+- M&E Indicator API tests — 13/13 PASSED
+- Full `core` test suite — 475/475 PASSED
+- Django system check — PASSED
+- `git diff --check` — PASSED
+
+### Database decision
+No database migration or schema change was required. The API uses the
+existing `me_indicators` database table and `MeIndicators` model.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final Git diff and stage the M&E indicator implementation,
+tests, and `development_log.md` together for commit.

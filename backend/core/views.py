@@ -39,6 +39,7 @@ from core.models import (
     FarmPoultryTransfers,
     Harvests,
     FinancialTransactions,
+    MeIndicators,
     PoultryHealthRecords,
     PoultrySales,
     UserProjectAssignments,
@@ -3537,6 +3538,197 @@ def harvests_list(request):
 
     return JsonResponse(
         {"harvests": list(harvests)}
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="me_indicators",
+)
+def me_indicator_create(request):
+    """Create an M&E indicator for a project the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    indicator_name = payload.get("indicator_name")
+    project_id = payload.get("project_id")
+
+    if indicator_name in (None, ""):
+        return JsonResponse(
+            {"error": "indicator_name is required"},
+            status=400,
+        )
+
+    if not isinstance(indicator_name, str) or not indicator_name.strip():
+        return JsonResponse(
+            {"error": "indicator_name is required"},
+            status=400,
+        )
+
+    if len(indicator_name.strip()) > 200:
+        return JsonResponse(
+            {
+                "error": (
+                    "indicator_name must not exceed 200 characters"
+                )
+            },
+            status=400,
+        )
+
+    project = None
+
+    if project_id in (None, ""):
+        return JsonResponse(
+            {"error": "project_id is required"},
+            status=400,
+        )
+
+    try:
+        project = Projects.objects.get(
+            project_id=project_id,
+        )
+    except Projects.DoesNotExist:
+        return JsonResponse(
+            {"error": "Project not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this project"},
+            status=403,
+        )
+
+    target_value = payload.get("target_value")
+
+    if target_value not in (None, ""):
+        try:
+            target_value = Decimal(str(target_value))
+        except (TypeError, ValueError, InvalidOperation):
+            return JsonResponse(
+                {"error": "target_value must be a valid number"},
+                status=400,
+            )
+
+    start_date = payload.get("start_date")
+    end_date = payload.get("end_date")
+
+    if start_date not in (None, ""):
+        try:
+            start_date = date.fromisoformat(str(start_date))
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"error": "start_date must be in YYYY-MM-DD format"},
+                status=400,
+            )
+    else:
+        start_date = None
+
+    if end_date not in (None, ""):
+        try:
+            end_date = date.fromisoformat(str(end_date))
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"error": "end_date must be in YYYY-MM-DD format"},
+                status=400,
+            )
+    else:
+        end_date = None
+
+    if start_date and end_date and start_date > end_date:
+        return JsonResponse(
+            {"error": "start_date cannot be after end_date"},
+            status=400,
+        )
+
+    unit = payload.get("unit")
+    description = payload.get("description")
+    status = payload.get("status", "active")
+
+    if unit is not None and not isinstance(unit, str):
+        return JsonResponse(
+            {"error": "unit must be text"},
+            status=400,
+        )
+
+    if unit and len(unit.strip()) > 50:
+        return JsonResponse(
+            {"error": "unit must not exceed 50 characters"},
+            status=400,
+        )
+
+    if description is not None and not isinstance(description, str):
+        return JsonResponse(
+            {"error": "description must be text"},
+            status=400,
+        )
+
+    if not isinstance(status, str) or not status.strip():
+        return JsonResponse(
+            {"error": "status must be text"},
+            status=400,
+        )
+
+    if len(status.strip()) > 50:
+        return JsonResponse(
+            {"error": "status must not exceed 50 characters"},
+            status=400,
+        )
+
+    now = timezone.now()
+
+    indicator = MeIndicators.objects.create(
+        project=project,
+        indicator_name=indicator_name.strip(),
+        description=description,
+        target_value=target_value,
+        unit=unit.strip() if unit else None,
+        start_date=start_date,
+        end_date=end_date,
+        status=status.strip(),
+        created_by=request.user,
+        created_at=now,
+        updated_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "me_indicator": {
+                "indicator_id": indicator.indicator_id,
+                "project_id": indicator.project_id,
+                "indicator_name": indicator.indicator_name,
+                "description": indicator.description,
+                "target_value": indicator.target_value,
+                "unit": indicator.unit,
+                "start_date": indicator.start_date,
+                "end_date": indicator.end_date,
+                "status": indicator.status,
+                "created_by_id": indicator.created_by_id,
+                "created_at": indicator.created_at,
+                "updated_at": indicator.updated_at,
+            }
+        },
+        status=201,
     )
 
 
