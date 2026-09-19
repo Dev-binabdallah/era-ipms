@@ -3392,6 +3392,155 @@ def farm_activities_list(request):
 
 @require_permission(
     permission=PERMISSION_ADD,
+    resource="harvests",
+)
+def harvest_create(request):
+    """Create a harvest record for a crop the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    crop_id = payload.get("crop_id")
+    harvest_date = payload.get("harvest_date")
+    quantity = payload.get("quantity")
+
+    if (
+        crop_id is None
+        or harvest_date in (None, "")
+        or quantity in (None, "")
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "crop_id, harvest_date, and quantity are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        quantity = Decimal(str(quantity))
+    except (TypeError, ValueError, InvalidOperation):
+        return JsonResponse(
+            {"error": "quantity must be a valid number"},
+            status=400,
+        )
+
+    if quantity <= 0:
+        return JsonResponse(
+            {"error": "quantity must be greater than 0"},
+            status=400,
+        )
+
+    try:
+        harvest_date = date.fromisoformat(str(harvest_date))
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "harvest_date must be in YYYY-MM-DD format"},
+            status=400,
+        )
+
+    try:
+        crop = FarmCrops.objects.select_related(
+            "project"
+        ).get(
+            crop_id=crop_id,
+        )
+    except FarmCrops.DoesNotExist:
+        return JsonResponse(
+            {"error": "Crop not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        crop.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this crop"},
+            status=403,
+        )
+
+    harvest = Harvests.objects.create(
+        crop=crop,
+        harvest_date=harvest_date,
+        quantity=quantity,
+        unit=payload.get("unit"),
+        usage_type=payload.get("usage_type"),
+        notes=payload.get("notes"),
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "harvest": {
+                "harvest_id": harvest.harvest_id,
+                "crop_id": harvest.crop_id,
+                "harvest_date": harvest.harvest_date,
+                "quantity": harvest.quantity,
+                "unit": harvest.unit,
+                "usage_type": harvest.usage_type,
+                "notes": harvest.notes,
+                "recorded_by": harvest.recorded_by_id,
+                "created_at": harvest.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="harvests",
+)
+def harvests_list(request):
+    """List harvests within the user's authorized project scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    harvests = authorized_queryset(
+        request.user,
+        "harvests",
+        Harvests.objects.all(),
+    ).values(
+        "harvest_id",
+        "crop_id",
+        "harvest_date",
+        "quantity",
+        "unit",
+        "usage_type",
+        "notes",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"harvests": list(harvests)}
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
     resource="farm_poultry_transfers",
 )
 def farm_poultry_transfer_create(request):

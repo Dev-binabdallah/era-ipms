@@ -1378,3 +1378,57 @@ The existing `farm_poultry_transfers` table remains authoritative, including its
 ### Next Step
 
 Stage the Farm Poultry Transfers API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-19 - Harvest API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing farm harvest records while using the existing permission, project scope, and authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /harvests/create/` endpoint for recording harvests.
+- Added a protected `GET /harvests/` endpoint for listing harvests.
+- Required the existing `ADD` permission when creating harvests.
+- Required the existing `VIEW` permission when listing harvests.
+- Used the existing `harvests` authorization and farm project scope rules.
+- Added crop lookup before creating a harvest.
+- Added project-scope validation through the selected crop's project.
+- Added validation for required `crop_id`, `harvest_date`, and `quantity` fields.
+- Added validation to ensure quantity is a valid positive number.
+- Added validation for `harvest_date` using `YYYY-MM-DD` format.
+- Added handling for invalid JSON requests.
+- Allowed optional `unit`, `usage_type`, and `notes` values.
+- Recorded the current user as the user responsible for entering the harvest.
+- Added URL routes for harvest creation and listing.
+- Added 13 API regression tests covering authentication, permissions, validation, project scope, creation, listing, and missing related records.
+- No database schema or migration changes were required because the existing `harvests` table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Harvest API tests: **13/13 passed**
+- Full Django `core` test suite: **444/444 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Harvest operations use the existing authorization architecture.
+
+The `harvests` resource uses the existing farm operations responsibility. A harvest is accessible only when its related crop belongs to a project within the user's active project scope.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `harvests` table remains authoritative, including its relationship to `farm_crops` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Harvest API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
