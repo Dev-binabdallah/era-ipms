@@ -1542,3 +1542,35 @@ existing `me_indicators` database table and `MeIndicators` model.
 ### Next step
 Review the final Git diff and stage the M&E indicator implementation,
 tests, and `development_log.md` together for commit.
+
+## 2026-09-19 — M&E Indicator Record Creation API
+
+### Objective
+Implement the API endpoint for recording M&E indicator results for authorized indicators.
+
+### Work completed
+- Added the `MeIndicatorRecords` model import to `backend/core/views.py`.
+- Added protected endpoint:
+  - `POST /me-indicator-records/create/`
+- Reused the existing `me_indicators` ADD permission and project-scope authorization.
+- Added validation for indicator ID, record date, recorded value, and notes.
+- Added creation audit information using the authenticated user and timestamp.
+- Added 13 focused API tests covering authentication, authorization, project scope, validation, and successful creation.
+- Added the new endpoint to `backend/config/urls.py`.
+- Corrected decorator placement so the existing financial transactions view retained its VIEW permission protection.
+
+### Verification
+- M&E Indicator Record API tests: 13/13 PASSED
+- Financial transactions regression test: PASSED
+- Full `core` test suite: 488/488 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The API uses the existing `me_indicator_records` database table and `MeIndicatorRecords` model.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final Git diff and stage the M&E indicator record implementation, tests, and `development_log.md` together for commit.

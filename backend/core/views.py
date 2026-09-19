@@ -40,6 +40,7 @@ from core.models import (
     Harvests,
     FinancialTransactions,
     MeIndicators,
+    MeIndicatorRecords,
     PoultryHealthRecords,
     PoultrySales,
     UserProjectAssignments,
@@ -3726,6 +3727,125 @@ def me_indicator_create(request):
                 "created_by_id": indicator.created_by_id,
                 "created_at": indicator.created_at,
                 "updated_at": indicator.updated_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="me_indicators",
+)
+def me_indicator_record_create(request):
+    """Create a monitoring record for an indicator the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    indicator_id = payload.get("indicator_id")
+    record_date = payload.get("record_date")
+    recorded_value = payload.get("recorded_value")
+    notes = payload.get("notes")
+
+    if indicator_id in (None, ""):
+        return JsonResponse(
+            {"error": "indicator_id is required"},
+            status=400,
+        )
+
+    try:
+        indicator = MeIndicators.objects.select_related(
+            "project",
+        ).get(
+            indicator_id=indicator_id,
+        )
+    except MeIndicators.DoesNotExist:
+        return JsonResponse(
+            {"error": "Indicator not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        indicator.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this indicator"},
+            status=403,
+        )
+
+    if record_date in (None, ""):
+        return JsonResponse(
+            {"error": "record_date is required"},
+            status=400,
+        )
+
+    try:
+        record_date = date.fromisoformat(str(record_date))
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "record_date must be in YYYY-MM-DD format"},
+            status=400,
+        )
+
+    if recorded_value in (None, ""):
+        return JsonResponse(
+            {"error": "recorded_value is required"},
+            status=400,
+        )
+
+    try:
+        recorded_value = Decimal(str(recorded_value))
+    except (TypeError, ValueError, InvalidOperation):
+        return JsonResponse(
+            {"error": "recorded_value must be a valid number"},
+            status=400,
+        )
+
+    if notes is not None and not isinstance(notes, str):
+        return JsonResponse(
+            {"error": "notes must be text"},
+            status=400,
+        )
+
+    now = timezone.now()
+
+    record = MeIndicatorRecords.objects.create(
+        indicator=indicator,
+        record_date=record_date,
+        recorded_value=recorded_value,
+        notes=notes,
+        recorded_by=request.user,
+        created_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "me_indicator_record": {
+                "indicator_record_id": record.indicator_record_id,
+                "indicator_id": record.indicator_id,
+                "record_date": record.record_date,
+                "recorded_value": record.recorded_value,
+                "notes": record.notes,
+                "recorded_by_id": record.recorded_by_id,
+                "created_at": record.created_at,
             }
         },
         status=201,
