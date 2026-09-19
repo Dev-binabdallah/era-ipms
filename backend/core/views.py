@@ -35,6 +35,7 @@ from core.models import (
     EggProduction,
     FeedRecords,
     FarmCrops,
+    FarmActivities,
     PoultryHealthRecords,
     PoultrySales,
     UserProjectAssignments,
@@ -3243,4 +3244,145 @@ def farm_crops_list(request):
 
     return JsonResponse(
         {"farm_crops": list(crops)}
+    )
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="farm_activities",
+)
+def farm_activity_create(request):
+    """Create a farm activity for a crop the user can access."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    crop_id = payload.get("crop_id")
+    activity_date = payload.get("activity_date")
+    activity_type = payload.get("activity_type")
+
+    if (
+        crop_id is None
+        or activity_date in (None, "")
+        or activity_type in (None, "")
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "crop_id, activity_date, and activity_type "
+                    "are required"
+                )
+            },
+            status=400,
+        )
+
+    activity_type = str(activity_type).strip()
+
+    if not activity_type:
+        return JsonResponse(
+            {"error": "activity_type cannot be empty"},
+            status=400,
+        )
+
+    try:
+        crop = FarmCrops.objects.select_related(
+            "project"
+        ).get(
+            crop_id=crop_id,
+        )
+    except FarmCrops.DoesNotExist:
+        return JsonResponse(
+            {"error": "Farm crop not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        crop.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use this farm crop"},
+            status=403,
+        )
+
+    try:
+        activity_date = date.fromisoformat(str(activity_date))
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {
+                "error": (
+                    "activity_date must be in YYYY-MM-DD format"
+                )
+            },
+            status=400,
+        )
+
+    activity = FarmActivities.objects.create(
+        crop=crop,
+        activity_date=activity_date,
+        activity_type=activity_type,
+        description=payload.get("description"),
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "farm_activity": {
+                "farm_activity_id": activity.farm_activity_id,
+                "crop_id": activity.crop_id,
+                "activity_date": activity.activity_date,
+                "activity_type": activity.activity_type,
+                "description": activity.description,
+                "recorded_by": activity.recorded_by_id,
+                "created_at": activity.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="farm_activities",
+)
+def farm_activities_list(request):
+    """List farm activities within the user's authorized crop scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    activities = authorized_queryset(
+        request.user,
+        "farm_activities",
+        FarmActivities.objects.all(),
+    ).values(
+        "farm_activity_id",
+        "crop_id",
+        "activity_date",
+        "activity_type",
+        "description",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"farm_activities": list(activities)}
     )

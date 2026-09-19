@@ -1271,3 +1271,56 @@ The existing `farm_crops` table remains authoritative, including its relationshi
 ### Next Step
 
 Stage the Farm Crops API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-19 - Farm Activities API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing farm activities while using the existing permission, crop scope, project scope, and authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /farm-activities/create/` endpoint for recording farm activities.
+- Added a protected `GET /farm-activities/` endpoint for listing farm activities.
+- Required the existing `ADD` permission when creating farm activities.
+- Required the existing `VIEW` permission when listing farm activities.
+- Used the existing `farm_activities` authorization and project-scope rules.
+- Added crop lookup before creating a farm activity.
+- Added project-scope validation through the selected farm crop.
+- Added validation for required `crop_id`, `activity_date`, and `activity_type` fields.
+- Added validation to prevent an empty activity type.
+- Added validation for `activity_date` using `YYYY-MM-DD` format.
+- Added handling for invalid JSON requests.
+- Recorded the current user as the user responsible for entering the farm activity.
+- Added URL routes for farm activity creation and listing.
+- Added 13 API regression tests covering authentication, permissions, crop and project scope, validation, creation, listing, and HTTP methods.
+- No database schema or migration changes were required because the existing `farm_activities` table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Farm Activities API tests: **13/13 passed**
+- Full Django `core` test suite: **417/417 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Farm activity operations use the existing authorization architecture.
+
+The `farm_activities` resource uses the existing farm operations responsibility, and farm activities inherit project scope through their related farm crop.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `farm_activities` table remains authoritative, including its relationships to `farm_crops` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Farm Activities API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
