@@ -1324,3 +1324,57 @@ The existing `farm_activities` table remains authoritative, including its relati
 ### Next Step
 
 Stage the Farm Activities API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-19 - Farm Poultry Transfers API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing transfers of farm harvests to poultry groups while using the existing permission, project scope, and authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /farm-poultry-transfers/create/` endpoint for recording farm poultry transfers.
+- Added a protected `GET /farm-poultry-transfers/` endpoint for listing farm poultry transfers.
+- Required the existing `ADD` permission when creating farm poultry transfers.
+- Required the existing `VIEW` permission when listing farm poultry transfers.
+- Used the existing `farm_poultry_transfers` authorization and project-scope rules.
+- Added harvest and poultry group lookups before creating a transfer.
+- Added validation to ensure the harvest and poultry group belong to the same project.
+- Added project-scope validation for the related farm project.
+- Added validation for required `harvest_id`, `poultry_group_id`, `transfer_date`, and `quantity` fields.
+- Added validation to ensure quantity is a valid positive number.
+- Added validation for `transfer_date` using `YYYY-MM-DD` format.
+- Added handling for invalid JSON requests.
+- Recorded the current user as the user responsible for entering the transfer.
+- Added URL routes for farm poultry transfer creation and listing.
+- Added 14 API regression tests covering authentication, permissions, project matching, project scope, validation, creation, listing, and missing related records.
+- No database schema or migration changes were required because the existing `farm_poultry_transfers` table and Django model already support the implementation.
+
+### Validation
+
+Local verification completed:
+
+- Farm Poultry Transfers API tests: **14/14 passed**
+- Full Django `core` test suite: **431/431 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Farm poultry transfer operations use the existing authorization architecture.
+
+The `farm_poultry_transfers` resource uses the existing farm operations responsibility. A transfer is accessible only when the related harvest and poultry group belong to the same project and that project is within the user's active project scope.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `farm_poultry_transfers` table remains authoritative, including its relationships to `harvests`, `poultry_groups`, and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Farm Poultry Transfers API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.

@@ -36,6 +36,8 @@ from core.models import (
     FeedRecords,
     FarmCrops,
     FarmActivities,
+    FarmPoultryTransfers,
+    Harvests,
     PoultryHealthRecords,
     PoultrySales,
     UserProjectAssignments,
@@ -3385,4 +3387,182 @@ def farm_activities_list(request):
 
     return JsonResponse(
         {"farm_activities": list(activities)}
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="farm_poultry_transfers",
+)
+def farm_poultry_transfer_create(request):
+    """Create a transfer from a harvest to a poultry group."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    harvest_id = payload.get("harvest_id")
+    poultry_group_id = payload.get("poultry_group_id")
+    transfer_date = payload.get("transfer_date")
+    quantity = payload.get("quantity")
+
+    if (
+        harvest_id is None
+        or poultry_group_id is None
+        or transfer_date in (None, "")
+        or quantity in (None, "")
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "harvest_id, poultry_group_id, transfer_date, "
+                    "and quantity are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        quantity = Decimal(str(quantity))
+    except (TypeError, ValueError, InvalidOperation):
+        return JsonResponse(
+            {"error": "quantity must be a valid number"},
+            status=400,
+        )
+
+    if quantity <= 0:
+        return JsonResponse(
+            {"error": "quantity must be greater than 0"},
+            status=400,
+        )
+
+    try:
+        transfer_date = date.fromisoformat(str(transfer_date))
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "transfer_date must be in YYYY-MM-DD format"},
+            status=400,
+        )
+
+    try:
+        harvest = Harvests.objects.select_related(
+            "crop__project"
+        ).get(
+            harvest_id=harvest_id,
+        )
+    except Harvests.DoesNotExist:
+        return JsonResponse(
+            {"error": "Harvest not found"},
+            status=404,
+        )
+
+    try:
+        poultry_group = PoultryGroups.objects.select_related(
+            "project"
+        ).get(
+            poultry_group_id=poultry_group_id,
+        )
+    except PoultryGroups.DoesNotExist:
+        return JsonResponse(
+            {"error": "Poultry group not found"},
+            status=404,
+        )
+
+    farm_project = harvest.crop.project
+    poultry_project = poultry_group.project
+
+    if farm_project.project_id != poultry_project.project_id:
+        return JsonResponse(
+            {
+                "error": (
+                    "Harvest and poultry group must belong "
+                    "to the same project"
+                )
+            },
+            status=400,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        farm_project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to use these records"},
+            status=403,
+        )
+
+    transfer = FarmPoultryTransfers.objects.create(
+        harvest=harvest,
+        poultry_group=poultry_group,
+        transfer_date=transfer_date,
+        quantity=quantity,
+        unit=payload.get("unit"),
+        notes=payload.get("notes"),
+        recorded_by=request.user,
+        created_at=timezone.now(),
+    )
+
+    return JsonResponse(
+        {
+            "farm_poultry_transfer": {
+                "transfer_id": transfer.transfer_id,
+                "harvest_id": transfer.harvest_id,
+                "poultry_group_id": transfer.poultry_group_id,
+                "transfer_date": transfer.transfer_date,
+                "quantity": transfer.quantity,
+                "unit": transfer.unit,
+                "notes": transfer.notes,
+                "recorded_by": transfer.recorded_by_id,
+                "created_at": transfer.created_at,
+            }
+        },
+        status=201,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="farm_poultry_transfers",
+)
+def farm_poultry_transfers_list(request):
+    """List farm poultry transfers within the user's authorized scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    transfers = authorized_queryset(
+        request.user,
+        "farm_poultry_transfers",
+        FarmPoultryTransfers.objects.all(),
+    ).values(
+        "transfer_id",
+        "harvest_id",
+        "poultry_group_id",
+        "transfer_date",
+        "quantity",
+        "unit",
+        "notes",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"farm_poultry_transfers": list(transfers)}
     )
