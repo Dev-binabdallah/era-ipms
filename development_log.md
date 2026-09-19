@@ -1432,3 +1432,67 @@ The existing `harvests` table remains authoritative, including its relationship 
 ### Next Step
 
 Stage the Harvest API implementation, its regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.
+
+## 2026-09-19 - Financial Transactions API Endpoints
+
+### Objective
+
+Implement protected API endpoints for recording and listing financial transactions while using the existing financial permissions, project scope, and organization-level financial authorization rules.
+
+### Work Completed
+
+- Added a protected `POST /financial-transactions/create/` endpoint for recording financial transactions.
+- Added a protected `GET /financial-transactions/` endpoint for listing financial transactions.
+- Required the existing `ADD` permission when creating financial transactions.
+- Required the existing `VIEW` permission when listing financial transactions.
+- Added financial transaction authorization using the existing `FINANCIAL_OPERATIONS` responsibility.
+- Added project-level financial scope so users can access transactions belonging to projects within their active project assignments.
+- Added organization-level financial scope for authorized Finance and Director users.
+- Kept Programme Coordinator financial access limited to authorized project records.
+- Added validation for required transaction date, transaction type, category, and amount fields.
+- Added validation for transaction date using `YYYY-MM-DD` format.
+- Added validation to ensure the transaction amount is a valid positive number.
+- Added validation for transaction type and category length.
+- Added project lookup and project-scope validation when a project is provided.
+- Added authorization checks for organization-level transactions when no project is provided.
+- Recorded the current user as the person responsible for entering the transaction.
+- Set newly created transactions to `recorded` status.
+- Added URL routes for financial transaction creation and listing.
+- Added 17 API regression tests covering authentication, permissions, validation, project scope, organization-level access, creation, and listing.
+- Updated authorization queryset tests to cover both project-level and organization-level financial records.
+- Added organization-level financial scope logic to the authorization service.
+- No database schema or migration changes were required because the existing `financial_transactions` table and Django model already support the implementation.
+- Financial approval was not implemented because the exact financial approval requirements remain an outstanding system-design decision.
+
+### Validation
+
+Local verification completed:
+
+- Financial Transactions API tests: **17/17 passed**
+- Authorization queryset tests: **19/19 passed**
+- Authorization service tests: **105/105 passed**
+- Full Django `core` test suite: **462/462 passed**
+- Django system check: **clean**
+- `git diff --check`: **clean**
+
+### Authorization Decision
+
+Financial transaction operations use the existing authorization architecture.
+
+Project-level financial records are accessible only when the user has the required financial permission and responsibility and is actively assigned to the related project.
+
+Organization-level financial records with no project are available only to authorized Finance and Director users with the required financial permission and responsibility. Programme Coordinator access remains project-scoped.
+
+### Database Decision
+
+No database schema changes or migrations were required.
+
+The existing `financial_transactions` table remains authoritative, including its relationships to `projects` and `users`.
+
+### Implementation Status
+
+**Complete.**
+
+### Next Step
+
+Stage the Financial Transactions API implementation, authorization updates, regression tests, and the development-log update together, review the staged changes, and complete the Git commit after final verification.

@@ -136,6 +136,25 @@ def authorized_queryset(user, resource, queryset):
                 user_assignments__is_active=True,
             ).distinct()
 
+        if resource_name in {
+            "financial_transaction",
+            "financial_transactions",
+        }:
+            project_scoped = Q(
+                project__user_assignments__user=user,
+                project__user_assignments__is_active=True,
+            )
+
+            if authorization_service.has_organization_financial_scope(
+                user
+            ):
+                return queryset.filter(
+                    project_scoped
+                    | Q(project__isnull=True)
+                ).distinct()
+
+            return queryset.filter(project_scoped).distinct()
+
         return queryset.filter(
             project__user_assignments__user=user,
             project__user_assignments__is_active=True,

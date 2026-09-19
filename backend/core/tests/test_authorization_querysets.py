@@ -285,7 +285,7 @@ class AuthorizedQuerysetTests(SimpleTestCase):
     @patch(
         "core.authorization.querysets.authorization_service"
     )
-    def test_financial_transaction_requires_project_scope(
+    def test_financial_transaction_uses_project_scope(
         self,
         service,
     ):
@@ -294,6 +294,7 @@ class AuthorizedQuerysetTests(SimpleTestCase):
             RESPONSIBILITY_FINANCIAL_OPERATIONS
         )
         service.has_responsibility.return_value = True
+        service.has_organization_financial_scope.return_value = False
 
         result = authorized_queryset(
             self.user,
@@ -301,9 +302,84 @@ class AuthorizedQuerysetTests(SimpleTestCase):
             self.queryset,
         )
 
-        self.queryset.filter.assert_called_once_with(
-            project__user_assignments__user=self.user,
-            project__user_assignments__is_active=True,
+        args, kwargs = self.queryset.filter.call_args
+
+        self.assertEqual(kwargs, {})
+        self.assertEqual(args[0].connector, Q.AND)
+        self.assertEqual(len(args[0].children), 2)
+
+        children = args[0].children
+
+        self.assertIn(
+            ("project__user_assignments__is_active", True),
+            children,
+        )
+        self.assertEqual(
+            children[0][0] if children[0][0] != "project__user_assignments__is_active"
+            else children[1][0],
+            "project__user_assignments__user",
+        )
+
+        user_condition = next(
+            child for child in children
+            if child[0] == "project__user_assignments__user"
+        )
+        self.assertIs(user_condition[1], self.user)
+        self.filtered_queryset.distinct.assert_called_once_with()
+        self.assertIs(result, self.filtered_queryset)
+
+    @patch(
+        "core.authorization.querysets.authorization_service"
+    )
+    def test_financial_transaction_includes_organization_records_for_authorized_user(
+        self,
+        service,
+    ):
+        service.has_permission.return_value = True
+        service.get_required_responsibility.return_value = (
+            RESPONSIBILITY_FINANCIAL_OPERATIONS
+        )
+        service.has_responsibility.return_value = True
+        service.has_organization_financial_scope.return_value = True
+
+        result = authorized_queryset(
+            self.user,
+            "financial_transaction",
+            self.queryset,
+        )
+
+        args, kwargs = self.queryset.filter.call_args
+
+        self.assertEqual(kwargs, {})
+        self.assertEqual(args[0].connector, Q.OR)
+        self.assertEqual(len(args[0].children), 2)
+
+        project_condition = next(
+            child for child in args[0].children
+            if hasattr(child, "children")
+        )
+        organization_condition = next(
+            child for child in args[0].children
+            if not hasattr(child, "children")
+        )
+
+        self.assertEqual(project_condition.connector, Q.AND)
+        self.assertEqual(len(project_condition.children), 2)
+
+        self.assertIn(
+            ("project__user_assignments__is_active", True),
+            project_condition.children,
+        )
+
+        user_condition = next(
+            child for child in project_condition.children
+            if child[0] == "project__user_assignments__user"
+        )
+        self.assertIs(user_condition[1], self.user)
+
+        self.assertEqual(
+            organization_condition,
+            ("project__isnull", True),
         )
         self.filtered_queryset.distinct.assert_called_once_with()
         self.assertIs(result, self.filtered_queryset)

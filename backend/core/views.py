@@ -38,6 +38,7 @@ from core.models import (
     FarmActivities,
     FarmPoultryTransfers,
     Harvests,
+    FinancialTransactions,
     PoultryHealthRecords,
     PoultrySales,
     UserProjectAssignments,
@@ -3536,6 +3537,231 @@ def harvests_list(request):
 
     return JsonResponse(
         {"harvests": list(harvests)}
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="financial_transactions",
+)
+def financial_transactions_list(request):
+    """Return financial transactions within the user's authorized scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    transactions = authorized_queryset(
+        request.user,
+        "financial_transactions",
+        FinancialTransactions.objects.all(),
+    )
+
+    data = []
+
+    for transaction in transactions:
+        data.append(
+            {
+                "transaction_id": transaction.transaction_id,
+                "project_id": transaction.project_id,
+                "transaction_date": transaction.transaction_date,
+                "transaction_type": transaction.transaction_type,
+                "category": transaction.category,
+                "amount": transaction.amount,
+                "description": transaction.description,
+                "payment_method": transaction.payment_method,
+                "reference_number": transaction.reference_number,
+                "recorded_by_id": transaction.recorded_by_id,
+                "approved_by_id": transaction.approved_by_id,
+                "approved_at": transaction.approved_at,
+                "status": transaction.status,
+                "created_at": transaction.created_at,
+                "updated_at": transaction.updated_at,
+            }
+        )
+
+    return JsonResponse(
+        {"financial_transactions": data},
+        status=200,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_ADD,
+    resource="financial_transactions",
+)
+def financial_transaction_create(request):
+    """Create a financial transaction within the user's authorized scope."""
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    transaction_date = payload.get("transaction_date")
+    transaction_type = payload.get("transaction_type")
+    category = payload.get("category")
+    amount = payload.get("amount")
+    project_id = payload.get("project_id")
+
+    if (
+        transaction_date in (None, "")
+        or transaction_type in (None, "")
+        or category in (None, "")
+        or amount in (None, "")
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "transaction_date, transaction_type, "
+                    "category, and amount are required"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        transaction_date = date.fromisoformat(
+            str(transaction_date)
+        )
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {
+                "error": (
+                    "transaction_date must be in YYYY-MM-DD format"
+                )
+            },
+            status=400,
+        )
+
+    try:
+        amount = Decimal(str(amount))
+    except (TypeError, ValueError, InvalidOperation):
+        return JsonResponse(
+            {"error": "amount must be a valid number"},
+            status=400,
+        )
+
+    if amount <= 0:
+        return JsonResponse(
+            {"error": "amount must be greater than 0"},
+            status=400,
+        )
+
+    if not isinstance(transaction_type, str) or not transaction_type.strip():
+        return JsonResponse(
+            {"error": "transaction_type is required"},
+            status=400,
+        )
+
+    if not isinstance(category, str) or not category.strip():
+        return JsonResponse(
+            {"error": "category is required"},
+            status=400,
+        )
+
+    if len(transaction_type) > 30:
+        return JsonResponse(
+            {"error": "transaction_type must not exceed 30 characters"},
+            status=400,
+        )
+
+    if len(category) > 100:
+        return JsonResponse(
+            {"error": "category must not exceed 100 characters"},
+            status=400,
+        )
+
+    project = None
+
+    if project_id not in (None, ""):
+        try:
+            project = Projects.objects.get(
+                project_id=project_id,
+            )
+        except Projects.DoesNotExist:
+            return JsonResponse(
+                {"error": "Project not found"},
+                status=404,
+            )
+
+        if not authorization_service.has_project_scope(
+            request.user,
+            project,
+        ):
+            return JsonResponse(
+                {
+                    "error": (
+                        "You are not authorized to use this project"
+                    )
+                },
+                status=403,
+            )
+    else:
+        if not authorization_service.has_organization_financial_scope(
+            request.user,
+        ):
+            return JsonResponse(
+                {
+                    "error": (
+                        "You are not authorized to record "
+                        "organization-level financial transactions"
+                    )
+                },
+                status=403,
+            )
+
+    now = timezone.now()
+
+    transaction = FinancialTransactions.objects.create(
+        project=project,
+        transaction_date=transaction_date,
+        transaction_type=transaction_type.strip(),
+        category=category.strip(),
+        amount=amount,
+        description=payload.get("description"),
+        payment_method=payload.get("payment_method"),
+        reference_number=payload.get("reference_number"),
+        recorded_by=request.user,
+        status="recorded",
+        created_at=now,
+        updated_at=now,
+    )
+
+    return JsonResponse(
+        {
+            "financial_transaction": {
+                "transaction_id": transaction.transaction_id,
+                "project_id": transaction.project_id,
+                "transaction_date": transaction.transaction_date,
+                "transaction_type": transaction.transaction_type,
+                "category": transaction.category,
+                "amount": transaction.amount,
+                "description": transaction.description,
+                "payment_method": transaction.payment_method,
+                "reference_number": transaction.reference_number,
+                "recorded_by": transaction.recorded_by_id,
+                "status": transaction.status,
+                "created_at": transaction.created_at,
+                "updated_at": transaction.updated_at,
+            }
+        },
+        status=201,
     )
 
 

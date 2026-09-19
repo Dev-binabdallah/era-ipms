@@ -8,6 +8,7 @@ from core.authorization.constants import (
     PERMISSION_MANAGE,
     PERMISSION_VIEW,
     RESPONSIBILITY_PROJECT_ACTIVITIES,
+    RESPONSIBILITY_FINANCIAL_OPERATIONS,
     RESPONSIBILITY_PROJECT_COORDINATION,
     RESPONSIBILITIES,
 )
@@ -216,6 +217,43 @@ class AuthorizationService:
             return None
 
         return RESOURCE_RESPONSIBILITY_MAP.get(resource_name)
+
+    def has_organization_financial_scope(self, user):
+        """
+        Determine whether a user may access organisation-level
+        financial records that do not belong to a project.
+
+        Finance and Director users may access these records.
+        Programme Coordinator access remains project-scoped.
+        """
+
+        if not self._is_authenticated(user):
+            return False
+
+        if not getattr(user, "is_active", False):
+            return False
+
+        title = getattr(user, "title", None)
+
+        if title is None:
+            return False
+
+        if not getattr(title, "is_active", False):
+            return False
+
+        if getattr(title, "title_name", "") not in {
+            "Finance",
+            "Director",
+        }:
+            return False
+
+        return (
+            self.has_permission(user, PERMISSION_VIEW)
+            and self.has_responsibility(
+                user,
+                RESPONSIBILITY_FINANCIAL_OPERATIONS,
+            )
+        )
 
     def has_project_scope(self, user, project):
         """
@@ -535,7 +573,7 @@ class AuthorizationService:
             project = getattr(record, "project", None)
 
             if project is None:
-                return False
+                return self.has_organization_financial_scope(user)
 
             return self.has_project_scope(user, project)
 
