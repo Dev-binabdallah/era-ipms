@@ -630,3 +630,97 @@ class MeIndicatorsApiTests(SimpleTestCase):
         )
 
         authorized_queryset.assert_called_once()
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_record_list_requires_authentication(self, decorator_service):
+        decorator_service.has_permission.return_value = False
+
+        request = self.factory.get("/me-indicator-records/")
+        request.user = SimpleNamespace(
+            is_authenticated=False,
+            is_active=True,
+        )
+
+        from core.views import me_indicator_records_list
+
+        response = me_indicator_records_list(request)
+
+        self.assertEqual(response.status_code, 401)
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_record_list_requires_view_permission(self, decorator_service):
+        decorator_service.can_view.return_value = False
+
+        request = self.factory.get("/me-indicator-records/")
+        request.user = self.user
+
+        from core.views import me_indicator_records_list
+
+        response = me_indicator_records_list(request)
+
+        self.assertEqual(response.status_code, 403)
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_record_list_post_request_returns_405(self, decorator_service):
+        decorator_service.can_view.return_value = True
+
+        request = self.factory.post("/me-indicator-records/")
+        request.user = self.user
+
+        from core.views import me_indicator_records_list
+
+        response = me_indicator_records_list(request)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
+
+    @patch("core.views.authorized_queryset")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_record_list_returns_authorized_records(
+        self,
+        decorator_service,
+        authorized_queryset,
+    ):
+        decorator_service.can_view.return_value = True
+
+        authorized_queryset.return_value.values.return_value = [
+            {
+                "indicator_record_id": 1,
+                "indicator_id": 10,
+                "record_date": date(2026, 9, 19),
+                "recorded_value": Decimal("75.00"),
+                "notes": "September progress recorded.",
+                "recorded_by_id": 1,
+                "created_at": datetime(2026, 9, 19, 11, 0, 0),
+            }
+        ]
+
+        request = self.factory.get("/me-indicator-records/")
+        request.user = self.user
+
+        from core.views import me_indicator_records_list
+
+        response = me_indicator_records_list(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "me_indicator_records": [
+                    {
+                        "indicator_record_id": 1,
+                        "indicator_id": 10,
+                        "record_date": "2026-09-19",
+                        "recorded_value": "75.00",
+                        "notes": "September progress recorded.",
+                        "recorded_by_id": 1,
+                        "created_at": "2026-09-19T11:00:00",
+                    }
+                ]
+            },
+        )
+
+        authorized_queryset.assert_called_once()

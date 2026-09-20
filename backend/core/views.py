@@ -3771,6 +3771,38 @@ def me_indicator_create(request):
 
 
 @require_permission(
+    permission=PERMISSION_VIEW,
+    resource="me_indicator_records",
+)
+def me_indicator_records_list(request):
+    """List M&E indicator records within the user's authorized project scope."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    records = authorized_queryset(
+        request.user,
+        "me_indicator_records",
+        MeIndicatorRecords.objects.all(),
+    ).values(
+        "indicator_record_id",
+        "indicator_id",
+        "record_date",
+        "recorded_value",
+        "notes",
+        "recorded_by_id",
+        "created_at",
+    )
+
+    return JsonResponse(
+        {"me_indicator_records": list(records)},
+        status=200,
+    )
+
+
+@require_permission(
     permission=PERMISSION_ADD,
     resource="me_indicators",
 )
