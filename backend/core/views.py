@@ -3770,6 +3770,313 @@ def me_indicator_create(request):
     )
 
 
+def get_me_indicator(request, indicator_id):
+    try:
+        return MeIndicators.objects.select_related(
+            "project",
+        ).get(
+            indicator_id=indicator_id,
+        )
+    except MeIndicators.DoesNotExist:
+        return None
+
+
+@require_permission(
+    permission=PERMISSION_EDIT,
+    resource="me_indicators",
+    record_getter=get_me_indicator,
+)
+def me_indicator_update(request, indicator_id):
+    """
+    Update an existing M&E indicator.
+
+    The indicator must belong to a project within the user's
+    authorized project scope.
+    Only indicator fields owned by this endpoint can be changed.
+    """
+
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    try:
+        indicator = MeIndicators.objects.select_related(
+            "project",
+        ).get(
+            indicator_id=indicator_id,
+        )
+    except MeIndicators.DoesNotExist:
+        return JsonResponse(
+            {"error": "Indicator not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        indicator.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to update this indicator"},
+            status=403,
+        )
+
+    protected_fields = {
+        "indicator_id",
+        "project",
+        "project_id",
+        "created_by",
+        "created_by_id",
+        "created_at",
+        "updated_at",
+    }
+
+    attempted_protected = sorted(
+        protected_fields.intersection(payload.keys())
+    )
+
+    if attempted_protected:
+        return JsonResponse(
+            {
+                "error": "Protected fields cannot be modified",
+                "fields": attempted_protected,
+            },
+            status=400,
+        )
+
+    editable_fields = {
+        "indicator_name",
+        "description",
+        "target_value",
+        "unit",
+        "start_date",
+        "end_date",
+        "status",
+    }
+
+    unknown_fields = sorted(
+        set(payload.keys()) - editable_fields
+    )
+
+    if unknown_fields:
+        return JsonResponse(
+            {
+                "error": "Unknown fields",
+                "fields": unknown_fields,
+            },
+            status=400,
+        )
+
+    if not payload:
+        return JsonResponse(
+            {"error": "At least one editable field is required"},
+            status=400,
+        )
+
+    update_fields = []
+
+    if "indicator_name" in payload:
+        indicator_name = str(
+            payload.get("indicator_name", "")
+        ).strip()
+
+        if not indicator_name:
+            return JsonResponse(
+                {"error": "indicator_name is required"},
+                status=400,
+            )
+
+        if len(indicator_name) > 200:
+            return JsonResponse(
+                {
+                    "error": (
+                        "indicator_name must not exceed 200 characters"
+                    )
+                },
+                status=400,
+            )
+
+        indicator.indicator_name = indicator_name
+        update_fields.append("indicator_name")
+
+    if "description" in payload:
+        description = payload.get("description")
+
+        if description is not None and not isinstance(
+            description,
+            str,
+        ):
+            return JsonResponse(
+                {"error": "description must be text"},
+                status=400,
+            )
+
+        indicator.description = description
+        update_fields.append("description")
+
+    if "target_value" in payload:
+        target_value = payload.get("target_value")
+
+        if target_value in (None, ""):
+            target_value = None
+        else:
+            try:
+                target_value = Decimal(str(target_value))
+            except (TypeError, ValueError, InvalidOperation):
+                return JsonResponse(
+                    {"error": "target_value must be a valid number"},
+                    status=400,
+                )
+
+            if target_value < 0:
+                return JsonResponse(
+                    {"error": "target_value cannot be negative"},
+                    status=400,
+                )
+
+        indicator.target_value = target_value
+        update_fields.append("target_value")
+
+    if "unit" in payload:
+        unit = payload.get("unit")
+
+        if unit is not None and not isinstance(unit, str):
+            return JsonResponse(
+                {"error": "unit must be text"},
+                status=400,
+            )
+
+        unit = unit.strip() if unit else None
+
+        if unit and len(unit) > 50:
+            return JsonResponse(
+                {"error": "unit must not exceed 50 characters"},
+                status=400,
+            )
+
+        indicator.unit = unit
+        update_fields.append("unit")
+
+    if "start_date" in payload:
+        start_date = payload.get("start_date")
+
+        if start_date in (None, ""):
+            start_date = None
+        else:
+            try:
+                start_date = date.fromisoformat(str(start_date))
+            except (TypeError, ValueError):
+                return JsonResponse(
+                    {
+                        "error": (
+                            "start_date must be in "
+                            "YYYY-MM-DD format"
+                        )
+                    },
+                    status=400,
+                )
+
+        indicator.start_date = start_date
+        update_fields.append("start_date")
+
+    if "end_date" in payload:
+        end_date = payload.get("end_date")
+
+        if end_date in (None, ""):
+            end_date = None
+        else:
+            try:
+                end_date = date.fromisoformat(str(end_date))
+            except (TypeError, ValueError):
+                return JsonResponse(
+                    {
+                        "error": (
+                            "end_date must be in "
+                            "YYYY-MM-DD format"
+                        )
+                    },
+                    status=400,
+                )
+
+        indicator.end_date = end_date
+        update_fields.append("end_date")
+
+    if "start_date" in payload or "end_date" in payload:
+        if (
+            indicator.start_date
+            and indicator.end_date
+            and indicator.start_date > indicator.end_date
+        ):
+            return JsonResponse(
+                {
+                    "error": (
+                        "start_date cannot be after end_date"
+                    )
+                },
+                status=400,
+            )
+
+    if "status" in payload:
+        status = payload.get("status")
+
+        if not isinstance(status, str) or not status.strip():
+            return JsonResponse(
+                {"error": "status must be text"},
+                status=400,
+            )
+
+        status = status.strip()
+
+        if len(status) > 50:
+            return JsonResponse(
+                {"error": "status must not exceed 50 characters"},
+                status=400,
+            )
+
+        indicator.status = status
+        update_fields.append("status")
+
+    indicator.updated_at = timezone.now()
+    update_fields.append("updated_at")
+
+    indicator.save(update_fields=update_fields)
+
+    return JsonResponse(
+        {
+            "me_indicator": {
+                "indicator_id": indicator.indicator_id,
+                "project_id": indicator.project_id,
+                "indicator_name": indicator.indicator_name,
+                "description": indicator.description,
+                "target_value": indicator.target_value,
+                "unit": indicator.unit,
+                "start_date": indicator.start_date,
+                "end_date": indicator.end_date,
+                "status": indicator.status,
+                "created_by_id": indicator.created_by_id,
+                "created_at": indicator.created_at,
+                "updated_at": indicator.updated_at,
+            }
+        },
+        status=200,
+    )
+
+
 @require_permission(
     permission=PERMISSION_VIEW,
     resource="me_indicator_records",
