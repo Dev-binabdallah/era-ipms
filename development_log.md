@@ -1668,3 +1668,36 @@ No database migration or schema change was required. The API uses the existing `
 
 ### Next step
 Review the final Git diff and stage the M&E indicator update implementation, tests, and `development_log.md` together for commit.
+
+## 2026-09-20 - M&E Indicator Record Update API
+
+### Objective
+Implement the API endpoint for updating existing M&E indicator records within the user's authorized project scope.
+
+### Work completed
+- Added protected endpoint:
+  - `PATCH /me-indicator-records/<indicator_record_id>/update/`
+- Added `me_indicator_record_update` to `backend/core/views.py`.
+- Added `get_me_indicator_record` for record-level EDIT authorization.
+- Reused the existing `me_indicator_records` EDIT permission and authorization rules.
+- Verified that the indicator record belongs to an indicator within the user's active authorized project scope.
+- Allowed updates to record date, recorded value, and notes.
+- Prevented modification of protected fields such as the indicator, recorder, and creation timestamp.
+- Added validation for JSON data, record date, recorded value, notes, protected fields, unknown fields, and empty update requests.
+- Added the endpoint to `backend/config/urls.py`.
+- Added 15 focused tests covering authentication, EDIT permission, HTTP method validation, record existence, project scope, protected fields, unknown fields, validation errors, and successful updates.
+
+### Verification
+- M&E Indicator API tests: 54/54 PASSED
+- Full `core` test suite: 529/529 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The API uses the existing `me_indicator_records` database table and `MeIndicatorRecords` model.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final Git diff and stage the M&E indicator record update implementation, tests, and `development_log.md` together for commit.

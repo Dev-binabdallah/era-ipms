@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
-from core.models import MeIndicators, Projects
+from core.models import MeIndicatorRecords, MeIndicators, Projects
 from core.views import (
     me_indicator_create,
     me_indicator_update,
@@ -1345,3 +1345,541 @@ class MeIndicatorsApiTests(SimpleTestCase):
         )
 
         authorized_queryset.assert_called_once()
+
+
+class MeIndicatorRecordUpdateApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.user = SimpleNamespace(
+            user_id=1,
+            is_authenticated=True,
+        )
+
+        self.project = SimpleNamespace(
+            project_id=10,
+        )
+
+        self.indicator = SimpleNamespace(
+            indicator_id=10,
+            project=self.project,
+            project_id=10,
+        )
+
+        self.record = SimpleNamespace(
+            indicator_record_id=1,
+            indicator=self.indicator,
+            indicator_id=10,
+            record_date=date(2026, 9, 19),
+            recorded_value=Decimal("75.00"),
+            notes="Original notes.",
+            recorded_by_id=1,
+            created_at=datetime(2026, 9, 19, 11, 0, 0),
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_requires_authentication(self, decorator_service):
+        decorator_service.can_edit.return_value = False
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps(
+                {
+                    "recorded_value": 80,
+                }
+            ),
+            content_type="application/json",
+        )
+
+        request.user = SimpleNamespace(
+            is_authenticated=False,
+        )
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 401)
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_requires_edit_permission(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = False
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps(
+                {
+                    "recorded_value": 80,
+                }
+            ),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 403)
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_get_request_returns_405(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.get(
+            "/me-indicator-records/1/update/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_invalid_json_returns_400(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data="{invalid json",
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Invalid JSON"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_record_success(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+
+        self.record.save = lambda **kwargs: None
+
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps(
+                {
+                    "record_date": "2026-09-20",
+                    "recorded_value": 80,
+                    "notes": "Updated progress.",
+                }
+            ),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "me_indicator_record": {
+                    "indicator_record_id": 1,
+                    "indicator_id": 10,
+                    "record_date": "2026-09-20",
+                    "recorded_value": "80",
+                    "notes": "Updated progress.",
+                    "recorded_by_id": 1,
+                    "created_at": "2026-09-19T11:00:00",
+                }
+            },
+        )
+
+        self.assertEqual(
+            self.record.record_date,
+            date(2026, 9, 20),
+        )
+        self.assertEqual(
+            self.record.recorded_value,
+            Decimal("80"),
+        )
+        self.assertEqual(
+            self.record.notes,
+            "Updated progress.",
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_record_not_found_returns_404(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        record_objects.select_related.return_value.get.side_effect = (
+            MeIndicatorRecords.DoesNotExist
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/999/update/",
+            data=json.dumps({"recorded_value": 80}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 999)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Indicator record not found"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_outside_project_scope_returns_403(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = False
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"recorded_value": 80}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "You are not authorized to update this "
+                    "indicator record"
+                )
+            },
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_protected_field_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"indicator_id": 99}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Protected fields cannot be modified",
+                "fields": ["indicator_id"],
+            },
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_unknown_field_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"unexpected_field": "value"}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "Unknown fields",
+                "fields": ["unexpected_field"],
+            },
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_empty_payload_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "At least one editable field is required"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_invalid_record_date_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"record_date": "not-a-date"}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "record_date must be in "
+                    "YYYY-MM-DD format"
+                )
+            },
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_missing_record_date_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"record_date": None}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "record_date is required"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_invalid_recorded_value_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"recorded_value": "not-a-number"}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "recorded_value must be a valid number"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_missing_recorded_value_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"recorded_value": None}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "recorded_value is required"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_invalid_notes_returns_400(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_edit.return_value = True
+        view_service.has_project_scope.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.patch(
+            "/me-indicator-records/1/update/",
+            data=json.dumps({"notes": 123}),
+            content_type="application/json",
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_update
+
+        response = me_indicator_record_update(request, 1)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "notes must be text"},
+        )

@@ -4228,6 +4228,203 @@ def me_indicator_record_create(request):
     )
 
 
+def get_me_indicator_record(request, indicator_record_id):
+    try:
+        return MeIndicatorRecords.objects.select_related(
+            "indicator",
+            "indicator__project",
+        ).get(
+            indicator_record_id=indicator_record_id,
+        )
+    except MeIndicatorRecords.DoesNotExist:
+        return None
+
+
+@require_permission(
+    permission=PERMISSION_EDIT,
+    resource="me_indicator_records",
+    record_getter=get_me_indicator_record,
+)
+def me_indicator_record_update(request, indicator_record_id):
+    """
+    Update an existing M&E indicator record.
+
+    The record must belong to an indicator within the user's
+    authorized project scope.
+    Only record fields owned by this endpoint can be changed.
+    """
+
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    try:
+        record = MeIndicatorRecords.objects.select_related(
+            "indicator",
+            "indicator__project",
+        ).get(
+            indicator_record_id=indicator_record_id,
+        )
+    except MeIndicatorRecords.DoesNotExist:
+        return JsonResponse(
+            {"error": "Indicator record not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        record.indicator.project,
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "You are not authorized to update this "
+                    "indicator record"
+                )
+            },
+            status=403,
+        )
+
+    protected_fields = {
+        "indicator_record_id",
+        "indicator",
+        "indicator_id",
+        "recorded_by",
+        "recorded_by_id",
+        "created_at",
+    }
+
+    attempted_protected = sorted(
+        protected_fields.intersection(payload.keys())
+    )
+
+    if attempted_protected:
+        return JsonResponse(
+            {
+                "error": "Protected fields cannot be modified",
+                "fields": attempted_protected,
+            },
+            status=400,
+        )
+
+    editable_fields = {
+        "record_date",
+        "recorded_value",
+        "notes",
+    }
+
+    unknown_fields = sorted(
+        set(payload.keys()) - editable_fields
+    )
+
+    if unknown_fields:
+        return JsonResponse(
+            {
+                "error": "Unknown fields",
+                "fields": unknown_fields,
+            },
+            status=400,
+        )
+
+    if not payload:
+        return JsonResponse(
+            {"error": "At least one editable field is required"},
+            status=400,
+        )
+
+    update_fields = []
+
+    if "record_date" in payload:
+        record_date = payload.get("record_date")
+
+        if record_date in (None, ""):
+            return JsonResponse(
+                {"error": "record_date is required"},
+                status=400,
+            )
+
+        try:
+            record_date = date.fromisoformat(str(record_date))
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {
+                    "error": (
+                        "record_date must be in "
+                        "YYYY-MM-DD format"
+                    )
+                },
+                status=400,
+            )
+
+        record.record_date = record_date
+        update_fields.append("record_date")
+
+    if "recorded_value" in payload:
+        recorded_value = payload.get("recorded_value")
+
+        if recorded_value in (None, ""):
+            return JsonResponse(
+                {"error": "recorded_value is required"},
+                status=400,
+            )
+
+        try:
+            recorded_value = Decimal(str(recorded_value))
+        except (TypeError, ValueError, InvalidOperation):
+            return JsonResponse(
+                {"error": "recorded_value must be a valid number"},
+                status=400,
+            )
+
+        record.recorded_value = recorded_value
+        update_fields.append("recorded_value")
+
+    if "notes" in payload:
+        notes = payload.get("notes")
+
+        if notes is not None and not isinstance(notes, str):
+            return JsonResponse(
+                {"error": "notes must be text"},
+                status=400,
+            )
+
+        record.notes = notes
+        update_fields.append("notes")
+
+    record.save(update_fields=update_fields)
+
+    return JsonResponse(
+        {
+            "me_indicator_record": {
+                "indicator_record_id": record.indicator_record_id,
+                "indicator_id": record.indicator_id,
+                "record_date": record.record_date,
+                "recorded_value": record.recorded_value,
+                "notes": record.notes,
+                "recorded_by_id": record.recorded_by_id,
+                "created_at": record.created_at,
+            }
+        },
+        status=200,
+    )
+
+
 @require_permission(
     permission=PERMISSION_VIEW,
     resource="financial_transactions",

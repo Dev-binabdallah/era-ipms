@@ -42,6 +42,7 @@ from core.views import (
     me_indicator_update,
     me_indicator_records_list,
     me_indicator_record_create,
+    me_indicator_record_update,
     farm_poultry_transfer_create,
     farm_poultry_transfers_list,
     project_assignments,
@@ -101,6 +102,10 @@ urlpatterns = [
     ),
     path("me-indicator-records/", me_indicator_records_list),
     path("me-indicator-records/create/", me_indicator_record_create),
+    path(
+        "me-indicator-records/<int:indicator_record_id>/update/",
+        me_indicator_record_update,
+    ),
     path("farm-poultry-transfers/", farm_poultry_transfers_list),
     path("farm-poultry-transfers/create/", farm_poultry_transfer_create),
     path("beneficiaries/", beneficiaries_collection),
