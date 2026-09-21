@@ -1883,3 +1883,205 @@ class MeIndicatorRecordUpdateApiTests(SimpleTestCase):
             response.content,
             {"error": "notes must be text"},
         )
+
+
+class MeIndicatorRecordDeleteApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.user = SimpleNamespace(
+            user_id=1,
+            is_authenticated=True,
+        )
+
+        self.project = SimpleNamespace(
+            project_id=10,
+        )
+
+        self.indicator = SimpleNamespace(
+            indicator_id=10,
+            project=self.project,
+            project_id=10,
+        )
+
+        self.record = SimpleNamespace(
+            indicator_record_id=1,
+            indicator=self.indicator,
+            indicator_id=10,
+            recorded_by_id=1,
+            created_at=datetime(2026, 9, 19, 11, 0, 0),
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_requires_authentication(self, decorator_service):
+        decorator_service.can_delete.return_value = False
+
+        request = self.factory.delete(
+            "/me-indicator-records/1/delete/"
+        )
+
+        request.user = SimpleNamespace(
+            is_authenticated=False,
+        )
+
+        from core.views import me_indicator_record_delete
+
+        response = me_indicator_record_delete(request, 1)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_requires_delete_permission(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_delete.return_value = False
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.delete(
+            "/me-indicator-records/1/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_delete
+
+        response = me_indicator_record_delete(request, 1)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_get_request_returns_405(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.get(
+            "/me-indicator-records/1/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_delete
+
+        response = me_indicator_record_delete(request, 1)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_record_not_found_returns_404(
+        self,
+        decorator_service,
+        record_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        record_objects.select_related.return_value.get.side_effect = (
+            MeIndicatorRecords.DoesNotExist
+        )
+
+        request = self.factory.delete(
+            "/me-indicator-records/999/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_delete
+
+        response = me_indicator_record_delete(request, 999)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Indicator record not found"},
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_outside_project_scope_returns_403(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        view_service.has_project_scope.return_value = False
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.delete(
+            "/me-indicator-records/1/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_delete
+
+        response = me_indicator_record_delete(request, 1)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "You are not authorized to delete this "
+                    "indicator record"
+                )
+            },
+        )
+
+    @patch("core.models.MeIndicatorRecords.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_record_success(
+        self,
+        decorator_service,
+        view_service,
+        record_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        view_service.has_project_scope.return_value = True
+
+        self.record.delete = lambda: None
+
+        record_objects.select_related.return_value.get.return_value = (
+            self.record
+        )
+
+        request = self.factory.delete(
+            "/me-indicator-records/1/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_record_delete
+
+        response = me_indicator_record_delete(request, 1)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "message": "Indicator record deleted successfully",
+                "indicator_record_id": 1,
+            },
+        )

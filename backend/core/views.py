@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from core.authorization.constants import (
     PERMISSION_ADD,
+    PERMISSION_DELETE,
     PERMISSION_EDIT,
     PERMISSION_VIEW,
 )
@@ -4420,6 +4421,63 @@ def me_indicator_record_update(request, indicator_record_id):
                 "recorded_by_id": record.recorded_by_id,
                 "created_at": record.created_at,
             }
+        },
+        status=200,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_DELETE,
+    resource="me_indicator_records",
+    record_getter=get_me_indicator_record,
+)
+def me_indicator_record_delete(request, indicator_record_id):
+    """
+    Delete an existing M&E indicator record.
+
+    The record must belong to an indicator within the user's
+    authorized project scope.
+    """
+
+    if request.method != "DELETE":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        record = MeIndicatorRecords.objects.select_related(
+            "indicator",
+            "indicator__project",
+        ).get(
+            indicator_record_id=indicator_record_id,
+        )
+    except MeIndicatorRecords.DoesNotExist:
+        return JsonResponse(
+            {"error": "Indicator record not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        record.indicator.project,
+    ):
+        return JsonResponse(
+            {
+                "error": (
+                    "You are not authorized to delete this "
+                    "indicator record"
+                )
+            },
+            status=403,
+        )
+
+    record.delete()
+
+    return JsonResponse(
+        {
+            "message": "Indicator record deleted successfully",
+            "indicator_record_id": indicator_record_id,
         },
         status=200,
     )
