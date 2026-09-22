@@ -2085,3 +2085,201 @@ class MeIndicatorRecordDeleteApiTests(SimpleTestCase):
                 "indicator_record_id": 1,
             },
         )
+
+
+class MeIndicatorDeleteApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+        self.user = SimpleNamespace(
+            user_id=1,
+            is_authenticated=True,
+        )
+
+        self.project = SimpleNamespace(
+            project_id=10,
+        )
+
+        self.indicator = SimpleNamespace(
+            indicator_id=10,
+            project=self.project,
+            project_id=10,
+        )
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_requires_authentication(self, decorator_service):
+        decorator_service.can_delete.return_value = False
+
+        request = self.factory.delete(
+            "/me-indicators/10/delete/"
+        )
+
+        request.user = SimpleNamespace(
+            is_authenticated=False,
+        )
+
+        from core.views import me_indicator_delete
+
+        response = me_indicator_delete(request, 10)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.models.MeIndicators.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_requires_delete_permission(
+        self,
+        decorator_service,
+        indicator_objects,
+    ):
+        decorator_service.can_delete.return_value = False
+        indicator_objects.select_related.return_value.get.return_value = (
+            self.indicator
+        )
+
+        request = self.factory.delete(
+            "/me-indicators/10/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_delete
+
+        response = me_indicator_delete(request, 10)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+    @patch("core.models.MeIndicators.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_get_request_returns_405(
+        self,
+        decorator_service,
+        indicator_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        indicator_objects.select_related.return_value.get.return_value = (
+            self.indicator
+        )
+
+        request = self.factory.get(
+            "/me-indicators/10/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_delete
+
+        response = me_indicator_delete(request, 10)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
+        )
+
+    @patch("core.models.MeIndicators.objects")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_indicator_not_found_returns_404(
+        self,
+        decorator_service,
+        indicator_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        indicator_objects.select_related.return_value.get.side_effect = (
+            MeIndicators.DoesNotExist
+        )
+
+        request = self.factory.delete(
+            "/me-indicators/999/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_delete
+
+        response = me_indicator_delete(request, 999)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Indicator not found"},
+        )
+
+    @patch("core.models.MeIndicators.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_outside_project_scope_returns_403(
+        self,
+        decorator_service,
+        view_service,
+        indicator_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        view_service.has_project_scope.return_value = False
+        indicator_objects.select_related.return_value.get.return_value = (
+            self.indicator
+        )
+
+        request = self.factory.delete(
+            "/me-indicators/10/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_delete
+
+        response = me_indicator_delete(request, 10)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": (
+                    "You are not authorized to delete this "
+                    "indicator"
+                )
+            },
+        )
+
+    @patch("core.models.MeIndicators.objects")
+    @patch("core.views.authorization_service")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_delete_indicator_success(
+        self,
+        decorator_service,
+        view_service,
+        indicator_objects,
+    ):
+        decorator_service.can_delete.return_value = True
+        view_service.has_project_scope.return_value = True
+
+        self.indicator.delete = lambda: None
+
+        indicator_objects.select_related.return_value.get.return_value = (
+            self.indicator
+        )
+
+        request = self.factory.delete(
+            "/me-indicators/10/delete/"
+        )
+        request.user = self.user
+
+        from core.views import me_indicator_delete
+
+        response = me_indicator_delete(request, 10)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "message": "Indicator deleted successfully",
+                "indicator_id": 10,
+            },
+        )
+
+        self.assertTrue(
+            self.indicator.delete is not None
+        )

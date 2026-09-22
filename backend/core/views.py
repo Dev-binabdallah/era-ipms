@@ -4079,6 +4079,57 @@ def me_indicator_update(request, indicator_id):
 
 
 @require_permission(
+    permission=PERMISSION_DELETE,
+    resource="me_indicators",
+    record_getter=get_me_indicator,
+)
+def me_indicator_delete(request, indicator_id):
+    """
+    Delete an existing M&E indicator.
+
+    The indicator must belong to a project within the user's
+    authorized project scope.
+    """
+
+    if request.method != "DELETE":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    try:
+        indicator = MeIndicators.objects.select_related(
+            "project",
+        ).get(
+            indicator_id=indicator_id,
+        )
+    except MeIndicators.DoesNotExist:
+        return JsonResponse(
+            {"error": "Indicator not found"},
+            status=404,
+        )
+
+    if not authorization_service.has_project_scope(
+        request.user,
+        indicator.project,
+    ):
+        return JsonResponse(
+            {"error": "You are not authorized to delete this indicator"},
+            status=403,
+        )
+
+    indicator.delete()
+
+    return JsonResponse(
+        {
+            "message": "Indicator deleted successfully",
+            "indicator_id": indicator_id,
+        },
+        status=200,
+    )
+
+
+@require_permission(
     permission=PERMISSION_VIEW,
     resource="me_indicator_records",
 )

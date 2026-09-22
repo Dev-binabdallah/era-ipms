@@ -40,6 +40,7 @@ from core.views import (
     me_indicators_list,
     me_indicator_create,
     me_indicator_update,
+    me_indicator_delete,
     me_indicator_records_list,
     me_indicator_record_create,
     me_indicator_record_update,
@@ -100,6 +101,10 @@ urlpatterns = [
     path(
         "me-indicators/<int:indicator_id>/update/",
         me_indicator_update,
+    ),
+    path(
+        "me-indicators/<int:indicator_id>/delete/",
+        me_indicator_delete,
     ),
     path("me-indicator-records/", me_indicator_records_list),
     path("me-indicator-records/create/", me_indicator_record_create),

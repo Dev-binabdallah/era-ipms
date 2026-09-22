@@ -1732,3 +1732,37 @@ No database migration or schema change was required. The API uses the existing `
 
 ### Next step
 Stage the M&E indicator record delete implementation, tests, and `development_log.md` together for commit, then commit and push the completed change.
+
+## 2026-09-22 - M&E Indicator Delete API
+
+### Objective
+Implement the API endpoint for deleting existing M&E indicators within the user's authorized project scope.
+
+### Work completed
+- Added protected endpoint:
+  - `DELETE /me-indicators/<indicator_id>/delete/`
+- Added `me_indicator_delete` to `backend/core/views.py`.
+- Reused the existing `me_indicators` DELETE permission and authorization rules.
+- Reused the existing `get_me_indicator` helper for record-level DELETE authorization.
+- Verified that the indicator belongs to a project within the user's active authorized project scope.
+- Added handling for unsupported HTTP methods, missing indicators, and unauthorized project scope.
+- Added successful indicator deletion response.
+- Added the DELETE route to `backend/config/urls.py`.
+- Added 6 focused tests covering authentication, DELETE permission, HTTP method validation, indicator existence, project scope, and successful deletion.
+- Restored the existing VIEW permission protection for the M&E indicator records list endpoint after full-suite testing identified the missing decorator.
+
+### Verification
+- M&E Indicator DELETE API tests: 6/6 PASSED
+- M&E Indicator API tests: 66/66 PASSED
+- Full `core` test suite: 541/541 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The API uses the existing `me_indicators` database table and `MeIndicators` model.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Stage the M&E indicator delete implementation, tests, and `development_log.md` together for commit, then commit and push the completed change.
