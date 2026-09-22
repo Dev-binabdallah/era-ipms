@@ -10,6 +10,7 @@ from core.views import (
     activity_assignment_create,
     activity_assignment_update,
     beneficiaries_collection,
+    beneficiary_update,
     disability_assessments_collection,
     home_visits_collection,
     referrals_collection,
@@ -119,6 +120,10 @@ urlpatterns = [
     path("farm-poultry-transfers/", farm_poultry_transfers_list),
     path("farm-poultry-transfers/create/", farm_poultry_transfer_create),
     path("beneficiaries/", beneficiaries_collection),
+    path(
+        "beneficiaries/<int:beneficiary_id>/",
+        beneficiary_update,
+    ),
     path(
         "disability-assessments/",
         disability_assessments_collection,

@@ -88,6 +88,23 @@ def get_referral(request, referral_id, **kwargs):
         return None
 
 
+def get_beneficiary(request, beneficiary_id, **kwargs):
+    try:
+        beneficiary_id = int(beneficiary_id)
+    except (TypeError, ValueError):
+        return None
+
+    if beneficiary_id <= 0:
+        return None
+
+    try:
+        return Beneficiaries.objects.get(
+            beneficiary_id=beneficiary_id,
+        )
+    except Beneficiaries.DoesNotExist:
+        return None
+
+
 def auth_login(request):
     if request.method != "POST":
         return JsonResponse(
@@ -246,6 +263,157 @@ def projects_create(request):
             }
         },
         status=201,
+    )
+
+
+
+@require_permission(
+    permission=PERMISSION_EDIT,
+    resource="beneficiaries",
+    record_getter=get_beneficiary,
+)
+def beneficiary_update(request, beneficiary_id):
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    beneficiary = get_beneficiary(
+        request,
+        beneficiary_id,
+    )
+
+    if beneficiary is None:
+        return JsonResponse(
+            {"error": "Beneficiary not found"},
+            status=404,
+        )
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    if not isinstance(payload, dict):
+        return JsonResponse(
+            {"error": "JSON body must be an object"},
+            status=400,
+        )
+
+    editable_fields = {
+        "beneficiary_code",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "sex",
+        "location",
+        "phone",
+        "registration_date",
+        "status",
+    }
+
+    unknown_fields = set(payload) - editable_fields
+
+    if unknown_fields:
+        return JsonResponse(
+            {
+                "error": (
+                    "Unsupported field: "
+                    + sorted(unknown_fields)[0]
+                )
+            },
+            status=400,
+        )
+
+    for field in ("beneficiary_code", "first_name", "last_name"):
+        if field in payload:
+            value = str(payload[field]).strip()
+
+            if not value:
+                return JsonResponse(
+                    {"error": f"{field} cannot be empty"},
+                    status=400,
+                )
+
+            setattr(beneficiary, field, value)
+
+    for field in ("date_of_birth", "registration_date"):
+        if field not in payload:
+            continue
+
+        value = payload[field]
+
+        if value in (None, ""):
+            setattr(beneficiary, field, None)
+            continue
+
+        try:
+            parsed_date = date.fromisoformat(str(value))
+        except ValueError:
+            return JsonResponse(
+                {
+                    "error": (
+                        f"{field} must use YYYY-MM-DD format"
+                    ),
+                },
+                status=400,
+            )
+
+        setattr(beneficiary, field, parsed_date)
+
+    for field in (
+        "sex",
+        "location",
+        "phone",
+        "status",
+    ):
+        if field in payload:
+            value = payload[field]
+
+            if value == "":
+                value = None
+
+            setattr(beneficiary, field, value)
+
+    beneficiary.updated_at = timezone.now()
+    beneficiary.save(
+        update_fields=[
+            "beneficiary_code",
+            "first_name",
+            "last_name",
+            "date_of_birth",
+            "sex",
+            "location",
+            "phone",
+            "registration_date",
+            "status",
+            "updated_at",
+        ],
+    )
+
+    return JsonResponse(
+        {
+            "beneficiary": {
+                "beneficiary_id": beneficiary.beneficiary_id,
+                "beneficiary_code": beneficiary.beneficiary_code,
+                "first_name": beneficiary.first_name,
+                "last_name": beneficiary.last_name,
+                "date_of_birth": beneficiary.date_of_birth,
+                "sex": beneficiary.sex,
+                "location": beneficiary.location,
+                "phone": beneficiary.phone,
+                "registration_date": beneficiary.registration_date,
+                "status": beneficiary.status,
+                "created_by_id": beneficiary.created_by_id,
+                "created_at": beneficiary.created_at,
+                "updated_at": beneficiary.updated_at,
+            }
+        },
+        status=200,
     )
 
 

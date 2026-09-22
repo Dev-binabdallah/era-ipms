@@ -1,3 +1,36 @@
+## 2026-09-22 - Beneficiary Update API
+
+### Objective
+Implement the API endpoint for updating existing beneficiary records using the project's centralized EDIT authorization rules.
+
+### Work completed
+- Added protected endpoint:
+  - `PATCH /beneficiaries/<beneficiary_id>/`
+- Added `beneficiary_update` to `backend/core/views.py`.
+- Added `get_beneficiary` helper for record-level beneficiary lookup and authorization.
+- Reused the existing `EDIT` permission and beneficiary record-level authorization rules.
+- Supported partial updates for beneficiary profile fields.
+- Added validation for required name and beneficiary code fields.
+- Added validation for `date_of_birth` and `registration_date` using `YYYY-MM-DD` format.
+- Rejected unsupported fields and invalid JSON payloads.
+- Updated the beneficiary `updated_at` timestamp when a record is changed.
+- Added the PATCH route to `backend/config/urls.py`.
+- Added a focused test covering a successful beneficiary update, authorization, response data, and database save fields.
+
+### Verification
+- Beneficiary API tests: 12/12 PASSED
+- Full `core` test suite: 542/542 PASSED
+- Django system check: PASSED
+
+### Database decision
+No database migration or schema change was required. The API uses the existing `beneficiaries` database table and `Beneficiaries` model.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Stage the Beneficiary Update API implementation, tests, and `development_log.md` together for commit, then commit and push the completed change.
+
 ## 2026-09-15 — Assignment Authorization Boundary Tests
 
 ### Objective

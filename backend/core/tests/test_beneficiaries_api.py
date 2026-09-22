@@ -5,7 +5,11 @@ from unittest.mock import Mock, patch
 
 from django.test import RequestFactory, SimpleTestCase
 
-from core.views import beneficiaries_collection, beneficiaries_list
+from core.views import (
+    beneficiaries_collection,
+    beneficiaries_list,
+    beneficiary_update,
+)
 
 
 class BeneficiariesApiTests(SimpleTestCase):
@@ -374,4 +378,104 @@ class BeneficiariesApiTests(SimpleTestCase):
             {
                 "error": "date_of_birth must use YYYY-MM-DD format",
             },
+        )
+
+
+    @patch("core.views.timezone.now")
+    @patch("core.views.Beneficiaries.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_patch_updates_beneficiary(
+        self,
+        service,
+        objects_get,
+        timezone_now,
+    ):
+        service.can_edit.return_value = True
+        timezone_now.return_value = "2026-09-22T10:00:00Z"
+
+        beneficiary = SimpleNamespace(
+            beneficiary_id=10,
+            beneficiary_code="BEN-010",
+            first_name="Amina",
+            last_name="Hassan",
+            date_of_birth=date(1995, 5, 10),
+            sex="Female",
+            location="Mombasa",
+            phone="0700000000",
+            registration_date=date(2026, 9, 7),
+            status="active",
+            created_by_id=42,
+            created_at="2026-09-07T00:00:00Z",
+            updated_at="2026-09-07T00:00:00Z",
+            save=Mock(),
+        )
+
+        objects_get.return_value = beneficiary
+
+        payload = {
+            "first_name": "Amina",
+            "last_name": "Abdullahi",
+            "location": "Kisauni",
+            "phone": "0711111111",
+            "status": "active",
+        }
+
+        request = self.factory.patch(
+            "/beneficiaries/10/",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        request.user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=42,
+        )
+
+        response = beneficiary_update(request, 10)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "beneficiary": {
+                    "beneficiary_id": 10,
+                    "beneficiary_code": "BEN-010",
+                    "first_name": "Amina",
+                    "last_name": "Abdullahi",
+                    "date_of_birth": "1995-05-10",
+                    "sex": "Female",
+                    "location": "Kisauni",
+                    "phone": "0711111111",
+                    "registration_date": "2026-09-07",
+                    "status": "active",
+                    "created_by_id": 42,
+                    "created_at": "2026-09-07T00:00:00Z",
+                    "updated_at": "2026-09-22T10:00:00Z",
+                },
+            },
+        )
+
+        self.assertEqual(objects_get.call_count, 2)
+        objects_get.assert_any_call(
+            beneficiary_id=10,
+        )
+        service.can_edit.assert_called_once_with(
+            request.user,
+            beneficiary,
+            resource="beneficiaries",
+            context=None,
+        )
+
+        beneficiary.save.assert_called_once_with(
+            update_fields=[
+                "beneficiary_code",
+                "first_name",
+                "last_name",
+                "date_of_birth",
+                "sex",
+                "location",
+                "phone",
+                "registration_date",
+                "status",
+                "updated_at",
+            ],
         )
