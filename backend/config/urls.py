@@ -10,6 +10,7 @@ from core.views import (
     activity_assignment_create,
     activity_assignment_update,
     beneficiaries_collection,
+    beneficiary_archive,
     beneficiary_update,
     disability_assessments_collection,
     home_visits_collection,
@@ -123,6 +124,10 @@ urlpatterns = [
     path(
         "beneficiaries/<int:beneficiary_id>/",
         beneficiary_update,
+    ),
+    path(
+        "beneficiaries/<int:beneficiary_id>/archive/",
+        beneficiary_archive,
     ),
     path(
         "disability-assessments/",

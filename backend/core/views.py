@@ -417,6 +417,55 @@ def beneficiary_update(request, beneficiary_id):
     )
 
 
+
+@require_permission(
+    permission=PERMISSION_EDIT,
+    resource="beneficiaries",
+    record_getter=get_beneficiary,
+)
+def beneficiary_archive(request, beneficiary_id):
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    beneficiary = get_beneficiary(
+        request,
+        beneficiary_id,
+    )
+
+    if beneficiary is None:
+        return JsonResponse(
+            {"error": "Beneficiary not found"},
+            status=404,
+        )
+
+    beneficiary.status = "inactive"
+    beneficiary.updated_at = timezone.now()
+
+    beneficiary.save(
+        update_fields=[
+            "status",
+            "updated_at",
+        ],
+    )
+
+    return JsonResponse(
+        {
+            "beneficiary": {
+                "beneficiary_id": beneficiary.beneficiary_id,
+                "beneficiary_code": beneficiary.beneficiary_code,
+                "first_name": beneficiary.first_name,
+                "last_name": beneficiary.last_name,
+                "status": beneficiary.status,
+                "updated_at": beneficiary.updated_at,
+            }
+        },
+        status=200,
+    )
+
+
 @require_permission(
     permission=PERMISSION_ADD,
     resource="beneficiaries",

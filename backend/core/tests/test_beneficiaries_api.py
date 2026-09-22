@@ -8,6 +8,7 @@ from django.test import RequestFactory, SimpleTestCase
 from core.views import (
     beneficiaries_collection,
     beneficiaries_list,
+    beneficiary_archive,
     beneficiary_update,
 )
 
@@ -478,4 +479,139 @@ class BeneficiariesApiTests(SimpleTestCase):
                 "status",
                 "updated_at",
             ],
+        )
+
+
+    @patch("core.views.timezone.now")
+    @patch("core.views.Beneficiaries.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_patch_archive_sets_beneficiary_inactive(
+        self,
+        service,
+        objects_get,
+        timezone_now,
+    ):
+        service.can_edit.return_value = True
+        timezone_now.return_value = "2026-09-22T11:00:00Z"
+
+        beneficiary = SimpleNamespace(
+            beneficiary_id=10,
+            beneficiary_code="BEN-010",
+            first_name="Amina",
+            last_name="Hassan",
+            status="active",
+            updated_at="2026-09-22T10:00:00Z",
+            save=Mock(),
+        )
+
+        objects_get.return_value = beneficiary
+
+        request = self.factory.patch(
+            "/beneficiaries/10/archive/",
+        )
+        request.user = SimpleNamespace(
+            is_authenticated=True,
+            user_id=42,
+        )
+
+        response = beneficiary_archive(request, 10)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "beneficiary": {
+                    "beneficiary_id": 10,
+                    "beneficiary_code": "BEN-010",
+                    "first_name": "Amina",
+                    "last_name": "Hassan",
+                    "status": "inactive",
+                    "updated_at": "2026-09-22T11:00:00Z",
+                },
+            },
+        )
+
+        self.assertEqual(beneficiary.status, "inactive")
+        self.assertEqual(objects_get.call_count, 2)
+        objects_get.assert_any_call(
+            beneficiary_id=10,
+        )
+
+        service.can_edit.assert_called_once_with(
+            request.user,
+            beneficiary,
+            resource="beneficiaries",
+            context=None,
+        )
+
+        beneficiary.save.assert_called_once_with(
+            update_fields=[
+                "status",
+                "updated_at",
+            ],
+        )
+
+
+    @patch("core.authorization.decorators.authorization_service")
+    def test_archive_without_edit_permission_returns_403(
+        self,
+        service,
+    ):
+        service.can_edit.return_value = False
+
+        beneficiary = SimpleNamespace(
+            beneficiary_id=10,
+        )
+
+        with patch(
+            "core.views.Beneficiaries.objects.get",
+            return_value=beneficiary,
+        ):
+            request = self.factory.patch(
+                "/beneficiaries/10/archive/",
+            )
+            request.user = SimpleNamespace(
+                is_authenticated=True,
+                user_id=42,
+            )
+
+            response = beneficiary_archive(request, 10)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"authorized": False},
+        )
+
+        service.can_edit.assert_called_once_with(
+            request.user,
+            beneficiary,
+            resource="beneficiaries",
+            context=None,
+        )
+
+
+    @patch("core.views.Beneficiaries.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_archive_unsupported_method_returns_405(
+        self,
+        service,
+        objects_get,
+    ):
+        service.can_edit.return_value = True
+        objects_get.return_value = SimpleNamespace(
+            beneficiary_id=10,
+        )
+
+        request = self.factory.post(
+            "/beneficiaries/10/archive/",
+        )
+        request.user = self.authenticated_user
+
+        response = beneficiary_archive(request, 10)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Method not allowed"},
         )

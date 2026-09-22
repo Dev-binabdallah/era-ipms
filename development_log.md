@@ -1,3 +1,34 @@
+## 2026-09-22 - Beneficiary Archive API
+
+### Objective
+Implement a protected archive action for beneficiary records using the existing status field, without deleting beneficiary history.
+
+### Work completed
+- Added protected endpoint:
+  - `PATCH /beneficiaries/<beneficiary_id>/archive/`
+- Added `beneficiary_archive` to `backend/core/views.py`.
+- Reused the existing `EDIT` permission and beneficiary record-level authorization rules.
+- Changed archived beneficiary status to `inactive`.
+- Updated `updated_at` when archiving.
+- Preserved the beneficiary record and related operational history.
+- Added the archive route to `backend/config/urls.py`.
+- Added focused tests for successful archiving, authorization, and unsupported methods.
+
+### Verification
+- Beneficiary API tests: 15/15 PASSED
+- Full `core` test suite: 545/545 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The archive action uses the existing `beneficiaries.status` field.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Stage the Beneficiary Archive API implementation, tests, and `development_log.md` together for commit, then commit and push the completed change.
+
 ## 2026-09-22 - Beneficiary Update API
 
 ### Objective
