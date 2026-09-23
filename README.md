@@ -4,81 +4,53 @@ Project Overview
 
 ERA Integrated Project Management System (ERA-IPMS) is a web-based information and project management system being developed to support the management, monitoring, accountability, and reporting of organisational and project activities.
 
-The system is initially being designed around the operational needs of Emergency Response Aid (ERA), which serves as the initial pilot organisation and requirements-validation partner.
+The system is initially designed around the operational needs of Emergency Response Aid (ERA), which serves as the initial pilot organisation and requirements-validation partner.
 
-ERA-IPMS is intended to provide a centralised platform for managing authorised information related to disability services and beneficiary activities, projects and activities, poultry, a small farm, finance, staff and members, monitoring and evaluation, dashboards, and reporting.
+ERA-IPMS provides a centralised platform for managing authorised information related to beneficiaries and disability services, projects and activities, poultry, small farm activities, finance, monitoring and evaluation, and related operational records.
+
+The project has progressed beyond the initial documentation and architecture stage. Core backend functionality, database integration, authentication, authorization, API endpoints, and automated tests are now being implemented and expanded incrementally.
 
 Project Baseline
 
-Item
-
-Current baseline
-
-Project
-
-ERA Integrated Project Management System (ERA-IPMS)
-
-Project type
-
-Web-Based Information and Project Management System
-
-Initial pilot organisation
-
-Emergency Response Aid (ERA)
-
-System owner/developer
-
-Abdullahi Abdi Mohamed
-
-Version
-
-1.1
-
-Status
-
-Documentation and Architecture Baseline
-
-Backend
-
-Python / Django
-
-Database
-
-MariaDB / MySQL
-
-Source of truth
-
-GitHub main branch
-
-This baseline is being established before further application and database development. Documentation, requirements, workflows, permissions, data structures, and architecture are being aligned first so that implementation is based on an agreed system design.
+| Item | Current baseline |
+|---|---|
+| Project | ERA Integrated Project Management System (ERA-IPMS) |
+| Project type | Web-Based Information and Project Management System |
+| Initial pilot organisation | Emergency Response Aid (ERA) |
+| System owner/developer | Abdullahi Abdi Mohamed |
+| Version | 1.1 |
+| Current status | Active backend implementation and testing |
+| Backend | Python / Django |
+| Database | MariaDB / MySQL |
+| Source of truth | GitHub main branch |
 
 Why is ERA-IPMS Being Developed?
 
-ERA currently requires practical ways to organise information associated with its organisational and project activities. ERA-IPMS is being developed to reduce fragmented record keeping and provide authorised users with relevant information through a central system.
+ERA requires practical ways to organise information associated with its organisational and project activities. ERA-IPMS is being developed to reduce fragmented record keeping and provide authorised users with relevant information through a central system.
 
-The system is intended to support:
+The system is being developed to support:
 
 Improved record management.
 
 Beneficiary and disability-related activity management.
 
-Home visits, referrals, and follow-ups.
+Home visits, referrals, and referral follow-ups.
 
 Project and activity management.
 
-Poultry production tracking.
+Poultry production and operational tracking.
 
 Small farm activity and harvest tracking.
 
-Basic sales, income, and expense recording.
+Farm-to-poultry transfer tracking where applicable.
 
-Staff, volunteers, and member information.
+Basic sales, income, expense, and financial transaction recording.
 
 Monitoring and evaluation.
 
-Management dashboards.
+Controlled access to organisational and programme information.
 
-Routine and management reporting.
+Management dashboards and reporting as further functionality is implemented.
 
 Better accountability through controlled access and auditability.
 
@@ -98,55 +70,61 @@ Finance - Sales, Expenses, and Financial Records
 
 Member - Assigned Programme Responsibilities
 
-These are titles, not fixed application roles with permanently bundled permissions.
+These are titles rather than fixed application roles with permanently bundled permissions.
 
 The system distinguishes three concepts:
 
 Title: the user's organisational or system title, such as Admin, Director, Programme Coordinator, Finance, or Member.
 
-Permission: the actions a user is authorised to perform, such as View, Add, Edit, Delete, Approve, Export, Manage, or Administer.
+Permission: the action a user is authorised to perform, such as View, Add, Edit, Delete, Approve, Export, Manage, or Administer.
 
 Responsibility: the programme or operational area assigned to a user, such as disability services, assessments, referrals and follow-ups, poultry, farm activities, project coordination, or M&E.
 
-Administrators can create future/custom titles and assign permissions individually. Record-level access is also required so that users do not automatically receive unrestricted access to all organisational information.
+The authorization system uses these concepts together with the relevant resource and record scope when determining whether an authenticated user can access a protected operation or record.
+
+Administrators can create future or custom titles and assign permissions according to the system's access-control design.
 
 Initial Access and Governance Direction
 
-ERA-IPMS will use controlled authentication and authorisation.
+ERA-IPMS uses controlled authentication and authorization.
 
-The approved authentication direction is:
+The current implementation includes:
 
 Users can sign in using username or email and password.
 
-Passwords must follow a strong security policy.
+Access to protected operations is controlled through application permissions.
 
-Access is controlled by application permissions.
+Programme and operational access can also depend on assigned responsibilities.
 
-Users should only access records and actions authorised for their title, permissions, responsibilities, and record-level scope.
+Record-level and scope-based authorization is applied where required.
 
-Beneficiary records are intended to be archived or made inactive rather than physically deleted.
+Beneficiary records can be archived or made inactive rather than physically deleted.
 
-An audit log is part of the approved minimum viable system direction.
+The broader governance direction includes:
 
-The initial governance direction includes:
+Admin: system administration and authorised administrative functions.
 
-Admin: system administration, user/title/permission management, and authorised project administration. Technical authority does not automatically grant programme decision authority.
-
-Director: programme oversight, M&E oversight, and authority relating to continuation of projects and activities.
+Director: programme oversight and M&E oversight.
 
 Programme Coordinator: programme and project coordination and operational oversight.
 
 Finance: financial records, sales, and expenses, including poultry and farm-related financial transactions.
 
-Member: assigned programme responsibilities and operational records within their authorised scope.
+Member: assigned programme responsibilities and operational records within the user's authorised scope.
 
-Project creation is initially assigned to Admin and Director. Future titles may be created by Admin.
+Project and other resource access is controlled according to the applicable permission, responsibility, resource, and record-level authorization rules.
+
+Future titles and additional permissions or responsibilities may be introduced as the system develops.
+
+Audit logging remains part of the approved minimum viable system direction.
 
 Main System Modules
 
-The initial scope includes the following modules:
+The system is being developed as a set of related operational modules. Several modules already have implemented backend APIs and automated tests, while other functionality remains under development.
 
 Administration and Access Management
+
+Current functionality includes:
 
 Authentication.
 
@@ -156,19 +134,37 @@ Titles and permissions.
 
 Responsibility assignments.
 
-Access control.
+Permission-based access control.
 
-Audit logging.
+Responsibility-based access control.
+
+Resource-level authorization.
+
+Record-level and scope-based access control.
+
+Authorization services, policies, decorators, and authorization-aware querysets.
+
+Audit logging remains part of the wider approved system direction.
 
 Beneficiary and Disability Management
 
-Beneficiary registration and search.
+Current functionality includes:
 
-Disability information and assessments.
+Beneficiary registration and retrieval.
+
+Beneficiary listing.
+
+Beneficiary updates.
+
+Beneficiary archive functionality.
+
+Disability assessments.
 
 Home visits.
 
 Referrals.
+
+Referral approval.
 
 Referral follow-ups.
 
@@ -176,19 +172,31 @@ Controlled beneficiary record access.
 
 Project and Activity Management
 
+Current functionality includes:
+
 Projects.
+
+Project listing and detail retrieval.
+
+Project updates.
+
+Project assignments.
 
 Activities.
 
+Activity assignments.
+
 Activity participants.
 
-Project assignment and coordination.
-
-Activity monitoring.
+Project and activity authorization.
 
 Poultry Management
 
-Poultry stock transactions.
+Current functionality includes:
+
+Poultry groups.
+
+Poultry stock movements.
 
 Egg production.
 
@@ -196,11 +204,13 @@ Feed records.
 
 Poultry health records.
 
-Poultry categories/groups.
+Poultry sales.
 
-Poultry sales and related operational records.
+Related poultry operational records.
 
 Small Farm Management
+
+Current functionality includes:
 
 Farm crops.
 
@@ -208,175 +218,229 @@ Farm activities.
 
 Harvests.
 
+Farm-to-poultry transfers.
+
 Farm-related operational records.
-
-Farm-to-poultry feed transfer tracking where applicable.
-
-Staff, Volunteers, and Members
-
-Staff and volunteer information.
-
-Member responsibilities and assignments.
-
-Controlled operational access.
 
 Finance
 
-Sales.
+Current functionality includes:
 
-Expenses.
+Financial transactions.
 
-Basic financial records.
+Project-related financial transactions.
 
-Poultry and farm-related financial transactions.
+Organisation-related financial transactions.
 
-The initial scope is basic financial management, not full accounting.
+Poultry-related financial transactions.
+
+Farm-related financial transactions.
+
+Sales and expense records within the implemented financial transaction structure.
+
+The current scope is basic financial transaction management, not full accounting.
 
 Monitoring and Evaluation
 
-M&E indicators.
+Current functionality includes:
 
-Project and activity monitoring.
+M&E indicator creation.
 
-Management-level monitoring information.
+M&E indicator listing.
+
+M&E indicator retrieval.
+
+M&E indicator updates.
+
+M&E indicator deletion.
+
+M&E indicator record creation.
+
+M&E indicator record listing.
+
+M&E indicator record updates.
+
+M&E indicator record deletion.
+
+Staff, Volunteers, and Members
+
+Staff, volunteer, and member management remains part of the wider system scope.
+
+The current implementation focuses on the user, title, permission, responsibility, and authorization structures required by the backend.
+
+Additional staff and volunteer management functionality may be implemented as the project progresses.
 
 Dashboard and Reporting
 
-Management dashboards.
+Dashboards, management summaries, routine reports, and authorised data exports remain part of the wider system scope.
 
-Operational summaries.
-
-Routine reports.
-
-Authorised data exports where permitted.
+These features are not considered fully implemented unless the corresponding functionality has been developed and verified.
 
 Poultry and Small Farm Relationship
 
-The poultry and small farm modules are related operationally.
+The poultry and small farm modules are related operational areas within ERA-IPMS.
 
-The farm may produce crops and other materials that can support poultry activities. Where farm produce is transferred for poultry feed, the system should provide a record of that transfer so that farm outputs and poultry inputs can be tracked consistently.
+The system supports separate records for poultry and farm activities while allowing controlled links between the two areas where required.
 
-Poultry records will support operational quantities such as stock, eggs, feed, health events, and sales. Financial transactions associated with these activities are handled through the finance module according to the user's authorised permissions.
+The current implementation includes:
+
+Poultry groups and poultry stock movements.
+
+Egg production.
+
+Feed records.
+
+Poultry health records.
+
+Poultry sales.
+
+Farm crops.
+
+Farm activities.
+
+Harvest records.
+
+Farm-to-poultry transfers.
+
+Financial transactions related to poultry and farm activities.
+
+The farm-to-poultry transfer functionality provides a controlled way to record relevant movement of farm outputs into poultry operations.
+
+The two modules remain separately managed so that poultry records and farm records can be maintained independently while still supporting relevant operational relationships.
 
 Information Access and Accountability
 
-ERA-IPMS is designed around least-privilege access.
+ERA-IPMS is designed around controlled access to organisational and programme information.
 
-A user's title alone does not automatically provide unrestricted access. Permissions and responsibilities determine what actions and programme areas the user may access, while record-level controls further restrict access where required.
+Authorization is applied according to the requirements of the protected operation and may consider:
 
-Examples of the approved access direction include:
+User authentication.
 
-Members access their own authorised operational records and own contribution totals per project.
+Permission.
 
-Members can access beneficiary records they personally registered, assessed, or visited, subject to the applicable permissions.
+Responsibility.
 
-Members can create and submit referrals, while approval is performed by an authorised person.
+Resource.
 
-Members maintain operational poultry records within their authorised scope.
+Record.
 
-Admin and Programme Coordinator can review authorised poultry information.
+Project or organisational scope.
 
-Finance manages authorised financial transactions.
+The current authorization implementation uses centralized authorization services together with policy mappings, decorators, and authorization-aware querysets.
 
-Director provides programme oversight and M&E oversight.
+Protected resources currently include areas such as:
 
-These rules will be refined and formalised in the User Roles and Permissions and Software Requirements Specification documents.
+Projects and activities.
+
+Beneficiaries and disability-related records.
+
+Referrals and referral follow-ups.
+
+Poultry records.
+
+Farm records.
+
+Financial transactions.
+
+M&E indicators and indicator records.
+
+The system is designed so that users only access records and operations within their authorised scope.
+
+Beneficiary records can be archived or made inactive when they should no longer be treated as active records, rather than relying on physical deletion.
+
+Automated tests are used to verify authorization behaviour, protected endpoints, access boundaries, and relevant record-level rules.
 
 Technology Direction
 
-ERA-IPMS is being developed using:
+ERA-IPMS is currently being developed using the following technologies:
 
-Technology
+| Technology | Purpose |
+|---|---|
+| Python | Backend application logic |
+| Django | Web application framework |
+| MariaDB / MySQL | Relational database |
+| HTML | Web page structure |
+| CSS | User interface styling |
+| JavaScript | Client-side interaction where required |
+| Django Test Framework | Automated backend testing |
+| Git / GitHub | Source code and version control |
 
-Purpose
+The current backend architecture is based on Django with MariaDB/MySQL.
 
-Python
+The application uses Django's request handling, database integration, authentication, authorization, and testing capabilities.
 
-Backend application logic
+The project is currently focused on backend implementation and API development, with user interface and reporting functionality being developed according to the project roadmap.
 
-Django
-
-Web application framework
-
-MariaDB / MySQL
-
-Relational database
-
-HTML
-
-Web page structure
-
-CSS
-
-User interface styling
-
-JavaScript
-
-Client-side interaction where required
-
-The current architecture direction is Django with MariaDB/MySQL. Java is not part of the current technology baseline.
+Java is not part of the current technology baseline.
 
 Development Approach
 
-Development follows a documentation-first and controlled implementation process.
+Development follows a controlled implementation and testing process based on the approved project documentation and system architecture.
 
-The current sequence is:
+The current implementation process includes:
 
-Project Concept Note.
+Review the required functionality.
 
-README baseline.
+Implement the relevant backend endpoint, service, or authorization logic.
 
-Needs Assessment.
+Apply the applicable permission, responsibility, resource, and record-level authorization rules.
 
-Stakeholder Analysis.
+Add or update automated tests.
 
-Software Requirements Specification.
+Run Django system checks and relevant tests.
 
-User Roles and Permissions.
+Review the implementation and related changes.
 
-System Workflows.
+Update the documentation and development log where required.
 
-Database Entity Design.
-
-ERD documentation.
-
-Database schema.
-
-Development Log.
-
-Application and database implementation after the documentation baseline is aligned.
-
-Each logical documentation step should be reviewed and committed before moving to the next step.
+Commit completed work after verification.
 
 The development environment is centred on VS Code, with its integrated terminal used for Django, Git, MariaDB/MySQL, and related development commands.
 
+New functionality is being added incrementally so that implementation, authorization, testing, and documentation can be reviewed together.
+
 Project Roadmap
 
-Phase 1  Documentation, Planning and Requirements
-              ↓
-Phase 2  Architecture and Database Baseline
-              ↓
-Phase 3  Django Application Foundation
-              ↓
-Phase 4  Authentication, Titles, Permissions and Access Control
-              ↓
-Phase 5  Core Programme and Beneficiary Modules
-              ↓
-Phase 6  Poultry, Farm and Finance Modules
-              ↓
-Phase 7  M&E, Dashboard and Reporting
-              ↓
-Phase 8  Testing, Security Review and Deployment
+The project has progressed from documentation and architecture planning into active backend implementation, API development, authorization, and automated testing.
 
-The detailed implementation order may be adjusted after the documentation and architecture review.
+The current development path is:
+
+Documentation, Planning and Requirements
+↓
+Architecture and Database Baseline
+↓
+Django Application Foundation
+↓
+Authentication and Access Control
+↓
+Core Programme and Beneficiary Modules
+↓
+Project and Activity Management
+↓
+Poultry, Farm and Finance Modules
+↓
+Monitoring and Evaluation Modules
+↓
+Continued API Development and Automated Testing
+↓
+Dashboard, Reporting, and Additional User Interface Features
+↓
+Security Review and Deployment Preparation
+
+The current development work is focused on completing and refining backend functionality, expanding automated test coverage, and implementing remaining system requirements.
+
+The implementation order may be adjusted as requirements and technical findings are reviewed.
 
 Repository Structure
+
+The main project structure currently includes:
 
 era-ipms/
 │
 ├── README.md
 ├── LICENSE
 ├── .gitignore
+├── development_log.md
 │
 ├── docs/
 │   ├── planning/
@@ -385,18 +449,30 @@ era-ipms/
 │   ├── database/
 │   │   └── erd/
 │   ├── testing/
-│   ├── deployment/
-│   └── development_log.md
+│   └── deployment/
 │
 ├── backend/
 │   ├── config/
 │   └── core/
+│       ├── authorization/
+│       ├── migrations/
+│       ├── tests/
+│       ├── models.py
+│       ├── views.py
+│       └── admin.py
 │
-├── frontend/
-├── database/
-└── tests/
+└── database/
+    └── schema.sql
 
-The repository structure may evolve as implementation progresses, but changes should be documented and kept consistent with the approved architecture.
+The backend contains the Django application, authorization components, migrations, models, views, administrative configuration, and automated tests.
+
+The database directory contains the approved database schema baseline.
+
+The documentation directory contains project planning, requirements, system design, database, testing, and deployment documentation.
+
+The development log records significant implementation and project changes.
+
+The repository structure may continue to evolve as implementation progresses.
 
 Data Protection and Security
 
@@ -440,11 +516,31 @@ Future scope should not be treated as part of the initial implementation unless 
 
 Project Status
 
-Current Status: Documentation and Architecture Baseline
+Current Status: Active Backend Implementation and Testing
 
-The Project Concept Note has been updated to version 1.1, and the README is being aligned with that baseline.
+ERA-IPMS has progressed from the original documentation and architecture baseline to an active Django backend with database integration, authentication, centralized authorization, protected API endpoints, and automated tests.
 
-The project is not yet at the stage where new application pages or database architecture changes should be introduced solely from assumptions. The remaining documentation baseline must first be reviewed for consistency before implementation proceeds.
+Implemented backend functionality currently covers several operational areas, including:
+
+Beneficiaries and disability-related services.
+
+Projects and activities.
+
+Referrals and referral follow-ups.
+
+Poultry operations.
+
+Small farm operations.
+
+Financial transactions.
+
+Monitoring and evaluation indicators and indicator records.
+
+Recent development has focused on expanding API functionality, authorization coverage, automated testing, and record management.
+
+Development is continuing incrementally. Existing functionality is being tested and reviewed while remaining system requirements and user interface features are implemented.
+
+The project should be considered an active development system rather than a final production release.
 
 Intellectual Property
 
