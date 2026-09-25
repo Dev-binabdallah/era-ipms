@@ -19,6 +19,7 @@ from core.views import (
     referral_follow_ups_collection,
     projects_collection,
     projects_detail_collection,
+    dashboard_summary,
     poultry_group_create,
     poultry_groups_list,
     poultry_stock_movement_create,
@@ -60,6 +61,7 @@ urlpatterns = [
     path("auth/login/", auth_login),
     path("auth/me/", auth_me),
     path("auth/logout/", auth_logout),
+    path("dashboard/summary/", dashboard_summary),
     path("activities/", activities_collection),
     path(
         "activities/<int:activity_id>/",

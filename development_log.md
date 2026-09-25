@@ -1864,3 +1864,41 @@ No database migration or schema change was required. This change only updates pr
 
 ### Next step
 Review the combined README and development log diff, then stage both files together for commit.
+
+## 2026-09-25 - Dashboard Summary API
+
+### Objective
+Implement the first read-only dashboard summary endpoint using the existing authorization rules and current backend modules.
+
+### Work completed
+- Added protected dashboard summary endpoint:
+  - `GET /dashboard/summary/`
+- Added `dashboard_summary` to `backend/core/views.py`.
+- Added the dashboard summary route to `backend/config/urls.py`.
+- Added authorized summary counts for:
+  - Projects
+  - Activities
+  - Beneficiaries
+  - Referrals
+  - Poultry groups
+  - Farm crops
+  - Financial transactions
+  - M&E indicators
+- Reused the existing `authorized_queryset()` implementation for each module so dashboard counts follow the user's existing access scope.
+- Added authentication and HTTP method handling for the dashboard endpoint.
+- Added dedicated dashboard API tests covering authentication, GET access, response structure, and unsupported HTTP methods.
+
+### Verification
+- Dashboard API tests: 3/3 PASSED
+- Full `core` test suite: 548/548 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The dashboard summary uses the existing database tables and models.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the complete dashboard implementation, tests, and development log diff before staging them together for commit.

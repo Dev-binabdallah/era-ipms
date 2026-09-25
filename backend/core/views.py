@@ -5152,3 +5152,65 @@ def farm_poultry_transfers_list(request):
     return JsonResponse(
         {"farm_poultry_transfers": list(transfers)}
     )
+
+
+def dashboard_summary(request):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"authorized": False},
+            status=401,
+        )
+
+    summary = {
+        "projects": authorized_queryset(
+            request.user,
+            "projects",
+            Projects.objects.all(),
+        ).count(),
+        "activities": authorized_queryset(
+            request.user,
+            "activities",
+            Activities.objects.all(),
+        ).count(),
+        "beneficiaries": authorized_queryset(
+            request.user,
+            "beneficiaries",
+            Beneficiaries.objects.all(),
+        ).count(),
+        "referrals": authorized_queryset(
+            request.user,
+            "referrals",
+            Referrals.objects.all(),
+        ).count(),
+        "poultry_groups": authorized_queryset(
+            request.user,
+            "poultry_groups",
+            PoultryGroups.objects.all(),
+        ).count(),
+        "farm_crops": authorized_queryset(
+            request.user,
+            "farm_crops",
+            FarmCrops.objects.all(),
+        ).count(),
+        "financial_transactions": authorized_queryset(
+            request.user,
+            "financial_transactions",
+            FinancialTransactions.objects.all(),
+        ).count(),
+        "me_indicators": authorized_queryset(
+            request.user,
+            "me_indicators",
+            MeIndicators.objects.all(),
+        ).count(),
+    }
+
+    return JsonResponse(
+        {"summary": summary},
+        status=200,
+    )
