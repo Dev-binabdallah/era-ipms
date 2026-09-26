@@ -1902,3 +1902,42 @@ No database migration or schema change was required. The dashboard summary uses 
 
 ### Next step
 Review the complete dashboard implementation, tests, and development log diff before staging them together for commit.
+
+## 2026-09-26 - M&E Indicator Summary API
+
+### Objective
+Implement a read-only M&E indicator summary endpoint using the existing M&E authorization and indicator record data.
+
+### Work completed
+- Added protected dashboard-style M&E indicator summary endpoint:
+  - `GET /me-indicators/summary/`
+- Added `me_indicators_summary` to `backend/core/views.py`.
+- Added the summary route to `backend/config/urls.py`.
+- Reused the existing `authorized_queryset()` implementation for M&E indicators.
+- Added summary information for:
+  - Indicator ID
+  - Project ID
+  - Indicator name
+  - Target value
+  - Unit
+  - Latest recorded value
+  - Number of records
+  - Indicator status
+- Used the latest indicator record by record date, with indicator record ID as the tie-breaker.
+- Added dedicated API tests covering authorization, HTTP method handling, and authorized summary response.
+- Strengthened the summary response test to verify indicator ID, project ID, indicator name, target value, unit, latest recorded value, record count, and status.
+
+### Verification
+- M&E indicator summary tests: 3/3 PASSED
+- Full `core` test suite: 551/551 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Database decision
+No database migration or schema change was required. The summary uses the existing M&E indicator and indicator record tables.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the complete M&E indicator summary implementation, tests, and development log diff before staging them together for commit.

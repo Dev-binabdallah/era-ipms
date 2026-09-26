@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
+from django.db.models import Count, OuterRef, Subquery
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -5212,5 +5213,52 @@ def dashboard_summary(request):
 
     return JsonResponse(
         {"summary": summary},
+        status=200,
+    )
+
+
+@require_permission(
+    permission=PERMISSION_VIEW,
+    resource="me_indicators",
+)
+def me_indicators_summary(request):
+    """Return an authorized summary of M&E indicators."""
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    authorized_indicators = authorized_queryset(
+        request.user,
+        "me_indicators",
+        MeIndicators.objects.all(),
+    )
+
+    latest_record = MeIndicatorRecords.objects.filter(
+        indicator=OuterRef("pk"),
+    ).order_by(
+        "-record_date",
+        "-indicator_record_id",
+    )
+
+    indicators = authorized_indicators.annotate(
+        record_count=Count("records"),
+        latest_recorded_value=Subquery(
+            latest_record.values("recorded_value")[:1]
+        ),
+    ).values(
+        "indicator_id",
+        "project_id",
+        "indicator_name",
+        "target_value",
+        "unit",
+        "latest_recorded_value",
+        "record_count",
+        "status",
+    )
+
+    return JsonResponse(
+        {"me_indicators_summary": list(indicators)},
         status=200,
     )

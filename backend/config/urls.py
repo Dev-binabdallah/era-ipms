@@ -40,6 +40,7 @@ from core.views import (
     harvests_list,
     financial_transaction_create,
     financial_transactions_list,
+    me_indicators_summary,
     me_indicators_list,
     me_indicator_create,
     me_indicator_update,
@@ -100,6 +101,7 @@ urlpatterns = [
     path("harvests/create/", harvest_create),
     path("financial-transactions/", financial_transactions_list),
     path("financial-transactions/create/", financial_transaction_create),
+    path("me-indicators/summary/", me_indicators_summary),
     path("me-indicators/", me_indicators_list),
     path("me-indicators/create/", me_indicator_create),
     path(
