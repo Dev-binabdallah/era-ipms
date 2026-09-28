@@ -1979,3 +1979,31 @@ The endpoint uses the existing `authorized_queryset()` for `activities`. No seco
 
 ### Next step
 Review the final implementation and development log diff before staging them together for commit.
+
+## 2026-09-28 - Admin Authorization Regression Test
+
+### Objective
+Add a regression test confirming that an active Admin user with the ADMINISTER permission can use the dedicated Administer authorization check.
+
+### Work completed
+- Added `PERMISSION_ADMINISTER` to the authorization service test imports.
+- Added a positive regression test:
+  - `test_admin_can_administer_when_permission_is_assigned`
+- The test creates an Admin user with the `ADMINISTER` permission and verifies that `can_administer()` returns `True`.
+- No production authorization logic was changed.
+- No database migration or schema change was required.
+
+### Verification
+- Authorization service tests: 106/106 PASSED
+- Full `core` test suite: 555/555 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Authorization decision
+The existing Admin authorization configuration and dedicated `can_administer()` path are correct. This change adds regression coverage only.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the authorization test and development log diff before staging them together for commit.

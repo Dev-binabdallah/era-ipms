@@ -8,6 +8,7 @@ from core.authorization.constants import (
     PERMISSION_APPROVE,
     PERMISSION_EDIT,
     PERMISSION_MANAGE,
+    PERMISSION_ADMINISTER,
     PERMISSION_VIEW,
     RESPONSIBILITY_BENEFICIARY_REGISTRATION,
     RESPONSIBILITY_FINANCIAL_OPERATIONS,
@@ -147,6 +148,16 @@ class AuthorizationServicePermissionTests(SimpleTestCase):
 
         self.assertFalse(
             self.service.has_permission(user, PERMISSION_APPROVE)
+        )
+
+    def test_admin_can_administer_when_permission_is_assigned(self):
+        user = self.make_user(
+            title_name="Admin",
+            permissions={PERMISSION_ADMINISTER},
+        )
+
+        self.assertTrue(
+            self.service.can_administer(user)
         )
 
 
