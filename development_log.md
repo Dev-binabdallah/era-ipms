@@ -1941,3 +1941,41 @@ No database migration or schema change was required. The summary uses the existi
 
 ### Next step
 Review the complete M&E indicator summary implementation, tests, and development log diff before staging them together for commit.
+
+## 2026-09-28 - Dashboard Activity Status Summary API
+
+### Objective
+Implement a read-only dashboard activity status summary endpoint using the existing authorization-filtered activity queryset.
+
+### Work completed
+- Added protected dashboard activity status summary endpoint:
+  - `GET /dashboard/activity-status-summary/`
+- Added `dashboard_activity_status_summary` to `backend/core/views.py`.
+- Reused the existing `authorized_queryset()` implementation for activities so returned counts follow the user's existing access scope.
+- Added counts for:
+  - Total activities
+  - Planned
+  - Ongoing
+  - Pending
+  - Completed
+  - Cancelled
+- Added the endpoint route to `backend/config/urls.py`.
+- Added dedicated API tests covering authentication, authorized status counts, response structure, and unsupported HTTP methods.
+- Left the existing `GET /dashboard/summary/` endpoint unchanged.
+- No database migration or schema change was required.
+
+### Verification
+- Dashboard activity status summary tests: 3/3 PASSED
+- Combined dashboard API tests: 6/6 PASSED
+- Full `core` test suite: 554/554 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Authorization decision
+The endpoint uses the existing `authorized_queryset()` for `activities`. No second or separate authorization mechanism was introduced.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the final implementation and development log diff before staging them together for commit.

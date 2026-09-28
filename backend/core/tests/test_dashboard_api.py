@@ -4,7 +4,10 @@ from unittest.mock import patch
 
 from django.test import RequestFactory, SimpleTestCase
 
-from core.views import dashboard_summary
+from core.views import (
+    dashboard_activity_status_summary,
+    dashboard_summary,
+)
 
 
 class DashboardSummaryApiTests(SimpleTestCase):
@@ -58,6 +61,82 @@ class DashboardSummaryApiTests(SimpleTestCase):
         request.user = SimpleNamespace(is_authenticated=True)
 
         response = dashboard_summary(request)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(
+            json.loads(response.content),
+            {"error": "Method not allowed"},
+        )
+
+
+class DashboardActivityStatusSummaryApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_activity_status_summary_requires_authentication(self):
+        request = self.factory.get(
+            "/dashboard/activity-status-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = dashboard_activity_status_summary(request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            json.loads(response.content),
+            {"authorized": False},
+        )
+
+    def test_activity_status_summary_returns_authorized_counts(self):
+        request = self.factory.get(
+            "/dashboard/activity-status-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        authorized_queryset_mock = patch(
+            "core.views.authorized_queryset"
+        )
+
+        with authorized_queryset_mock as mock_authorized_queryset:
+            mock_queryset = SimpleNamespace(
+                values_list=lambda *args, **kwargs: [
+                    "Planned",
+                    "Ongoing",
+                    "Ongoing",
+                    "Pending",
+                    "Completed",
+                    "Cancelled",
+                    "Completed",
+                ]
+            )
+            mock_authorized_queryset.return_value = mock_queryset
+
+            response = dashboard_activity_status_summary(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content),
+            {
+                "activity_status_summary": {
+                    "total": 7,
+                    "planned": 1,
+                    "ongoing": 2,
+                    "pending": 1,
+                    "completed": 2,
+                    "cancelled": 1,
+                }
+            },
+        )
+
+        mock_authorized_queryset.assert_called_once()
+
+    def test_activity_status_summary_rejects_non_get_requests(self):
+        request = self.factory.post(
+            "/dashboard/activity-status-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = dashboard_activity_status_summary(request)
 
         self.assertEqual(response.status_code, 405)
         self.assertEqual(

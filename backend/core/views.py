@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
@@ -5213,6 +5214,45 @@ def dashboard_summary(request):
 
     return JsonResponse(
         {"summary": summary},
+        status=200,
+    )
+
+
+def dashboard_activity_status_summary(request):
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"authorized": False},
+            status=401,
+        )
+
+    activities = authorized_queryset(
+        request.user,
+        "activities",
+        Activities.objects.all(),
+    )
+
+    statuses = list(
+        activities.values_list("status", flat=True)
+    )
+    status_counts = Counter(statuses)
+
+    return JsonResponse(
+        {
+            "activity_status_summary": {
+                "total": len(statuses),
+                "planned": status_counts.get("Planned", 0),
+                "ongoing": status_counts.get("Ongoing", 0),
+                "pending": status_counts.get("Pending", 0),
+                "completed": status_counts.get("Completed", 0),
+                "cancelled": status_counts.get("Cancelled", 0),
+            }
+        },
         status=200,
     )
 
