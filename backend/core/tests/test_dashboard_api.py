@@ -47,14 +47,21 @@ class DashboardSummaryApiTests(SimpleTestCase):
                     "beneficiaries": 0,
                     "referrals": 0,
                     "poultry_groups": 0,
+                    "poultry_stock_movements": 0,
+                    "egg_production": 0,
+                    "feed_records": 0,
+                    "poultry_health_records": 0,
+                    "poultry_sales": 0,
                     "farm_crops": 0,
+                    "harvests": 0,
+                    "farm_poultry_transfers": 0,
                     "financial_transactions": 0,
                     "me_indicators": 0,
                 }
             },
         )
 
-        self.assertEqual(mock_authorized_queryset.call_count, 8)
+        self.assertEqual(mock_authorized_queryset.call_count, 15)
 
     def test_dashboard_summary_rejects_non_get_requests(self):
         request = self.factory.post("/dashboard/summary/")

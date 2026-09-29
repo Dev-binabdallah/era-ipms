@@ -5195,10 +5195,45 @@ def dashboard_summary(request):
             "poultry_groups",
             PoultryGroups.objects.all(),
         ).count(),
+        "poultry_stock_movements": authorized_queryset(
+            request.user,
+            "poultry_stock_movements",
+            PoultryStockMovements.objects.all(),
+        ).count(),
+        "egg_production": authorized_queryset(
+            request.user,
+            "egg_production",
+            EggProduction.objects.all(),
+        ).count(),
+        "feed_records": authorized_queryset(
+            request.user,
+            "feed_records",
+            FeedRecords.objects.all(),
+        ).count(),
+        "poultry_health_records": authorized_queryset(
+            request.user,
+            "poultry_health_records",
+            PoultryHealthRecords.objects.all(),
+        ).count(),
+        "poultry_sales": authorized_queryset(
+            request.user,
+            "poultry_sales",
+            PoultrySales.objects.all(),
+        ).count(),
         "farm_crops": authorized_queryset(
             request.user,
             "farm_crops",
             FarmCrops.objects.all(),
+        ).count(),
+        "harvests": authorized_queryset(
+            request.user,
+            "harvests",
+            Harvests.objects.all(),
+        ).count(),
+        "farm_poultry_transfers": authorized_queryset(
+            request.user,
+            "farm_poultry_transfers",
+            FarmPoultryTransfers.objects.all(),
         ).count(),
         "financial_transactions": authorized_queryset(
             request.user,

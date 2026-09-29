@@ -2007,3 +2007,37 @@ The existing Admin authorization configuration and dedicated `can_administer()` 
 
 ### Next step
 Review the authorization test and development log diff before staging them together for commit.
+
+## 2026-09-29 - Dashboard Summary Operational Module Counts
+
+### Objective
+Extend the dashboard summary endpoint to include authorized counts for the existing poultry and farm operational records.
+
+### Work completed
+- Extended `GET /dashboard/summary/` in `backend/core/views.py`.
+- Added authorized counts for:
+  - Poultry stock movements
+  - Egg production
+  - Feed records
+  - Poultry health records
+  - Poultry sales
+  - Harvests
+  - Farm poultry transfers
+- Reused the existing `authorized_queryset()` authorization and scope filtering for every new resource.
+- Updated `test_dashboard_api.py` to verify the expanded 15-resource dashboard summary.
+- No database migration or schema change was required.
+
+### Verification
+- Dashboard API tests: 6/6 PASSED
+- Full `core` test suite: 555/555 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Authorization decision
+The dashboard summary continues to use the existing `authorized_queryset()` mechanism. No separate dashboard authorization logic was introduced.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the complete dashboard summary implementation and development log diff before staging them together for commit.
