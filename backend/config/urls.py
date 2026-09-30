@@ -20,6 +20,7 @@ from core.views import (
     projects_collection,
     projects_detail_collection,
     dashboard_activity_status_summary,
+    dashboard_financial_summary,
     dashboard_summary,
     poultry_group_create,
     poultry_groups_list,
@@ -67,6 +68,10 @@ urlpatterns = [
     path(
         "dashboard/activity-status-summary/",
         dashboard_activity_status_summary,
+    ),
+    path(
+        "dashboard/financial-summary/",
+        dashboard_financial_summary,
     ),
     path("activities/", activities_collection),
     path(

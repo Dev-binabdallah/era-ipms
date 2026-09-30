@@ -5253,6 +5253,54 @@ def dashboard_summary(request):
     )
 
 
+def dashboard_financial_summary(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({"authorized": False}, status=401)
+
+    transactions = authorized_queryset(
+        request.user,
+        "financial_transactions",
+        FinancialTransactions.objects.all(),
+    )
+
+    total_transactions = 0
+    total_amount = 0
+    by_transaction_type = {}
+
+    for transaction in transactions:
+        transaction_type = transaction.transaction_type
+        amount = transaction.amount
+
+        total_transactions += 1
+        total_amount += amount
+
+        if transaction_type not in by_transaction_type:
+            by_transaction_type[transaction_type] = {
+                "count": 0,
+                "total_amount": 0,
+            }
+
+        by_transaction_type[transaction_type]["count"] += 1
+        by_transaction_type[transaction_type]["total_amount"] += amount
+
+    for transaction_type, summary in by_transaction_type.items():
+        summary["total_amount"] = f"{summary['total_amount']:.2f}"
+
+    return JsonResponse(
+        {
+            "financial_summary": {
+                "total_transactions": total_transactions,
+                "total_amount": f"{total_amount:.2f}",
+                "by_transaction_type": by_transaction_type,
+            }
+        },
+        status=200,
+    )
+
+
 def dashboard_activity_status_summary(request):
     if request.method != "GET":
         return JsonResponse(

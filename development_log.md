@@ -2041,3 +2041,37 @@ The dashboard summary continues to use the existing `authorized_queryset()` mech
 
 ### Next step
 Review the complete dashboard summary implementation and development log diff before staging them together for commit.
+
+## 2026-09-30 - Dashboard Financial Summary
+
+### Objective
+Add a dashboard endpoint that provides authorized financial transaction totals and transaction-type summaries.
+
+### Work completed
+- Added `GET /dashboard/financial-summary/` in `backend/core/views.py`.
+- Added the corresponding route in `backend/config/urls.py`.
+- Used the existing `authorized_queryset()` mechanism for `financial_transactions`.
+- Added overall financial transaction count and total amount.
+- Added transaction counts and total amounts grouped by transaction type.
+- Added authentication and HTTP method validation.
+- Added four financial dashboard API tests covering:
+  - Unauthenticated access
+  - Authorized totals
+  - Multiple transaction types
+  - Rejection of non-GET requests
+- No database migration or schema change was required.
+
+### Verification
+- Dashboard API tests: 10/10 PASSED
+- Full `core` test suite: 559/559 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Authorization decision
+The financial dashboard uses the existing `authorized_queryset()` mechanism for `financial_transactions`. No separate dashboard authorization logic was introduced.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the financial dashboard implementation and development log diff before staging them together for commit.

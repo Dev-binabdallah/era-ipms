@@ -6,6 +6,7 @@ from django.test import RequestFactory, SimpleTestCase
 
 from core.views import (
     dashboard_activity_status_summary,
+    dashboard_financial_summary,
     dashboard_summary,
 )
 
@@ -144,6 +145,132 @@ class DashboardActivityStatusSummaryApiTests(SimpleTestCase):
         request.user = SimpleNamespace(is_authenticated=True)
 
         response = dashboard_activity_status_summary(request)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(
+            json.loads(response.content),
+            {"error": "Method not allowed"},
+        )
+
+
+class DashboardFinancialSummaryApiTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_financial_summary_requires_authentication(self):
+        request = self.factory.get(
+            "/dashboard/financial-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = dashboard_financial_summary(request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            json.loads(response.content),
+            {"authorized": False},
+        )
+
+    def test_financial_summary_returns_authorized_totals_by_type(self):
+        request = self.factory.get(
+            "/dashboard/financial-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        authorized_queryset_mock = patch(
+            "core.views.authorized_queryset"
+        )
+
+        transactions = [
+            SimpleNamespace(
+                transaction_type="expense",
+                amount=1500,
+            ),
+            SimpleNamespace(
+                transaction_type="expense",
+                amount=2500,
+            ),
+            SimpleNamespace(
+                transaction_type="expense",
+                amount=1500,
+            ),
+        ]
+
+        with authorized_queryset_mock as mock_authorized_queryset:
+            mock_authorized_queryset.return_value = transactions
+
+            response = dashboard_financial_summary(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content),
+            {
+                "financial_summary": {
+                    "total_transactions": 3,
+                    "total_amount": "5500.00",
+                    "by_transaction_type": {
+                        "expense": {
+                            "count": 3,
+                            "total_amount": "5500.00",
+                        }
+                    },
+                }
+            },
+        )
+
+        mock_authorized_queryset.assert_called_once()
+
+    def test_financial_summary_groups_different_transaction_types(self):
+        request = self.factory.get(
+            "/dashboard/financial-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        transactions = [
+            SimpleNamespace(
+                transaction_type="expense",
+                amount=1500,
+            ),
+            SimpleNamespace(
+                transaction_type="income",
+                amount=4000,
+            ),
+        ]
+
+        with patch(
+            "core.views.authorized_queryset",
+            return_value=transactions,
+        ):
+            response = dashboard_financial_summary(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content),
+            {
+                "financial_summary": {
+                    "total_transactions": 2,
+                    "total_amount": "5500.00",
+                    "by_transaction_type": {
+                        "expense": {
+                            "count": 1,
+                            "total_amount": "1500.00",
+                        },
+                        "income": {
+                            "count": 1,
+                            "total_amount": "4000.00",
+                        },
+                    },
+                }
+            },
+        )
+
+    def test_financial_summary_rejects_non_get_requests(self):
+        request = self.factory.post(
+            "/dashboard/financial-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = dashboard_financial_summary(request)
 
         self.assertEqual(response.status_code, 405)
         self.assertEqual(
