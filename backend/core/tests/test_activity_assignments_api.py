@@ -784,6 +784,126 @@ class ActivityAssignmentsApiTests(SimpleTestCase):
             self.activity,
         )
 
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_malformed_json_returns_400(
+        self,
+        service,
+        activity_get,
+    ):
+        service.can_assign_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_assignment_create(
+            self.make_post_request(
+                self.authenticated_user,
+                body=b'{"user_id":',
+            ),
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Invalid JSON"},
+        )
+
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_create_non_object_json_returns_400(
+        self,
+        service,
+        activity_get,
+    ):
+        service.can_assign_activity.return_value = True
+        activity_get.return_value = self.activity
+
+        response = activity_assignment_create(
+            self.make_post_request(
+                self.authenticated_user,
+                body=b'[{"user_id":20}]',
+            ),
+            1,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "JSON body must be an object"},
+        )
+
+    @patch("core.views.ActivityAssignments.objects.get")
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_malformed_json_returns_400(
+        self,
+        service,
+        activity_get,
+        assignment_get,
+    ):
+        service.can_assign_activity.return_value = True
+        activity_get.return_value = self.activity
+        assignment_get.return_value = SimpleNamespace(
+            activity_assignment_id=5,
+            activity_id=1,
+            user_id=20,
+            assigned_at="2026-09-08T10:00:00Z",
+            assigned_by_id=10,
+            status="assigned",
+            save=Mock(),
+        )
+
+        response = activity_assignment_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'{"status":',
+            ),
+            1,
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "Invalid JSON"},
+        )
+
+    @patch("core.views.ActivityAssignments.objects.get")
+    @patch("core.models.Activities.objects.get")
+    @patch("core.authorization.decorators.authorization_service")
+    def test_update_non_object_json_returns_400(
+        self,
+        service,
+        activity_get,
+        assignment_get,
+    ):
+        service.can_assign_activity.return_value = True
+        activity_get.return_value = self.activity
+        assignment_get.return_value = SimpleNamespace(
+            activity_assignment_id=5,
+            activity_id=1,
+            user_id=20,
+            assigned_at="2026-09-08T10:00:00Z",
+            assigned_by_id=10,
+            status="assigned",
+            save=Mock(),
+        )
+
+        response = activity_assignment_update(
+            self.make_patch_request(
+                self.authenticated_user,
+                body=b'["status","completed"]',
+            ),
+            1,
+            5,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "JSON body must be an object"},
+        )
+
     def test_method_restrictions(self):
         activity = self.activity
 

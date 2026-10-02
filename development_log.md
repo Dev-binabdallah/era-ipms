@@ -2075,3 +2075,34 @@ The financial dashboard uses the existing `authorized_queryset()` mechanism for 
 
 ### Next step
 Review the financial dashboard implementation and development log diff before staging them together for commit.
+
+## 2026-10-02 - Activity Assignment API Test Coverage
+
+### Objective
+Strengthen the activity assignment API test coverage for invalid JSON request bodies.
+
+### Work completed
+- Extended `backend/core/tests/test_activity_assignments_api.py`.
+- Added tests for malformed JSON during activity assignment creation.
+- Added tests for non-object JSON during activity assignment creation.
+- Added tests for malformed JSON during activity assignment updates.
+- Added tests for non-object JSON during activity assignment updates.
+- Verified that invalid JSON returns HTTP 400 with the expected error response.
+- Verified that JSON values that are not objects return HTTP 400 with the expected error response.
+- No production activity assignment logic was changed.
+- No database migration or schema change was required.
+
+### Verification
+- Activity assignment and project API tests: 70/70 PASSED
+- Full `core` test suite: 563/563 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Authorization decision
+The existing activity assignment authorization mechanism was not changed. The tests continue to verify the existing authorization behavior.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the activity assignment test and development log diff before staging them together for commit.
