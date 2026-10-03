@@ -64,6 +64,26 @@ class DashboardSummaryApiTests(SimpleTestCase):
 
         self.assertEqual(mock_authorized_queryset.call_count, 15)
 
+    def test_dashboard_summary_returns_empty_summary_for_no_authorized_records(self):
+        request = self.factory.get("/dashboard/summary/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        with patch(
+            "core.views.authorized_queryset"
+        ) as mock_authorized_queryset:
+            mock_authorized_queryset.return_value = SimpleNamespace(
+                count=lambda: 0
+            )
+
+            response = dashboard_summary(request)
+
+        self.assertEqual(response.status_code, 200)
+        summary = json.loads(response.content)["summary"]
+
+        self.assertTrue(summary)
+        self.assertTrue(all(value == 0 for value in summary.values()))
+        self.assertEqual(mock_authorized_queryset.call_count, 15)
+
     def test_dashboard_summary_rejects_non_get_requests(self):
         request = self.factory.post("/dashboard/summary/")
         request.user = SimpleNamespace(is_authenticated=True)
@@ -132,6 +152,38 @@ class DashboardActivityStatusSummaryApiTests(SimpleTestCase):
                     "pending": 1,
                     "completed": 2,
                     "cancelled": 1,
+                }
+            },
+        )
+
+        mock_authorized_queryset.assert_called_once()
+
+    def test_activity_status_summary_returns_empty_counts_for_no_authorized_activities(self):
+        request = self.factory.get(
+            "/dashboard/activity-status-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        with patch(
+            "core.views.authorized_queryset"
+        ) as mock_authorized_queryset:
+            mock_authorized_queryset.return_value = SimpleNamespace(
+                values_list=lambda *args, **kwargs: []
+            )
+
+            response = dashboard_activity_status_summary(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content),
+            {
+                "activity_status_summary": {
+                    "total": 0,
+                    "planned": 0,
+                    "ongoing": 0,
+                    "pending": 0,
+                    "completed": 0,
+                    "cancelled": 0,
                 }
             },
         )
@@ -263,6 +315,32 @@ class DashboardFinancialSummaryApiTests(SimpleTestCase):
                 }
             },
         )
+
+    def test_financial_summary_returns_empty_totals_for_no_authorized_transactions(self):
+        request = self.factory.get(
+            "/dashboard/financial-summary/"
+        )
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        with patch(
+            "core.views.authorized_queryset",
+            return_value=[],
+        ) as mock_authorized_queryset:
+            response = dashboard_financial_summary(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content),
+            {
+                "financial_summary": {
+                    "total_transactions": 0,
+                    "total_amount": "0.00",
+                    "by_transaction_type": {},
+                }
+            },
+        )
+
+        mock_authorized_queryset.assert_called_once()
 
     def test_financial_summary_rejects_non_get_requests(self):
         request = self.factory.post(

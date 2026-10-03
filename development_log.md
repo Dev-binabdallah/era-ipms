@@ -2106,3 +2106,34 @@ The existing activity assignment authorization mechanism was not changed. The te
 
 ### Next step
 Review the activity assignment test and development log diff before staging them together for commit.
+
+## 2026-10-03 - Dashboard Authorization Regression Tests
+
+### Objective
+Strengthen dashboard API test coverage for authenticated users who have no authorized records.
+
+### Work completed
+- Extended `backend/core/tests/test_dashboard_api.py`.
+- Added regression coverage for the dashboard summary when `authorized_queryset()` returns no authorized records.
+- Added regression coverage for the activity status summary when no authorized activities are available.
+- Added regression coverage for the financial summary when no authorized financial transactions are available.
+- Verified that dashboard endpoints return HTTP 200 with empty authorized results in these cases.
+- Verified that dashboard calculations continue to use the existing `authorized_queryset()` mechanism.
+- No production dashboard logic was changed.
+- No database migration or schema change was required.
+
+### Verification
+- Dashboard API tests: 13/13 PASSED
+- Authorization queryset, boundary, and decorator tests: 37/37 PASSED
+- Full `core` test suite: 566/566 PASSED
+- Django system check: PASSED
+- `git diff --check`: PASSED
+
+### Authorization decision
+The dashboard endpoints continue to calculate results from records returned by `authorized_queryset()`. No separate dashboard authorization logic was introduced or changed.
+
+### Implementation status
+**Complete.**
+
+### Next step
+Review the dashboard test and development log diff before staging them together for commit.
