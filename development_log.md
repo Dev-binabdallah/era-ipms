@@ -2179,3 +2179,37 @@ No database migration or schema change was required. The existing poultry tables
 
 ### Next step
 Run the new poultry lifecycle tests and the full core suite locally. If they pass, continue the same completion pattern for the small-farm operational records.
+
+
+## 2026-10-04 - Small Farm Operational Record Update APIs
+
+### Objective
+Continue operational lifecycle completion by adding controlled update APIs for farm crops, farm activities, harvests, and farm-to-poultry transfers.
+
+### Work completed
+- Added backend/core/farm_views.py for farm update handlers.
+- Added protected PATCH endpoints for farm crops, farm activities, harvests, and farm-to-poultry transfers.
+- Reused AuthorizationService.can_edit() for all four update operations.
+- Preserved project scope and the existing farm/poultry relationship checks through the centralized authorization service.
+- Protected project, crop, harvest, poultry group, recorder, primary key, and creation fields from direct modification.
+- Added validation for dates, required text, quantities, decimals, protected fields, and unknown fields.
+- Added regression tests for authentication, authorization, missing records, validation, protected relationships, successful updates, and method restrictions.
+- Added the four PATCH routes to backend/config/urls.py.
+- No database migration or schema change was required.
+
+### Verification
+- Repository-level implementation was reviewed against the existing farm models, create/list handlers, authorization service, URLs, and tests.
+- The current chat execution environment still does not contain the local ERA-IPMS clone or MariaDB test environment, so the Django test suite could not be executed here.
+- GitHub main was at commit 863a80d before this change.
+
+### Authorization decision
+Farm updates use the existing EDIT permission and resource responsibility mappings. Farm-to-poultry transfer updates continue to depend on the existing same-project scope rule.
+
+### Database decision
+No database migration or schema change was required. Existing unmanaged farm tables are reused.
+
+### Implementation status
+**Implemented, pending local Django test execution.**
+
+### Next step
+Run the poultry and farm lifecycle test files together, then run the full core suite before beginning finance lifecycle completion.

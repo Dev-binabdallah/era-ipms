@@ -59,6 +59,13 @@ from core.poultry_views import (
     poultry_stock_movement_update,
 )
 
+from core.farm_views import (
+    farm_activity_update,
+    farm_crop_update,
+    farm_poultry_transfer_update,
+    harvest_update,
+)
+
 
 def get_referral_beneficiary_context(request, **kwargs):
     try:
