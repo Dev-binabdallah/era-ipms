@@ -68,6 +68,11 @@ from core.farm_views import (
 
 from core.finance_views import financial_transaction_update
 
+from core.beneficiary_service_views import (
+    disability_assessment_update,
+    home_visit_update,
+)
+
 
 def get_referral_beneficiary_context(request, **kwargs):
     try:

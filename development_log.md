@@ -2246,3 +2246,34 @@ No database migration or schema change was required.
 
 ### Next step
 Run poultry, farm, and finance lifecycle tests together, then continue with the beneficiary and disability-service lifecycle.
+
+
+## 2026-10-04 - Disability Assessment and Home Visit Update APIs
+
+### Objective
+Complete the first correction lifecycle for disability-service operational records while keeping beneficiary relationships and recorder identity protected.
+
+### Work completed
+- Added backend/core/beneficiary_service_views.py.
+- Added PATCH /disability-assessments/<assessment_id>/.
+- Added PATCH /home-visits/<home_visit_id>/.
+- Reused AuthorizationService.can_edit() and the existing disability-assessment and home-visit resource rules.
+- Protected beneficiary relationships, recorder identity, primary keys, and creation timestamps.
+- Added validation for dates, text fields, boolean follow-up state, protected fields, and unknown fields.
+- Added dedicated regression tests for authentication, authorization, missing records, successful updates, validation, protected relationships, and method restrictions.
+- Added both PATCH routes to backend/config/urls.py.
+- No database migration or schema change was required.
+
+### Verification
+- Repository-level implementation was reviewed against the existing beneficiary-service models, create/list handlers, authorization service, URLs, and tests.
+- The current chat execution environment does not contain the local ERA-IPMS clone or MariaDB test environment, so Django tests could not be executed here.
+- GitHub main was at commit 855d247 before this change.
+
+### Authorization decision
+The new endpoints use the existing EDIT permission and resource responsibility rules. No new authorization policy was introduced.
+
+### Implementation status
+**Implemented, pending local Django test execution.**
+
+### Next step
+Run the complete lifecycle regression set, then perform the authorization-scope security pass for disability assessments and home visits before starting the frontend integration.

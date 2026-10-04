@@ -13,6 +13,8 @@ from core.views import (
     beneficiary_archive,
     beneficiary_update,
     disability_assessments_collection,
+    disability_assessment_update,
+    home_visit_update,
     home_visits_collection,
     referrals_collection,
     referral_submit,
@@ -170,8 +172,16 @@ urlpatterns = [
         disability_assessments_collection,
     ),
     path(
+        "disability-assessments/<int:assessment_id>/",
+        disability_assessment_update,
+    ),
+    path(
         "home-visits/",
         home_visits_collection,
+    ),
+    path(
+        "home-visits/<int:home_visit_id>/",
+        home_visit_update,
     ),
     path(
         "referrals/",
