@@ -2137,3 +2137,45 @@ The dashboard endpoints continue to calculate results from records returned by `
 
 ### Next step
 Review the dashboard test and development log diff before staging them together for commit.
+
+
+## 2026-10-04 - Poultry Operational Record Update APIs
+
+### Objective
+Complete the first operational lifecycle block by adding controlled update APIs for the six existing poultry record types without changing the database schema or the centralized authorization design.
+
+### Work completed
+- Added a dedicated backend/core/poultry_views.py module for poultry update handlers.
+- Added protected PATCH endpoints for:
+  - Poultry groups
+  - Poultry stock movements
+  - Egg production
+  - Feed records
+  - Poultry health records
+  - Poultry sales
+- Reused the existing AuthorizationService.can_edit() decision for every poultry update.
+- Enforced the existing project-derived authorization scope through the resource names already registered in RESOURCE_RESPONSIBILITY_MAP.
+- Added validation for JSON payload type, editable fields, protected fields, unknown fields, dates, text lengths, non-negative quantities, decimal values, and egg-production balance.
+- Kept record ownership and audit fields such as project, poultry group, recorder, primary key, and creation timestamps protected from update.
+- Recomputed eggs_remaining whenever an egg-production record is updated.
+- Added dedicated API tests covering authentication, authorization, missing records, method restrictions, invalid JSON, protected fields, successful updates, decimal validation paths, and egg-balance validation.
+- Added the six PATCH routes to backend/config/urls.py.
+- No database migration or schema change was required.
+
+### Verification
+- Repository-level implementation was reviewed against the existing authorization service, poultry models, view conventions, URL structure, and test conventions.
+- The current chat execution environment does not contain the local ERA-IPMS clone or its MariaDB test environment, so the Django test suite could not be executed here.
+- The added test suite is intended to be run immediately in the existing local terminal before the production branch is considered verified.
+- GitHub main was at commit 6d812e9 before this change.
+
+### Authorization decision
+No new permission model was introduced. Poultry updates use the existing EDIT permission, poultry responsibility mapping, and project scope through AuthorizationService.can_edit().
+
+### Database decision
+No database migration or schema change was required. The existing poultry tables and unmanaged Django models are used.
+
+### Implementation status
+**Implemented, pending local Django test execution.**
+
+### Next step
+Run the new poultry lifecycle tests and the full core suite locally. If they pass, continue the same completion pattern for the small-farm operational records.

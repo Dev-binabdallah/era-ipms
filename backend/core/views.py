@@ -50,6 +50,15 @@ from core.models import (
     Users,
 )
 
+from core.poultry_views import (
+    egg_production_update,
+    feed_record_update,
+    poultry_group_update,
+    poultry_health_record_update,
+    poultry_sale_update,
+    poultry_stock_movement_update,
+)
+
 
 def get_referral_beneficiary_context(request, **kwargs):
     try:
