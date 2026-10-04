@@ -616,3 +616,74 @@ class AuthorizedQuerysetTests(SimpleTestCase):
         self.queryset.filter.assert_not_called()
         self.queryset.none.assert_not_called()
         self.assertIs(result, self.queryset)
+
+
+    @patch(
+        "core.authorization.querysets.authorization_service"
+    )
+    def test_member_disability_assessment_queryset_is_limited_to_related_beneficiaries(
+        self,
+        service,
+    ):
+        service.has_permission.return_value = True
+        service.get_required_responsibility.return_value = (
+            "DISABILITY_ASSESSMENT"
+        )
+        service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(title_name="Member")
+
+        result = authorized_queryset(
+            self.user,
+            "disability_assessments",
+            self.queryset,
+        )
+
+        self.queryset.filter.assert_called_once()
+        condition = self.queryset.filter.call_args.args[0]
+
+        self.assertEqual(condition.connector, "OR")
+        self.assertEqual(len(condition.children), 3)
+        self.assertIn(
+            ("beneficiary__created_by", self.user),
+            condition.children,
+        )
+        self.assertIn(
+            ("beneficiary__disability_assessments__assessed_by", self.user),
+            condition.children,
+        )
+        self.assertIn(
+            ("beneficiary__home_visits__conducted_by", self.user),
+            condition.children,
+        )
+        self.filtered_queryset.distinct.assert_called_once_with()
+        self.assertIs(result, self.filtered_queryset)
+
+    @patch(
+        "core.authorization.querysets.authorization_service"
+    )
+    def test_member_home_visit_queryset_is_limited_to_related_beneficiaries(
+        self,
+        service,
+    ):
+        service.has_permission.return_value = True
+        service.get_required_responsibility.return_value = (
+            "HOME_VISITS"
+        )
+        service.has_responsibility.return_value = True
+
+        self.user.title = SimpleNamespace(title_name="Member")
+
+        result = authorized_queryset(
+            self.user,
+            "home_visits",
+            self.queryset,
+        )
+
+        self.queryset.filter.assert_called_once()
+        condition = self.queryset.filter.call_args.args[0]
+
+        self.assertEqual(condition.connector, "OR")
+        self.assertEqual(len(condition.children), 3)
+        self.filtered_queryset.distinct.assert_called_once_with()
+        self.assertIs(result, self.filtered_queryset)

@@ -2277,3 +2277,31 @@ The new endpoints use the existing EDIT permission and resource responsibility r
 
 ### Next step
 Run the complete lifecycle regression set, then perform the authorization-scope security pass for disability assessments and home visits before starting the frontend integration.
+
+
+## 2026-10-04 - Disability-Service Scope Security Integration
+
+### Objective
+Align disability assessment and home-visit list and record authorization with the documented Member beneficiary relationship boundary before frontend integration.
+
+### Work completed
+- Removed disability assessments and home visits from the unscoped resource queryset path.
+- Added Member-specific beneficiary relationship filtering for disability assessment and home-visit querysets.
+- Preserved broader access for Director and Programme Coordinator users according to the existing policy.
+- Added record-level scope handling in AuthorizationService for disability assessments and home visits by resolving their beneficiary and reusing the established beneficiary scope logic.
+- Added authorization regression tests for related and unrelated Member records.
+- No database migration or schema change was required.
+
+### Verification
+- Authorization logic was reviewed against the existing beneficiary scope rules and current resource responsibility mappings.
+- The local Django suite could not be executed in this chat environment because the local clone and MariaDB test environment are unavailable.
+- GitHub main was at commit cd7fdcb before this change.
+
+### Authorization decision
+This change closes the previously identified beneficiary-service authorization gap without introducing a second authorization mechanism.
+
+### Implementation status
+**Implemented, pending local Django test execution.**
+
+### Next step
+Complete frontend integration after running the full authorization regression suite.

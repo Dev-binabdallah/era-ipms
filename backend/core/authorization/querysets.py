@@ -60,10 +60,6 @@ ME_INDICATOR_RECORD_RESOURCES = {
 }
 
 UNSCOPED_RESOURCES = {
-    "disability_assessment",
-    "disability_assessments",
-    "home_visit",
-    "home_visits",
     "follow_up",
     "follow_ups",
     "referral_follow_up",
@@ -235,6 +231,30 @@ def authorized_queryset(user, resource, queryset):
             Q(created_by=user)
             | Q(disability_assessments__assessed_by=user)
             | Q(home_visits__conducted_by=user)
+        ).distinct()
+
+    if resource_name in {
+        "disability_assessment",
+        "disability_assessments",
+        "home_visit",
+        "home_visits",
+    }:
+        title_name = getattr(
+            getattr(user, "title", None),
+            "title_name",
+            "",
+        )
+
+        if title_name in {
+            "Director",
+            "Programme Coordinator",
+        }:
+            return queryset
+
+        return queryset.filter(
+            Q(beneficiary__created_by=user)
+            | Q(beneficiary__disability_assessments__assessed_by=user)
+            | Q(beneficiary__home_visits__conducted_by=user)
         ).distinct()
 
     if resource_name in {"referral", "referrals"}:

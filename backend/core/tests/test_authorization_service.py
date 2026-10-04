@@ -2030,3 +2030,55 @@ class AuthorizationServiceScopeTests(SimpleTestCase):
             )
         )
 
+
+
+    def test_member_can_view_assessment_for_related_beneficiary(self):
+        assessor = SimpleNamespace(user_id=1)
+
+        beneficiary = SimpleNamespace(
+            created_by=SimpleNamespace(user_id=2),
+            disability_assessments=[
+                SimpleNamespace(assessed_by=assessor),
+            ],
+        )
+
+        assessment = SimpleNamespace(beneficiary=beneficiary)
+
+        self.user = self.make_user(
+            title_name="Member",
+            permissions={PERMISSION_VIEW},
+            responsibilities={"DISABILITY_ASSESSMENT"},
+        )
+        self.user.user_id = 1
+
+        self.assertTrue(
+            self.service.can_view(
+                self.user,
+                assessment,
+                resource="disability_assessments",
+            )
+        )
+
+    def test_member_cannot_view_unrelated_home_visit(self):
+        beneficiary = SimpleNamespace(
+            created_by=SimpleNamespace(user_id=2),
+            disability_assessments=[],
+            home_visits=[],
+        )
+
+        visit = SimpleNamespace(beneficiary=beneficiary)
+
+        self.user = self.make_user(
+            title_name="Member",
+            permissions={PERMISSION_VIEW},
+            responsibilities={"HOME_VISITS"},
+        )
+        self.user.user_id = 1
+
+        self.assertFalse(
+            self.service.can_view(
+                self.user,
+                visit,
+                resource="home_visits",
+            )
+        )
