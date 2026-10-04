@@ -2305,3 +2305,33 @@ This change closes the previously identified beneficiary-service authorization g
 
 ### Next step
 Complete frontend integration after running the full authorization regression suite.
+
+## 2026-10-04 - Initial Django Web UI and Login Page
+
+### Work completed
+
+Started the ERA-IPMS web interface using Django templates, CSS, and JavaScript without introducing a separate frontend framework.
+
+Implemented the first UI slice:
+
+- Added a Django web view for the login page.
+- Added a shared base template for the web interface.
+- Added the ERA-IPMS login page.
+- Added initial responsive login-page styling.
+- Added login JavaScript using the existing `/auth/login/` API.
+- Added CSRF handling for the login request.
+- Added user-friendly login error and success messages.
+- Added a login-page regression test.
+- Added the `/login/` web route while keeping `/auth/login/` as the existing authentication API.
+
+### Verification
+
+- Django system check passed.
+- Login page test passed.
+- JavaScript syntax check passed.
+- Wrong credentials correctly return "Invalid credentials".
+- Correct credentials successfully authenticate the user as `admin`.
+
+### Status
+
+Initial web UI and login flow implemented and verified locally. Dashboard UI has not yet been implemented.
