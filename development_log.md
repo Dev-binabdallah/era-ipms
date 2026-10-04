@@ -2213,3 +2213,36 @@ No database migration or schema change was required. Existing unmanaged farm tab
 
 ### Next step
 Run the poultry and farm lifecycle test files together, then run the full core suite before beginning finance lifecycle completion.
+
+
+## 2026-10-04 - Financial Transaction Update API
+
+### Objective
+Complete the basic financial transaction lifecycle by allowing authorized users to correct editable transaction details without changing project ownership, recorder information, approval metadata, or transaction status.
+
+### Work completed
+- Added backend/core/finance_views.py with a protected financial transaction PATCH handler.
+- Added PATCH /financial-transactions/<transaction_id>/.
+- Reused AuthorizationService.can_edit() and the existing financial resource scope rules.
+- Added validation for transaction dates, transaction type, category, amount, text fields, protected fields, and unknown fields.
+- Protected project, recorder, approval fields, status, primary key, and creation/update control fields from direct modification.
+- Added dedicated API tests for authentication, authorization, missing records, method restriction, successful update, approval-field protection, and amount validation.
+- Added the PATCH route to backend/config/urls.py.
+- No database migration or schema change was required.
+
+### Verification
+- Repository-level implementation was reviewed against the existing financial model, create/list handler, authorization service, URLs, and tests.
+- The current chat execution environment does not contain the local ERA-IPMS clone or MariaDB test environment, so Django tests could not be executed here.
+- GitHub main was at commit bbfc433 before this change.
+
+### Authorization decision
+Financial transaction updates use the existing EDIT permission and the existing project or organization-level financial scope. Approval remains a separate protected state and is not writable through this update endpoint.
+
+### Database decision
+No database migration or schema change was required.
+
+### Implementation status
+**Implemented, pending local Django test execution.**
+
+### Next step
+Run poultry, farm, and finance lifecycle tests together, then continue with the beneficiary and disability-service lifecycle.

@@ -66,6 +66,8 @@ from core.farm_views import (
     harvest_update,
 )
 
+from core.finance_views import financial_transaction_update
+
 
 def get_referral_beneficiary_context(request, **kwargs):
     try:
