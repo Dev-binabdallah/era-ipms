@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Projects | ERA-IPMS{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <header class="dashboard-header">
+        <div class="dashboard-brand">
+            <a href="/dashboard/" class="brand-link">
+                <div class="brand-mark">ERA</div>
+
+                <div>
+                    <h1>ERA-IPMS</h1>
+                    <p>Integrated Project Management System</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="user-area">
+            <div>
+                <strong id="user-name">Loading...</strong>
+                <span id="user-title">Loading...</span>
+            </div>
+
+            <button
+                type="button"
+                id="logout-button"
+                class="secondary-button"
+            >
+                Sign out
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-content">
+
+        <div class="page-heading">
+            <div>
+                <p class="eyebrow">Projects & Activities</p>
+                <h2>Projects</h2>
+            </div>
+
+            <a href="/dashboard/" class="back-link">
+                Back to dashboard
+            </a>
+        </div>
+
+        <div id="projects-message" class="dashboard-message"></div>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h3>Projects</h3>
+                </div>
+
+                <strong id="project-count">0</strong>
+            </div>
+
+            <div id="projects-list" class="projects-list">
+                <p>Loading projects...</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="{% static 'core/js/projects.js' %}"></script>
+{% endblock %}

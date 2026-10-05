@@ -2467,3 +2467,34 @@ Changes:
 ### Status
 
 Successful login now opens the dashboard automatically.
+
+## 2026-10-05 - Add Projects Navigation UI
+
+### Work completed
+
+Added the first dashboard module navigation flow for Projects & Activities.
+
+Implemented:
+
+- Added a protected `/projects-ui/` web page.
+- Added a Projects & Activities link to the dashboard.
+- Added a Projects page with the current user and title.
+- Added a link back to the dashboard.
+- Connected the Projects page to the existing authorized `/projects/` API.
+- Added a simple project list layout for authorized projects.
+- Added an access-restricted message when the existing authorization service returns HTTP 403.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Web UI tests passed.
+- Full core test suite passed.
+- Projects JavaScript syntax check passed.
+- Browser verification confirmed dashboard navigation to `/projects-ui/`.
+- Browser verification confirmed the existing Admin authorization boundary is respected.
+- Browser verification confirmed HTTP 403 is presented as a clear "Access restricted" message.
+
+### Status
+
+Projects & Activities navigation is completed and verified locally. The next UI milestone will add another authorized module after this commit.

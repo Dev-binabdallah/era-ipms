@@ -2,7 +2,11 @@ from types import SimpleNamespace
 
 from django.test import RequestFactory, SimpleTestCase
 
-from core.web_views import dashboard_page, login_page
+from core.web_views import (
+    dashboard_page,
+    login_page,
+    projects_page,
+)
 
 
 class LoginPageTests(SimpleTestCase):
@@ -45,8 +49,34 @@ class DashboardPageTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Dashboard")
         self.assertContains(response, "Projects")
+        self.assertContains(response, 'href="/projects-ui/"')
         self.assertContains(response, "Activity status")
         self.assertContains(response, "Financial summary")
         self.assertContains(response, "core/js/dashboard.js")
         self.assertContains(response, "csrfmiddlewaretoken")
-        self.assertContains(response, "csrfmiddlewaretoken")
+
+
+class ProjectsPageTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_projects_redirects_unauthenticated_user(self):
+        request = self.factory.get("/projects-ui/")
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = projects_page(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/login/")
+
+    def test_projects_page_loads_for_authenticated_user(self):
+        request = self.factory.get("/projects-ui/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = projects_page(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Projects & Activities")
+        self.assertContains(response, "Projects")
+        self.assertContains(response, "core/js/projects.js")
+        self.assertContains(response, "Back to dashboard")

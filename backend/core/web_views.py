@@ -12,3 +12,12 @@ def dashboard_page(request):
         return redirect("/login/")
 
     return render(request, "core/dashboard.html")
+
+
+
+def projects_page(request):
+    """Display the protected Projects page."""
+    if not request.user.is_authenticated:
+        return redirect("/login/")
+
+    return render(request, "core/projects.html")
