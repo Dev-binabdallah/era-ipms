@@ -39,10 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            message.textContent = `Signed in successfully as ${data.username}.`;
-            message.className = "login-message success";
-
-            submitButton.textContent = "Signed in";
+            window.location.href = "/dashboard/";
         } catch (error) {
             message.textContent = "Unable to connect to the server.";
             message.className = "login-message error";

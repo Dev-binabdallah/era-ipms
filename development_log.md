@@ -2443,3 +2443,27 @@ Changes:
 
 Login page refinement completed. The dashboard navigation work will continue after this change is committed.
 
+
+## 2026-10-05 - Redirect Successful Login to Dashboard
+
+### Work completed
+
+Updated the login flow so that successful authentication automatically redirects the user to the dashboard.
+
+Changes:
+
+- Successful login now redirects from `/login/` to `/dashboard/`.
+- Existing authentication API and session handling remain unchanged.
+- Failed login behavior remains unchanged.
+
+### Verification
+
+- Django system check passed.
+- Web UI tests passed.
+- Login JavaScript syntax check passed.
+- Browser verification confirmed `POST /auth/login/` returned HTTP 200.
+- Browser verification confirmed successful login was followed by `GET /dashboard/` with HTTP 200.
+
+### Status
+
+Successful login now opens the dashboard automatically.
