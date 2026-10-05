@@ -21,3 +21,12 @@ def projects_page(request):
         return redirect("/login/")
 
     return render(request, "core/projects.html")
+
+
+
+def beneficiaries_page(request):
+    """Display the protected Beneficiary Services page."""
+    if not request.user.is_authenticated:
+        return redirect("/login/")
+
+    return render(request, "core/beneficiaries.html")

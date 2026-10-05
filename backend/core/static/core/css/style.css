@@ -527,3 +527,30 @@ button:disabled {
     color: #6b7280;
     font-size: 13px;
 }
+
+.beneficiaries-list {
+    display: grid;
+    gap: 12px;
+}
+
+.beneficiary-card {
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.beneficiary-card h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.beneficiary-card p {
+    margin: 10px 0 8px;
+    color: #4b5563;
+    font-size: 13px;
+}
+
+.beneficiary-card small {
+    color: #6b7280;
+    font-size: 12px;
+}

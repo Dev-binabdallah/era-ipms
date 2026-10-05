@@ -5,6 +5,7 @@ from django.test import RequestFactory, SimpleTestCase
 from core.web_views import (
     dashboard_page,
     login_page,
+    beneficiaries_page,
     projects_page,
 )
 
@@ -80,3 +81,35 @@ class ProjectsPageTests(SimpleTestCase):
         self.assertContains(response, "Projects")
         self.assertContains(response, "core/js/projects.js")
         self.assertContains(response, "Back to dashboard")
+
+
+class BeneficiariesPageTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_beneficiaries_redirects_unauthenticated_user(self):
+        request = self.factory.get("/beneficiaries-ui/")
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = beneficiaries_page(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/login/")
+
+    def test_beneficiaries_page_loads_for_authenticated_user(self):
+        request = self.factory.get("/beneficiaries-ui/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = beneficiaries_page(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Beneficiary Services")
+        self.assertContains(response, "Beneficiaries")
+        self.assertContains(
+            response,
+            "core/js/beneficiaries.js",
+        )
+        self.assertContains(
+            response,
+            "Back to dashboard",
+        )

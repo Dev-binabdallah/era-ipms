@@ -2498,3 +2498,33 @@ Implemented:
 ### Status
 
 Projects & Activities navigation is completed and verified locally. The next UI milestone will add another authorized module after this commit.
+
+## 2026-10-05 - Add Beneficiary Services Navigation UI
+
+### Work completed
+
+Added the Beneficiary Services navigation flow to the ERA-IPMS dashboard.
+
+Implemented:
+
+- Added a protected `/beneficiaries-ui/` web page.
+- Added Beneficiary Services navigation from the dashboard.
+- Added beneficiary record display structure.
+- Connected the page to the existing authorized `/beneficiaries/` API.
+- Added handling for unauthorized access with a clear "Access restricted" message.
+- Added browser navigation back to the dashboard.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed.
+- Beneficiary Services web tests passed.
+- Beneficiary JavaScript syntax check passed.
+- Browser verification confirmed dashboard navigation to `/beneficiaries-ui/`.
+- Browser verification confirmed the existing authorization boundary is respected.
+- Browser verification confirmed HTTP 403 is presented as a clear access restriction message.
+
+### Status
+
+Beneficiary Services navigation is completed and verified locally.
