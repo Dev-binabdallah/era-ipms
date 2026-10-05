@@ -148,6 +148,17 @@ class PoultryPageTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Poultry Operations")
         self.assertContains(response, "Poultry Groups")
+        self.assertContains(response, "Stock movements")
+        self.assertContains(response, "Egg production")
+        self.assertContains(response, "Feed records")
+        self.assertContains(response, "Health records")
+        self.assertContains(response, "Poultry sales")
+        self.assertContains(response, 'id="poultry-count"')
+        self.assertContains(response, 'id="stock-count"')
+        self.assertContains(response, 'id="egg-count"')
+        self.assertContains(response, 'id="feed-count"')
+        self.assertContains(response, 'id="health-count"')
+        self.assertContains(response, 'id="sales-count"')
         self.assertContains(
             response,
             "core/js/poultry.js",

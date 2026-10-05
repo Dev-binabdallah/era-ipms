@@ -2724,3 +2724,43 @@ Implemented:
 ### Status
 
 Beneficiary Services navigation is completed and verified locally.
+
+## 2026-10-05 - Add Poultry Operations Sections to Navigation UI
+
+### Work completed
+
+Expanded the Poultry Operations page to include the main poultry management records.
+
+Implemented:
+
+- Added Stock Movements to `/poultry-ui/`.
+- Added Egg Production to `/poultry-ui/`.
+- Added Feed Records to `/poultry-ui/`.
+- Added Health Records to `/poultry-ui/`.
+- Added Poultry Sales to `/poultry-ui/`.
+- Added counts for poultry groups and each supporting record section.
+- Connected the sections to the existing authorized poultry APIs.
+- Added poultry record cards for authorized data.
+- Added clear handling for restricted access to each poultry resource.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed with 623 tests.
+- Poultry web view tests passed.
+- Poultry JavaScript syntax check passed.
+- Browser verification confirmed `/poultry-ui/` returned HTTP 200.
+- Browser verification confirmed `poultry.js` loaded successfully.
+- Browser verification confirmed `/auth/me/` returned HTTP 200.
+- Browser verification confirmed `/poultry-groups/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/poultry-stock-movements/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/egg-production/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/feed-records/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/poultry-health-records/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/poultry-sales/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed each restricted poultry resource is clearly presented in the UI.
+
+### Status
+
+Poultry Operations navigation is completed and verified locally.
