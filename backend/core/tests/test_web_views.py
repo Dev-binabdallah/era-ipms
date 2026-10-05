@@ -10,6 +10,7 @@ from core.web_views import (
     poultry_page,
     farm_page,
     finance_page,
+    me_page,
 )
 
 
@@ -212,3 +213,28 @@ class FinancePageTests(SimpleTestCase):
             response,
             "Back to dashboard",
         )
+
+class MePageTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_me_redirects_unauthenticated_user(self):
+        request = self.factory.get("/me-ui/")
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = me_page(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/login/")
+
+    def test_me_page_loads_for_authenticated_user(self):
+        request = self.factory.get("/me-ui/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = me_page(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Monitoring & Evaluation")
+        self.assertContains(response, "Indicators")
+        self.assertContains(response, "core/js/me.js")
+        self.assertContains(response, "Back to dashboard")

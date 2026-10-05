@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from core.web_views import dashboard_page, login_page, projects_page, beneficiaries_page, poultry_page, farm_page, finance_page
+from core.web_views import dashboard_page, login_page, projects_page, beneficiaries_page, poultry_page, farm_page, finance_page, me_page
 from core.views import (
     auth_login,
     auth_me,
@@ -82,6 +82,7 @@ urlpatterns = [
     path("poultry-ui/", poultry_page),
     path("farm-ui/", farm_page),
     path("finance-ui/", finance_page),
+    path("me-ui/", me_page),
     path("auth/login/", auth_login),
     path("auth/me/", auth_me),
     path("auth/logout/", auth_logout),

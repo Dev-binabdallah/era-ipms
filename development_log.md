@@ -2620,3 +2620,38 @@ Implemented:
 ### Status
 
 Finance navigation is completed and verified locally.
+
+## 2026-10-05 - Add Monitoring & Evaluation Navigation UI
+
+### Work completed
+
+Added the Monitoring & Evaluation navigation flow to the ERA-IPMS dashboard.
+
+Implemented:
+
+- Added a protected `/me-ui/` web page.
+- Added Monitoring & Evaluation navigation from the dashboard.
+- Added M&E indicator summary cards.
+- Added indicator records count.
+- Connected the page to the existing authorized `/me-indicators/summary/` API.
+- Added indicator display cards with target, latest value, status, and record count.
+- Added handling for unauthorized access with a clear "Access restricted" message.
+- Added navigation back to the dashboard.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed with 623 tests.
+- M&E web view tests passed.
+- M&E JavaScript syntax check passed.
+- M&E URL resolved correctly to `me_page`.
+- Browser verification confirmed `/me-ui/` returned HTTP 200.
+- Browser verification confirmed `me.js` loaded successfully.
+- Browser verification confirmed `/auth/me/` returned HTTP 200.
+- Browser verification confirmed `/me-indicators/summary/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed the UI displays the access restriction without bypassing authorization.
+
+### Status
+
+Monitoring & Evaluation navigation is completed and verified locally.

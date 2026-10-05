@@ -57,3 +57,11 @@ def finance_page(request):
         return redirect("/login/")
 
     return render(request, "core/finance.html")
+
+
+def me_page(request):
+    """Display the protected Monitoring and Evaluation page."""
+    if not request.user.is_authenticated:
+        return redirect("/login/")
+
+    return render(request, "core/me.html")

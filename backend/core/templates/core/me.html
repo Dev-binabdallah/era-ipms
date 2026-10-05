@@ -1,0 +1,80 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Monitoring & Evaluation | ERA-IPMS{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <header class="dashboard-header">
+        <div class="dashboard-brand">
+            <a href="/dashboard/" class="brand-link">
+                <div class="brand-mark">ERA</div>
+
+                <div>
+                    <h1>ERA-IPMS</h1>
+                    <p>Integrated Project Management System</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="user-area">
+            <div>
+                <strong id="user-name">Loading...</strong>
+                <span id="user-title">Loading...</span>
+            </div>
+
+            <button
+                type="button"
+                id="logout-button"
+                class="secondary-button"
+            >
+                Sign out
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-content">
+
+        <div class="page-heading">
+            <div>
+                <p class="eyebrow">Monitoring & Evaluation</p>
+                <h2>Indicators</h2>
+            </div>
+
+            <a href="/dashboard/" class="back-link">
+                Back to dashboard
+            </a>
+        </div>
+
+        <div id="me-message" class="dashboard-message"></div>
+
+        <section class="me-overview">
+            <article class="summary-card">
+                <span>Total indicators</span>
+                <strong id="me-indicator-count">0</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Indicator records</span>
+                <strong id="me-record-count">0</strong>
+            </article>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h3>Monitoring indicators</h3>
+                </div>
+            </div>
+
+            <div id="me-indicator-list" class="me-list">
+                <p>Loading M&E indicators...</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="{% static 'core/js/me.js' %}"></script>
+{% endblock %}
