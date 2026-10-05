@@ -2335,3 +2335,35 @@ Implemented the first UI slice:
 ### Status
 
 Initial web UI and login flow implemented and verified locally. Dashboard UI has not yet been implemented.
+
+## 2026-10-05 - Initial Dashboard UI
+
+### Work completed
+
+Implemented the first ERA-IPMS dashboard UI using the existing Django web interface.
+
+Added:
+
+- Protected `/dashboard/` web page.
+- Redirect to `/login/` for unauthenticated users.
+- Logged-in username and title display.
+- Sign-out button using the existing authentication API.
+- Dashboard summary cards for projects, activities, beneficiaries, referrals, poultry groups, farm crops, financial transactions, and M&E indicators.
+- Activity status summary for planned, ongoing, pending, completed, and cancelled activities.
+- Financial summary showing total amount, transaction count, and transaction-type totals.
+- Initial module overview for beneficiary services, projects and activities, poultry, small farm, finance, and monitoring and evaluation.
+- Dashboard JavaScript that loads data from the existing authorized dashboard APIs.
+- Responsive dashboard styling for desktop and smaller screens.
+- Removed the extra "Authorized project information at a glance." label so the dashboard heading is simpler.
+
+### Verification
+
+- Django system check passed.
+- Dashboard web tests passed.
+- Dashboard successfully loaded in the browser while authenticated as `admin`.
+- Dashboard summary values displayed correctly.
+- Activity and financial summary sections loaded successfully.
+
+### Status
+
+Initial dashboard UI completed and verified locally. The next UI step will be module navigation.

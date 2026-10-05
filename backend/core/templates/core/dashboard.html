@@ -1,0 +1,198 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | ERA-IPMS{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <header class="dashboard-header">
+        <div class="dashboard-brand">
+            <div class="brand-mark">ERA</div>
+
+            <div>
+                <h1>ERA-IPMS</h1>
+                <p>Integrated Project Management System</p>
+            </div>
+        </div>
+
+        <div class="user-area">
+            <div>
+                <strong id="user-name">Loading...</strong>
+                <span id="user-title">Loading...</span>
+            </div>
+
+            <button
+                type="button"
+                id="logout-button"
+                class="secondary-button"
+            >
+                Sign out
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-content">
+
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">Overview</p>
+                <h2>Dashboard</h2>
+                            </div>
+
+            <div id="dashboard-message" class="dashboard-message"></div>
+        </section>
+
+        <section class="summary-grid" aria-label="System summary">
+            <article class="summary-card">
+                <span>Projects</span>
+                <strong id="count-projects">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Activities</span>
+                <strong id="count-activities">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Beneficiaries</span>
+                <strong id="count-beneficiaries">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Referrals</span>
+                <strong id="count-referrals">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Poultry Groups</span>
+                <strong id="count-poultry-groups">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Farm Crops</span>
+                <strong id="count-farm-crops">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Finance Records</span>
+                <strong id="count-financial-transactions">-</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>M&E Indicators</span>
+                <strong id="count-me-indicators">-</strong>
+            </article>
+        </section>
+
+        <section class="dashboard-panels">
+
+            <article class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Activities</p>
+                        <h3>Activity status</h3>
+                    </div>
+
+                    <strong id="activity-total">0 total</strong>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span>Planned</span>
+                        <strong id="status-planned">0</strong>
+                    </div>
+
+                    <div class="status-item">
+                        <span>Ongoing</span>
+                        <strong id="status-ongoing">0</strong>
+                    </div>
+
+                    <div class="status-item">
+                        <span>Pending</span>
+                        <strong id="status-pending">0</strong>
+                    </div>
+
+                    <div class="status-item">
+                        <span>Completed</span>
+                        <strong id="status-completed">0</strong>
+                    </div>
+
+                    <div class="status-item">
+                        <span>Cancelled</span>
+                        <strong id="status-cancelled">0</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Finance</p>
+                        <h3>Financial summary</h3>
+                    </div>
+                </div>
+
+                <div class="finance-total">
+                    <span>Total amount</span>
+                    <strong id="financial-total">0.00</strong>
+                </div>
+
+                <div class="finance-count">
+                    <span>Transactions</span>
+                    <strong id="financial-count">0</strong>
+                </div>
+
+                <div id="financial-types" class="financial-types">
+                    <p>No transaction data available.</p>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">System areas</p>
+                    <h3>Modules</h3>
+                </div>
+            </div>
+
+            <div class="module-grid">
+                <div class="module-item">
+                    <strong>Beneficiary Services</strong>
+                    <span>Registration, assessments, visits and referrals</span>
+                </div>
+
+                <div class="module-item">
+                    <strong>Projects & Activities</strong>
+                    <span>Projects, activities and assignments</span>
+                </div>
+
+                <div class="module-item">
+                    <strong>Poultry</strong>
+                    <span>Groups, stock, eggs, feed, health and sales</span>
+                </div>
+
+                <div class="module-item">
+                    <strong>Small Farm</strong>
+                    <span>Crops, activities, harvests and transfers</span>
+                </div>
+
+                <div class="module-item">
+                    <strong>Finance</strong>
+                    <span>Financial transactions and summaries</span>
+                </div>
+
+                <div class="module-item">
+                    <strong>Monitoring & Evaluation</strong>
+                    <span>Indicators and indicator records</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="{% static 'core/js/dashboard.js' %}"></script>
+{% endblock %}

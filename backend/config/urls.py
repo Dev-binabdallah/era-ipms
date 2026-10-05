@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from core.web_views import login_page
+from core.web_views import dashboard_page, login_page
 from core.views import (
     auth_login,
     auth_me,
@@ -76,6 +76,7 @@ from core.referral_workflow import referral_approve
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", login_page),
+    path("dashboard/", dashboard_page),
     path("auth/login/", auth_login),
     path("auth/me/", auth_me),
     path("auth/logout/", auth_logout),
