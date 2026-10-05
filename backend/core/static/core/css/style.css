@@ -59,14 +59,15 @@ body {
     font-size: 13px;
 }
 
-.login-intro h2 {
-    margin: 0 0 8px;
-    font-size: 22px;
+.login-heading {
+    margin-bottom: 24px;
 }
 
-.login-intro p {
-    margin: 0 0 24px;
-    color: #6b7280;
+.login-heading h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #243b53;
 }
 
 .form-group {

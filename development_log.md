@@ -2393,3 +2393,53 @@ Added:
 ### Status
 
 Dashboard logout is now working correctly with Django CSRF protection.
+
+## 2026-10-05 - Refine Login Page
+
+### Work completed
+
+Refined the ERA-IPMS login page to make it simpler and more professional.
+
+Changes:
+
+- Removed the "Welcome back" heading.
+- Removed the "Sign in to access your ERA-IPMS workspace." sentence.
+- Kept a simple "Sign in" heading.
+- Adjusted the login heading styling and spacing.
+- Updated the login page regression test to confirm the removed text does not return.
+
+### Verification
+
+- Django system check passed.
+- Login page tests passed.
+- Login page verified locally in the browser.
+
+### Status
+
+Login page refinement completed. The dashboard navigation work will continue after this change is committed.
+
+
+## 2026-10-05 - Refine Login Page
+
+### Work completed
+
+Refined the ERA-IPMS login page to make it simpler and more professional.
+
+Changes:
+
+- Removed the "Welcome back" heading.
+- Removed the "Sign in to access your ERA-IPMS workspace." sentence.
+- Kept a simple "Sign in" heading.
+- Adjusted the login heading styling and spacing.
+- Updated the login page regression test to confirm the removed text does not return.
+
+### Verification
+
+- Django system check passed.
+- Login page tests passed.
+- Login page verified locally in the browser.
+
+### Status
+
+Login page refinement completed. The dashboard navigation work will continue after this change is committed.
+

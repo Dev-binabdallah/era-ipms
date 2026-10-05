@@ -14,6 +14,11 @@ class LoginPageTests(SimpleTestCase):
         self.assertContains(response, "Username or email")
         self.assertContains(response, "Password")
         self.assertContains(response, "Sign in")
+        self.assertNotContains(response, "Welcome back")
+        self.assertNotContains(
+            response,
+            "Sign in to access your ERA-IPMS workspace.",
+        )
         self.assertContains(response, 'id="login-form"')
         self.assertContains(response, "core/js/login.js")
 
