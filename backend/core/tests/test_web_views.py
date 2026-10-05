@@ -9,6 +9,7 @@ from core.web_views import (
     projects_page,
     poultry_page,
     farm_page,
+    finance_page,
 )
 
 
@@ -174,6 +175,38 @@ class FarmPageTests(SimpleTestCase):
         self.assertContains(
             response,
             "core/js/farm.js",
+        )
+        self.assertContains(
+            response,
+            "Back to dashboard",
+        )
+
+
+class FinancePageTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_finance_redirects_unauthenticated_user(self):
+        request = self.factory.get("/finance-ui/")
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = finance_page(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/login/")
+
+    def test_finance_page_loads_for_authenticated_user(self):
+        request = self.factory.get("/finance-ui/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = finance_page(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Financial Operations")
+        self.assertContains(response, "Financial Transactions")
+        self.assertContains(
+            response,
+            "core/js/finance.js",
         )
         self.assertContains(
             response,

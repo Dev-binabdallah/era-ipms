@@ -48,3 +48,12 @@ def farm_page(request):
         return redirect("/login/")
 
     return render(request, "core/farm.html")
+
+
+
+def finance_page(request):
+    """Display the protected Finance page."""
+    if not request.user.is_authenticated:
+        return redirect("/login/")
+
+    return render(request, "core/finance.html")

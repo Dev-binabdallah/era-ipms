@@ -2589,3 +2589,34 @@ Implemented:
 ### Status
 
 Small Farm navigation is completed and verified locally.
+
+## 2026-10-05 - Add Finance Navigation UI
+
+### Work completed
+
+Added the Finance navigation flow to the ERA-IPMS dashboard.
+
+Implemented:
+
+- Added a protected `/finance-ui/` web page.
+- Added Finance navigation from the dashboard.
+- Added financial transaction summary cards.
+- Added financial transaction display structure.
+- Connected the page to the existing authorized `/financial-transactions/` API.
+- Added handling for unauthorized access with a clear "Access restricted" message.
+- Added navigation back to the dashboard.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed.
+- Finance web tests passed.
+- Finance JavaScript syntax check passed.
+- Browser verification confirmed dashboard navigation to `/finance-ui/`.
+- Browser verification confirmed the existing authorization boundary is respected.
+- Browser verification confirmed HTTP 403 is presented as a clear access restriction message.
+
+### Status
+
+Finance navigation is completed and verified locally.

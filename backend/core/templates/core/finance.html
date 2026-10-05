@@ -1,0 +1,80 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Finance | ERA-IPMS{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <header class="dashboard-header">
+        <div class="dashboard-brand">
+            <a href="/dashboard/" class="brand-link">
+                <div class="brand-mark">ERA</div>
+
+                <div>
+                    <h1>ERA-IPMS</h1>
+                    <p>Integrated Project Management System</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="user-area">
+            <div>
+                <strong id="user-name">Loading...</strong>
+                <span id="user-title">Loading...</span>
+            </div>
+
+            <button
+                type="button"
+                id="logout-button"
+                class="secondary-button"
+            >
+                Sign out
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-content">
+
+        <div class="page-heading">
+            <div>
+                <p class="eyebrow">Financial Operations</p>
+                <h2>Financial Transactions</h2>
+            </div>
+
+            <a href="/dashboard/" class="back-link">
+                Back to dashboard
+            </a>
+        </div>
+
+        <div id="finance-message" class="dashboard-message"></div>
+
+        <section class="finance-overview">
+            <article class="summary-card">
+                <span>Total transactions</span>
+                <strong id="finance-count">0</strong>
+            </article>
+
+            <article class="summary-card">
+                <span>Total amount</span>
+                <strong id="finance-total">0.00</strong>
+            </article>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h3>Financial transactions</h3>
+                </div>
+            </div>
+
+            <div id="finance-list" class="finance-list">
+                <p>Loading financial transactions...</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="{% static 'core/js/finance.js' %}"></script>
+{% endblock %}
