@@ -2367,3 +2367,29 @@ Added:
 ### Status
 
 Initial dashboard UI completed and verified locally. The next UI step will be module navigation.
+
+## 2026-10-05 - Fix Dashboard Logout CSRF Handling
+
+### Work completed
+
+Fixed the dashboard logout flow to work correctly with Django CSRF protection.
+
+Added:
+
+- CSRF token retrieval from the dashboard page.
+- Fallback CSRF token retrieval from the Django `csrftoken` cookie.
+- Automatic `X-CSRFToken` header for non-GET dashboard requests.
+- Safer JSON response handling when the server returns a non-JSON response.
+
+### Verification
+
+- Django system check passed.
+- Dashboard web tests passed: 3/3.
+- Dashboard JavaScript syntax check passed.
+- Dashboard loaded successfully in the browser.
+- Logout request returned HTTP 200.
+- User was redirected to `/login/` after successful logout.
+
+### Status
+
+Dashboard logout is now working correctly with Django CSRF protection.

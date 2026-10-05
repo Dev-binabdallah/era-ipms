@@ -7,11 +7,47 @@ document.addEventListener("DOMContentLoaded", function () {
         message.className = `dashboard-message ${type}`.trim();
     }
 
+    function getCsrfToken() {
+        const tokenInput = document.querySelector(
+            'input[name="csrfmiddlewaretoken"]'
+        );
+
+        if (tokenInput && tokenInput.value) {
+            return tokenInput.value;
+        }
+
+        const cookie = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("csrftoken="));
+
+        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+    }
+
     async function fetchJson(url, options = {}) {
-        const response = await fetch(url, {
+        const requestOptions = {
             credentials: "same-origin",
             ...options,
-        });
+        };
+
+        if ((requestOptions.method || "GET").toUpperCase() !== "GET") {
+            requestOptions.headers = {
+                ...(requestOptions.headers || {}),
+                "X-CSRFToken": getCsrfToken(),
+            };
+        }
+
+        const response = await fetch(url, requestOptions);
+
+        const contentType =
+            response.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+            const error = new Error(
+                `Server returned HTTP ${response.status}.`
+            );
+            error.status = response.status;
+            throw error;
+        }
 
         const data = await response.json();
 
