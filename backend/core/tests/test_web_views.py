@@ -191,6 +191,13 @@ class FarmPageTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Small Farm Operations")
         self.assertContains(response, "Farm Crops")
+        self.assertContains(response, "Farm activities")
+        self.assertContains(response, "Harvests")
+        self.assertContains(response, "Poultry transfers")
+        self.assertContains(response, 'id="farm-count"')
+        self.assertContains(response, 'id="activity-count"')
+        self.assertContains(response, 'id="harvest-count"')
+        self.assertContains(response, 'id="transfer-count"')
         self.assertContains(
             response,
             "core/js/farm.js",

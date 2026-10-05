@@ -2764,3 +2764,42 @@ Implemented:
 ### Status
 
 Poultry Operations navigation is completed and verified locally.
+
+## 2026-10-05 - Add Small Farm Operations Sections to Navigation UI
+
+### Work completed
+
+Expanded the Small Farm Operations page to include the main farm management records.
+
+Implemented:
+
+- Added Farm Activities to `/farm-ui/`.
+- Added Harvests to `/farm-ui/`.
+- Added Poultry Transfers to `/farm-ui/`.
+- Added counts for farm crops and each supporting record section.
+- Connected the sections to the existing authorized farm APIs.
+- Added farm record cards for authorized data.
+- Added clear handling for restricted access to each farm resource.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed with 623 tests.
+- Farm web view tests passed with 15 tests.
+- Farm JavaScript syntax check passed.
+- Browser verification confirmed `/farm-ui/` returned HTTP 200.
+- Browser verification confirmed `farm.js` loaded successfully.
+- Browser verification confirmed `style.css` loaded successfully.
+- Browser verification confirmed `/auth/me/` returned HTTP 200.
+- Browser verification confirmed `/farm-crops/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/farm-activities/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/harvests/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/farm-poultry-transfers/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed each restricted farm resource was handled independently in the UI.
+- `git diff --check` passed.
+- No backend authorization changes were required.
+
+### Status
+
+Small Farm Operations navigation is completed and verified locally.
