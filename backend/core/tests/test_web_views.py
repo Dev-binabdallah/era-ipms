@@ -109,6 +109,13 @@ class BeneficiariesPageTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Beneficiary Services")
         self.assertContains(response, "Beneficiaries")
+        self.assertContains(response, "Disability assessments")
+        self.assertContains(response, "Home visits")
+        self.assertContains(response, "Referrals")
+        self.assertContains(response, 'id="beneficiary-count"')
+        self.assertContains(response, 'id="assessment-count"')
+        self.assertContains(response, 'id="home-visit-count"')
+        self.assertContains(response, 'id="referral-count"')
         self.assertContains(
             response,
             "core/js/beneficiaries.js",

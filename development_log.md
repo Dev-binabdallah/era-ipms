@@ -2688,3 +2688,39 @@ Implemented:
 ### Status
 
 Projects & Activities navigation is completed and verified locally.
+
+## 2026-10-05 - Add Beneficiary Service Sections to Navigation UI
+
+### Work completed
+
+Expanded the Beneficiary Services page to include the main disability service workflow information.
+
+Implemented:
+
+- Added a Disability Assessments section to `/beneficiaries-ui/`.
+- Added a Home Visits section to `/beneficiaries-ui/`.
+- Added a Referrals section to `/beneficiaries-ui/`.
+- Added counts for beneficiaries, assessments, home visits, and referrals.
+- Connected the sections to the existing authorized APIs.
+- Added service cards for authorized assessment, home visit, and referral records.
+- Added clear handling for restricted access to each service.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed with 623 tests.
+- Beneficiary web view tests passed.
+- Beneficiary JavaScript syntax check passed.
+- Browser verification confirmed `/beneficiaries-ui/` returned HTTP 200.
+- Browser verification confirmed `beneficiaries.js` loaded successfully.
+- Browser verification confirmed `/auth/me/` returned HTTP 200.
+- Browser verification confirmed `/beneficiaries/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/disability-assessments/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/home-visits/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/referrals/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed each restricted service is clearly presented in the UI.
+
+### Status
+
+Beneficiary Services navigation is completed and verified locally.
