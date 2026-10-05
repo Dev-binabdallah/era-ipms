@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const indicatorCount = document.getElementById("me-indicator-count");
     const recordCount = document.getElementById("me-record-count");
     const indicatorList = document.getElementById("me-indicator-list");
+    const recordList = document.getElementById("me-record-list");
 
     function showMessage(text, type = "") {
         message.textContent = text;
@@ -107,6 +108,63 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function renderRecords(records) {
+        recordList.innerHTML = "";
+
+        if (!records.length) {
+            recordList.innerHTML = `
+                <div class="empty-state">
+                    <strong>No indicator records found</strong>
+                    <p>
+                        No authorized M&E indicator records are
+                        currently available.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        records.forEach(function (record) {
+            const card = document.createElement("article");
+            card.className = "me-record-card";
+
+            const heading = document.createElement("div");
+            heading.className = "me-card-heading";
+
+            const name = document.createElement("h4");
+            name.textContent =
+                `Indicator ${record.indicator_id}`;
+
+            const date = document.createElement("strong");
+            date.textContent =
+                record.record_date || "No date";
+
+            heading.appendChild(name);
+            heading.appendChild(date);
+
+            const value = document.createElement("p");
+            value.textContent =
+                `Recorded value: ${
+                    record.recorded_value ?? "Not set"
+                }`;
+
+            const notes = document.createElement("p");
+            notes.textContent =
+                `Notes: ${record.notes || "None"}`;
+
+            const recorder = document.createElement("small");
+            recorder.textContent =
+                `Recorded by user ${record.recorded_by_id ?? "Unknown"}`;
+
+            card.appendChild(heading);
+            card.appendChild(value);
+            card.appendChild(notes);
+            card.appendChild(recorder);
+
+            recordList.appendChild(card);
+        });
+    }
+
     async function loadUser() {
         const user = await fetchJson("/auth/me/");
 
@@ -121,13 +179,37 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             await loadUser();
 
-            const data = await fetchJson(
+            const indicatorData = await fetchJson(
                 "/me-indicators/summary/"
             );
 
             renderIndicators(
-                data.me_indicators_summary
+                indicatorData.me_indicators_summary
             );
+
+            try {
+                const recordData = await fetchJson(
+                    "/me-indicator-records/"
+                );
+
+                renderRecords(
+                    recordData.me_indicator_records
+                );
+            } catch (error) {
+                if (error.status === 403) {
+                    recordList.innerHTML = `
+                        <div class="empty-state">
+                            <strong>Access restricted</strong>
+                            <p>
+                                You do not have permission to view
+                                M&E indicator records.
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    throw error;
+                }
+            }
 
             showMessage("");
         } catch (error) {
@@ -146,6 +228,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         <p>
                             You do not have permission to view
                             M&E indicators.
+                        </p>
+                    </div>
+                `;
+
+                recordList.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Access restricted</strong>
+                        <p>
+                            You do not have permission to view
+                            M&E indicator records.
                         </p>
                     </div>
                 `;

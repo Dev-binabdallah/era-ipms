@@ -261,5 +261,7 @@ class MePageTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Monitoring & Evaluation")
         self.assertContains(response, "Indicators")
+        self.assertContains(response, "Indicator records")
+        self.assertContains(response, "me-record-list")
         self.assertContains(response, "core/js/me.js")
         self.assertContains(response, "Back to dashboard")

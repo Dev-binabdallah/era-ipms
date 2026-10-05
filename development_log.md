@@ -2803,3 +2803,39 @@ Implemented:
 ### Status
 
 Small Farm Operations navigation is completed and verified locally.
+
+## 2026-10-05 - Add M&E Indicator Records to Navigation UI
+
+### Work completed
+
+Expanded the Monitoring & Evaluation page to display indicator records alongside the existing indicator summary.
+
+Implemented:
+
+- Added an Indicator Records section to `/me-ui/`.
+- Connected the section to the existing `/me-indicator-records/` API.
+- Added indicator record cards showing indicator ID, record date, recorded value, notes, and recorded-by user.
+- Added an empty-state message when no indicator records are available.
+- Added independent handling for restricted access to M&E indicator records.
+- Kept the existing indicator summary and authorization behavior unchanged.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- M&E indicator record API tests passed with 13 tests.
+- M&E web view tests passed with 2 tests.
+- M&E JavaScript syntax check passed.
+- Full core test suite passed with 623 tests.
+- Django system check passed.
+- Browser verification confirmed `/me-ui/` returned HTTP 200.
+- Browser verification confirmed `me.js` loaded successfully.
+- Browser verification confirmed `/auth/me/` returned HTTP 200.
+- Browser verification confirmed `/me-indicators/summary/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/me-indicator-records/` was handled as restricted for the current Admin user.
+- Browser verification confirmed both indicator and indicator-record sections clearly present the appropriate access-restricted message.
+- `git diff --check` passed.
+- No backend authorization changes were required.
+
+### Status
+
+M&E Indicator Records UI is completed and verified locally.
