@@ -2559,3 +2559,33 @@ Implemented:
 ### Status
 
 Poultry navigation is completed and verified locally.
+
+## 2026-10-05 - Add Small Farm Navigation UI
+
+### Work completed
+
+Added the Small Farm navigation flow to the ERA-IPMS dashboard.
+
+Implemented:
+
+- Added a protected `/farm-ui/` web page.
+- Added Small Farm navigation from the dashboard.
+- Added farm crop display structure.
+- Connected the page to the existing authorized `/farm-crops/` API.
+- Added handling for unauthorized access with a clear "Access restricted" message.
+- Added navigation back to the dashboard.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed.
+- Small Farm web tests passed.
+- Small Farm JavaScript syntax check passed.
+- Browser verification confirmed dashboard navigation to `/farm-ui/`.
+- Browser verification confirmed the existing authorization boundary is respected.
+- Browser verification confirmed HTTP 403 is presented as a clear access restriction message.
+
+### Status
+
+Small Farm navigation is completed and verified locally.

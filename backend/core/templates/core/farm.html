@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Small Farm | ERA-IPMS{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <header class="dashboard-header">
+        <div class="dashboard-brand">
+            <a href="/dashboard/" class="brand-link">
+                <div class="brand-mark">ERA</div>
+
+                <div>
+                    <h1>ERA-IPMS</h1>
+                    <p>Integrated Project Management System</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="user-area">
+            <div>
+                <strong id="user-name">Loading...</strong>
+                <span id="user-title">Loading...</span>
+            </div>
+
+            <button
+                type="button"
+                id="logout-button"
+                class="secondary-button"
+            >
+                Sign out
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-content">
+
+        <div class="page-heading">
+            <div>
+                <p class="eyebrow">Small Farm Operations</p>
+                <h2>Farm Crops</h2>
+            </div>
+
+            <a href="/dashboard/" class="back-link">
+                Back to dashboard
+            </a>
+        </div>
+
+        <div id="farm-message" class="dashboard-message"></div>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h3>Farm crops</h3>
+                </div>
+
+                <strong id="farm-count">0</strong>
+            </div>
+
+            <div id="farm-list" class="farm-list">
+                <p>Loading farm crops...</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="{% static 'core/js/farm.js' %}"></script>
+{% endblock %}

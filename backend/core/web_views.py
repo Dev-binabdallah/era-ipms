@@ -39,3 +39,12 @@ def poultry_page(request):
         return redirect("/login/")
 
     return render(request, "core/poultry.html")
+
+
+
+def farm_page(request):
+    """Display the protected Small Farm page."""
+    if not request.user.is_authenticated:
+        return redirect("/login/")
+
+    return render(request, "core/farm.html")
