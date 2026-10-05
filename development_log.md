@@ -2655,3 +2655,36 @@ Implemented:
 ### Status
 
 Monitoring & Evaluation navigation is completed and verified locally.
+
+## 2026-10-05 - Add Activities Section to Projects Navigation UI
+
+### Work completed
+
+Expanded the Projects & Activities page to include authorized activities.
+
+Implemented:
+
+- Added an Activities section to `/projects-ui/`.
+- Added an activity count.
+- Connected the page to the existing `/activities/` API.
+- Added activity cards showing activity name, status, description, project, date, location, and results where available.
+- Added clear handling for restricted project access.
+- Added clear handling for restricted activity access.
+- Kept the existing authorization rules unchanged.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed with 623 tests.
+- Projects web view tests passed.
+- Projects JavaScript syntax check passed.
+- Browser verification confirmed `/projects-ui/` returned HTTP 200.
+- Browser verification confirmed `projects.js` loaded successfully.
+- Browser verification confirmed `/auth/me/` returned HTTP 200.
+- Browser verification confirmed `/projects/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed `/activities/` returned HTTP 403 for the current Admin user.
+- Browser verification confirmed both authorization boundaries are handled by the UI.
+
+### Status
+
+Projects & Activities navigation is completed and verified locally.
