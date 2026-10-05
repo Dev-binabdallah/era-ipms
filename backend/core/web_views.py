@@ -30,3 +30,12 @@ def beneficiaries_page(request):
         return redirect("/login/")
 
     return render(request, "core/beneficiaries.html")
+
+
+
+def poultry_page(request):
+    """Display the protected Poultry page."""
+    if not request.user.is_authenticated:
+        return redirect("/login/")
+
+    return render(request, "core/poultry.html")

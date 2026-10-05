@@ -2528,3 +2528,34 @@ Implemented:
 ### Status
 
 Beneficiary Services navigation is completed and verified locally.
+
+## 2026-10-05 - Add Poultry Navigation UI
+
+### Work completed
+
+Added the Poultry navigation flow to the ERA-IPMS dashboard.
+
+Implemented:
+
+- Added a protected `/poultry-ui/` web page.
+- Added Poultry navigation from the dashboard.
+- Added poultry group display structure.
+- Connected the page to the existing authorized `/poultry-groups/` API.
+- Added handling for unauthorized access with a clear "Access restricted" message.
+- Added navigation back to the dashboard.
+- Kept the existing authorization rules unchanged.
+- Cleaned the web URL import after adding the Poultry route.
+
+### Verification
+
+- Django system check passed.
+- Full core test suite passed.
+- Poultry web tests passed.
+- Poultry JavaScript syntax check passed.
+- Browser verification confirmed dashboard navigation to `/poultry-ui/`.
+- Browser verification confirmed the existing authorization boundary is respected.
+- Browser verification confirmed HTTP 403 is presented as a clear access restriction message.
+
+### Status
+
+Poultry navigation is completed and verified locally.

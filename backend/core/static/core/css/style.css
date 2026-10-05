@@ -554,3 +554,30 @@ button:disabled {
     color: #6b7280;
     font-size: 12px;
 }
+
+.poultry-list {
+    display: grid;
+    gap: 12px;
+}
+
+.poultry-card {
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.poultry-card h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.poultry-card p {
+    margin: 10px 0 8px;
+    color: #4b5563;
+    font-size: 13px;
+}
+
+.poultry-card small {
+    color: #6b7280;
+    font-size: 12px;
+}

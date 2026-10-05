@@ -7,6 +7,7 @@ from core.web_views import (
     login_page,
     beneficiaries_page,
     projects_page,
+    poultry_page,
 )
 
 
@@ -108,6 +109,38 @@ class BeneficiariesPageTests(SimpleTestCase):
         self.assertContains(
             response,
             "core/js/beneficiaries.js",
+        )
+        self.assertContains(
+            response,
+            "Back to dashboard",
+        )
+
+
+class PoultryPageTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_poultry_redirects_unauthenticated_user(self):
+        request = self.factory.get("/poultry-ui/")
+        request.user = SimpleNamespace(is_authenticated=False)
+
+        response = poultry_page(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/login/")
+
+    def test_poultry_page_loads_for_authenticated_user(self):
+        request = self.factory.get("/poultry-ui/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = poultry_page(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Poultry Operations")
+        self.assertContains(response, "Poultry Groups")
+        self.assertContains(
+            response,
+            "core/js/poultry.js",
         )
         self.assertContains(
             response,
