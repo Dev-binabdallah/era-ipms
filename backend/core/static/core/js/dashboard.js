@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
     const message = document.getElementById("dashboard-message");
-    const logoutButton = document.getElementById("logout-button");
 
     function showMessage(text, type = "") {
         message.textContent = text;
@@ -174,26 +173,6 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         }
     }
-
-    logoutButton.addEventListener("click", async function () {
-        logoutButton.disabled = true;
-        logoutButton.textContent = "Signing out...";
-
-        try {
-            await fetchJson("/auth/logout/", {
-                method: "POST",
-            });
-
-            window.location.href = "/login/";
-        } catch (error) {
-            logoutButton.disabled = false;
-            logoutButton.textContent = "Sign out";
-            showMessage(
-                error.message || "Unable to sign out.",
-                "error"
-            );
-        }
-    });
 
     loadDashboard();
 });

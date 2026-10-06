@@ -2920,3 +2920,32 @@ Implemented:
 ### Status
 
 Poultry groups frontend response handling is fixed and verified locally.
+
+## 2026-10-06 - Add Shared Logout Functionality
+
+### Work completed
+
+Fixed logout functionality across all main ERA-IPMS navigation pages.
+
+Implemented:
+
+- Created a shared `logout.js` file for logout handling.
+- Loaded the shared logout script through `base.html`.
+- Removed the dashboard-specific logout handler from `dashboard.js`.
+- Kept dashboard-specific functionality inside `dashboard.js`.
+- Added CSRF protection to the shared logout request.
+- Added safe handling when a page does not contain a logout button.
+- Kept the existing `/auth/logout/` endpoint and authentication behavior unchanged.
+
+### Verification
+
+- Logout JavaScript syntax check passed.
+- Dashboard JavaScript syntax check passed.
+- Django system check passed.
+- Full core test suite passed with 623 tests.
+- `git diff --check` passed.
+- No backend authorization or database changes were required.
+
+### Status
+
+Shared logout functionality is completed and verified locally.
