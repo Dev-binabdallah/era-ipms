@@ -2872,3 +2872,28 @@ Implemented:
 ### Status
 
 Project and Activity Assignments UI is completed and verified locally.
+## 2026-10-06 - Improve Poultry Record Card Spacing
+
+### Work completed
+
+Improved the Poultry Operations UI to keep multiple record details clearly separated within poultry record cards.
+
+Implemented:
+
+- Updated poultry record card `<small>` elements to display as separate blocks.
+- Added consistent spacing between poultry record details.
+- Kept the existing Poultry page structure unchanged.
+- Kept the existing poultry APIs and authorization rules unchanged.
+- Kept the styling consistent with the Small Farm record cards.
+
+### Verification
+
+- Poultry API tests passed with 81 tests.
+- Django system check passed.
+- Poultry JavaScript syntax check passed.
+- `git diff --check` passed.
+- No backend or database changes were required.
+
+### Status
+
+Poultry record card spacing improvement is completed and verified locally.

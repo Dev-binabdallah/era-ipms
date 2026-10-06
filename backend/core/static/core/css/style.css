@@ -827,6 +827,8 @@ button:disabled {
 }
 
 .poultry-record-card small {
+    display: block;
+    margin-top: 4px;
     color: #6b7280;
     font-size: 12px;
 }
