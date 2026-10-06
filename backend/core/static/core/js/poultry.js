@@ -357,7 +357,9 @@ document.addEventListener("DOMContentLoaded", function () {
             await Promise.all([
                 loadResource(
                     "/poultry-groups/",
-                    renderPoultryGroups,
+                    function (data) {
+                        renderPoultryGroups(data.poultry_groups);
+                    },
                     poultryList,
                     poultryCount
                 ),
