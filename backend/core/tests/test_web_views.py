@@ -83,6 +83,7 @@ class ProjectsPageTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Projects & Activities")
         self.assertContains(response, "Projects")
+        self.assertContains(response, "Activities")
         self.assertContains(response, "core/js/projects.js")
         self.assertContains(response, "Back to dashboard")
 

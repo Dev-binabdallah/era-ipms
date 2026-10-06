@@ -49,6 +49,150 @@ document.addEventListener("DOMContentLoaded", function () {
         return data;
     }
 
+    function renderAssignmentList(container, assignments, type) {
+        container.innerHTML = "";
+
+        if (!assignments.length) {
+            container.innerHTML = `
+                <div class="assignment-empty">
+                    <strong>No assignments found</strong>
+                    <p>
+                        No users are currently assigned.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        assignments.forEach(function (assignment) {
+            const item = document.createElement("div");
+            item.className = "assignment-item";
+
+            const user = document.createElement("strong");
+            user.textContent =
+                `User ${assignment.user_id}`;
+
+            const status = document.createElement("span");
+
+            if (type === "project") {
+                status.textContent =
+                    assignment.is_active ? "Active" : "Inactive";
+            } else {
+                status.textContent =
+                    assignment.status || "Not set";
+            }
+
+            item.appendChild(user);
+            item.appendChild(status);
+
+            if (assignment.assigned_at) {
+                const assignedAt = document.createElement("small");
+                assignedAt.textContent =
+                    `Assigned: ${assignment.assigned_at}`;
+                item.appendChild(assignedAt);
+            }
+
+            container.appendChild(item);
+        });
+    }
+
+    function renderAssignmentSection(card, assignments, type) {
+        const section = document.createElement("section");
+        section.className = "assignment-section";
+
+        const heading = document.createElement("h5");
+        heading.textContent = "Assignments";
+
+        const list = document.createElement("div");
+        list.className = "assignment-list";
+
+        section.appendChild(heading);
+        section.appendChild(list);
+
+        renderAssignmentList(list, assignments, type);
+
+        card.appendChild(section);
+    }
+
+    function renderAssignmentError(card, messageText) {
+        const section = document.createElement("section");
+        section.className = "assignment-section";
+
+        const heading = document.createElement("h5");
+        heading.textContent = "Assignments";
+
+        const message = document.createElement("div");
+        message.className = "assignment-empty";
+
+        const strong = document.createElement("strong");
+        strong.textContent = "Assignments unavailable";
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = messageText;
+
+        message.appendChild(strong);
+        message.appendChild(paragraph);
+
+        section.appendChild(heading);
+        section.appendChild(message);
+
+        card.appendChild(section);
+    }
+
+    async function loadProjectAssignments(card, projectId) {
+        try {
+            const data = await fetchJson(
+                `/projects/${projectId}/assignments/`
+            );
+
+            renderAssignmentSection(
+                card,
+                data.assignments || [],
+                "project"
+            );
+        } catch (error) {
+            if (error.status === 403) {
+                renderAssignmentError(
+                    card,
+                    "You do not have permission to view project assignments."
+                );
+                return;
+            }
+
+            renderAssignmentError(
+                card,
+                "Unable to load project assignments."
+            );
+        }
+    }
+
+    async function loadActivityAssignments(card, activityId) {
+        try {
+            const data = await fetchJson(
+                `/activities/${activityId}/assignments/`
+            );
+
+            renderAssignmentSection(
+                card,
+                data.assignments || [],
+                "activity"
+            );
+        } catch (error) {
+            if (error.status === 403) {
+                renderAssignmentError(
+                    card,
+                    "You do not have permission to view activity assignments."
+                );
+                return;
+            }
+
+            renderAssignmentError(
+                card,
+                "Unable to load activity assignments."
+            );
+        }
+    }
+
     function renderProjects(projects) {
         projectCount.textContent = projects.length;
         projectList.innerHTML = "";
@@ -100,6 +244,11 @@ document.addEventListener("DOMContentLoaded", function () {
             card.appendChild(dates);
 
             projectList.appendChild(card);
+
+            loadProjectAssignments(
+                card,
+                project.project_id
+            );
         });
     }
 
@@ -164,6 +313,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             activitiesList.appendChild(card);
+
+            loadActivityAssignments(
+                card,
+                activity.activity_id
+            );
         });
     }
 

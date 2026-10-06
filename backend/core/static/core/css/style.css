@@ -859,3 +859,62 @@ button:disabled {
     color: #6b7280;
     font-size: 12px;
 }
+
+.assignment-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.assignment-section h5 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #243b53;
+}
+
+.assignment-list {
+    display: grid;
+    gap: 8px;
+}
+
+.assignment-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    padding: 10px 12px;
+    border: 1px solid #edf0f2;
+    border-radius: 6px;
+    background: #f9fafb;
+}
+
+.assignment-item strong {
+    font-size: 13px;
+}
+
+.assignment-item span {
+    font-size: 12px;
+    color: #52667a;
+    text-transform: capitalize;
+}
+
+.assignment-item small {
+    grid-column: 1 / -1;
+    color: #6b7280;
+    font-size: 11px;
+}
+
+.assignment-empty {
+    padding: 10px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.assignment-empty strong {
+    display: block;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.assignment-empty p {
+    margin: 0;
+}

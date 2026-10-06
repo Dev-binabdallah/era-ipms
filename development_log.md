@@ -2839,3 +2839,36 @@ Implemented:
 ### Status
 
 M&E Indicator Records UI is completed and verified locally.
+
+## 2026-10-06 - Add Project and Activity Assignments to Navigation UI
+
+### Work completed
+
+Expanded the Projects & Activities page to display assignment information for authorized projects and activities.
+
+Implemented:
+
+- Added project assignment sections to project cards.
+- Added activity assignment sections to activity cards.
+- Connected project cards to the existing project assignment API.
+- Connected activity cards to the existing activity assignment API.
+- Added assignment status and assignment date information.
+- Added clear empty-state messages when no users are assigned.
+- Added independent handling for restricted assignment access.
+- Kept the existing project and activity authorization rules unchanged.
+- Added a Projects & Activities web view test assertion for the Activities section.
+- Added assignment-specific styling without changing the existing page structure.
+
+### Verification
+
+- Projects web view tests passed with 2 tests.
+- Full core test suite passed with 623 tests.
+- Django system check passed.
+- Projects JavaScript syntax check passed.
+- `git diff --check` passed.
+- Project and activity assignment access errors are handled independently in the UI.
+- No backend authorization changes were required.
+
+### Status
+
+Project and Activity Assignments UI is completed and verified locally.
