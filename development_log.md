@@ -2949,3 +2949,26 @@ Implemented:
 ### Status
 
 Shared logout functionality is completed and verified locally.
+
+## 2026-10-07 - Add Logout Script Web View Regression Test
+
+### Work completed
+
+Added a regression test to verify that the dashboard page includes the shared logout JavaScript file.
+
+Implemented:
+
+- Added an assertion for `core/js/logout.js` in `DashboardPageTests`.
+- Kept the existing dashboard page structure and logout implementation unchanged.
+- Added test coverage to help prevent accidental removal of the shared logout script.
+
+### Verification
+
+- Web view tests passed with 15 tests.
+- Django system check passed with no issues.
+- `git diff --check` passed.
+- No backend, authorization, API, or database changes were required.
+
+### Status
+
+Logout script inclusion regression test is completed and verified locally.

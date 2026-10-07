@@ -58,6 +58,7 @@ class DashboardPageTests(SimpleTestCase):
         self.assertContains(response, "Activity status")
         self.assertContains(response, "Financial summary")
         self.assertContains(response, "core/js/dashboard.js")
+        self.assertContains(response, "core/js/logout.js")
         self.assertContains(response, "csrfmiddlewaretoken")
 
 
