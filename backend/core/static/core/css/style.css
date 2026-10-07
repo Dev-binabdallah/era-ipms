@@ -545,6 +545,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.beneficiary-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .beneficiary-card h4 {
@@ -559,6 +565,8 @@ button:disabled {
 }
 
 .beneficiary-card small {
+    display: block;
+    margin-top: 4px;
     color: #6b7280;
     font-size: 12px;
 }
