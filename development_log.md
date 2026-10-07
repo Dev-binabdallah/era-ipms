@@ -2950,6 +2950,22 @@ Implemented:
 
 Shared logout functionality is completed and verified locally.
 
+## 2026-10-07 - Improve Projects and Activities Card Styling
+
+### Work completed
+- Improved the visual styling of project cards in the Projects UI.
+- Improved the visual styling of activity cards to match project cards.
+- Added subtle hover feedback to project and activity cards.
+- Improved spacing for project and activity metadata.
+- Kept assignment-section styling unchanged.
+- No API, authorization, database, or JavaScript behavior was changed.
+
+### Verification
+- `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+- `python backend/manage.py test core.tests.test_projects_api` - 45/45 passed.
+- Django system check reported no issues.
+- `git diff --check` passed.
+
 ## 2026-10-07 - Add Logout Script Web View Regression Test
 
 ### Work completed

@@ -482,6 +482,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.project-card:hover {
+    border-color: #cbd2d9;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
 
 .project-card h4 {
@@ -507,6 +513,8 @@ button:disabled {
 }
 
 .project-card small {
+    display: block;
+    margin-top: 4px;
     color: #6b7280;
     font-size: 12px;
 }
@@ -748,6 +756,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.activity-card:hover {
+    border-color: #cbd2d9;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
 
 .activity-card h4 {
@@ -773,6 +787,8 @@ button:disabled {
 }
 
 .activity-card small {
+    display: block;
+    margin-top: 4px;
     color: #6b7280;
     font-size: 12px;
 }
