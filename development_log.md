@@ -3028,3 +3028,28 @@ Beneficiary card styling is completed and verified locally.
 ### Status
 
 Beneficiary service card styling is completed and verified locally.
+
+## 2026-10-08 - Improve Poultry Group Card Styling
+
+### Work completed
+- Improved the visual styling of poultry group cards in the Poultry UI.
+- Added subtle hover feedback to poultry group cards.
+- Improved spacing for poultry group status metadata.
+- Kept the existing poultry group card structure and content unchanged.
+- Kept stock movement, egg production, feed, health, and sales record card styling unchanged.
+- No API, authorization, database, or JavaScript behavior was changed.
+
+### Verification
+- `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+- `python backend/manage.py test core.tests.test_poultry_api` - 8/8 passed.
+- `python backend/manage.py test core.tests.test_poultry_stock_movements_api` - 9/9 passed.
+- `python backend/manage.py test core.tests.test_egg_production_api` - 12/12 passed.
+- `python backend/manage.py test core.tests.test_feed_records_api` - 13/13 passed.
+- `python backend/manage.py test core.tests.test_poultry_health_records_api` - 12/12 passed.
+- `python backend/manage.py test core.tests.test_poultry_sales_api` - 14/14 passed.
+- Django system check reported no issues.
+- `git diff --check` passed.
+
+### Status
+
+Poultry group card styling is completed and verified locally.
