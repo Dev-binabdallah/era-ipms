@@ -3138,3 +3138,24 @@ Finance card styling is completed and verified locally.
 ### Status
 
 M&E card styling is completed and verified locally.
+
+## 2026-10-09 - Improve Shared Summary Card Styling
+
+### Work completed
+- Added subtle hover feedback to shared summary cards.
+- Added a short transition for border color and shadow changes.
+- Kept the existing card layout, spacing, content, and responsive behavior unchanged.
+- Applied the shared styling consistently to dashboard, Finance, and M&E summary cards.
+- No API, authorization, database, JavaScript, or summary calculation behavior was changed.
+
+### Verification
+- `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+- `python backend/manage.py test core.tests.test_financial_transactions_api` - 17/17 passed.
+- `python backend/manage.py test core.tests.test_financial_transaction_update_api` - 7/7 passed.
+- `python backend/manage.py test core.tests.test_me_indicator_summary_api` - 3/3 passed.
+- `python backend/manage.py check` - no issues.
+- `git diff --check` passed.
+
+### Status
+
+Shared summary card styling is completed and verified locally.

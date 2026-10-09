@@ -251,6 +251,12 @@ button:disabled {
     border: 1px solid #d9dee3;
     border-radius: 10px;
     padding: 20px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-card:hover {
+    border-color: #cbd2d9;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
 
 .summary-card span {
