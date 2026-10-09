@@ -853,6 +853,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.poultry-record-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .poultry-record-card h4 {
