@@ -3194,3 +3194,23 @@ Dashboard activity status styling is completed and verified locally.
 ### Status
 
 Keyboard-focus styling is completed and verified locally.
+
+## 2026-10-09 - Improve Mobile Finance Transaction Layout
+
+### Work completed
+
+* Stacked finance transaction categories and amounts vertically on screens up to 640px wide.
+* Allowed long transaction category names to wrap onto additional lines.
+* Preserved the existing desktop transaction layout.
+* No transaction calculations, API, authorization, database, or JavaScript behavior was changed.
+
+### Verification
+
+* `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+* `python backend/manage.py test core.tests.test_dashboard_api` - 13/13 passed.
+* `python backend/manage.py check` - no issues.
+* `git diff --check` passed.
+
+### Status
+
+Mobile finance transaction styling is completed and verified locally.

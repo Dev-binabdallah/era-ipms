@@ -720,6 +720,16 @@ button:disabled {
     .finance-overview {
         grid-template-columns: 1fr;
     }
+
+    .finance-card-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .finance-card-heading h4 {
+        overflow-wrap: anywhere;
+    }
 }
 
 .me-overview {
