@@ -3076,3 +3076,25 @@ Poultry group card styling is completed and verified locally.
 ### Status
 
 Poultry record card styling is completed and verified locally.
+
+## 2026-10-09 - Improve Farm Card Styling
+
+### Work completed
+- Added subtle hover feedback to Farm cards.
+- Added consistent hover feedback to Farm record cards.
+- Displayed Farm card metadata on separate lines with consistent spacing.
+- Preserved existing card content, layout, and behavior.
+- No API, authorization, database, or JavaScript behavior was changed.
+
+### Verification
+- `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+- `python backend/manage.py test core.tests.test_farm_activities_api` - 13/13 passed.
+- `python backend/manage.py test core.tests.test_farm_crops_api` - 13/13 passed.
+- `python backend/manage.py test core.tests.test_farm_lifecycle_update_api` - 10/10 passed.
+- `python backend/manage.py test core.tests.test_farm_poultry_transfers_api` - 14/14 passed.
+- `python backend/manage.py check` - no issues.
+- `git diff --check` passed.
+
+### Status
+
+Farm card styling is completed and verified locally.

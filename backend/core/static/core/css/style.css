@@ -615,6 +615,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.farm-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .farm-card h4 {
@@ -629,6 +635,8 @@ button:disabled {
 }
 
 .farm-card small {
+    display: block;
+    margin-top: 4px;
     color: #6b7280;
     font-size: 12px;
 }
@@ -888,6 +896,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.farm-record-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .farm-record-card h4 {
