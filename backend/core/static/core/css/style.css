@@ -96,6 +96,14 @@ body {
     box-shadow: 0 0 0 2px rgba(82, 102, 122, 0.12);
 }
 
+/* Keep keyboard focus visible on interactive elements. */
+a:focus-visible,
+button:focus-visible,
+.form-group input:focus-visible {
+    outline: 3px solid #52667a;
+    outline-offset: 3px;
+}
+
 button {
     width: 100%;
     padding: 12px;

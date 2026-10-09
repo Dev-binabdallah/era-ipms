@@ -3177,3 +3177,20 @@ Shared summary card styling is completed and verified locally.
 ### Status
 
 Dashboard activity status styling is completed and verified locally.
+
+## 2026-10-09 - Improve Keyboard Focus Accessibility
+
+### Work completed
+- Added visible keyboard-focus indicators for links, buttons, and login inputs.
+- Used the CSS `:focus-visible` selector to support keyboard navigation.
+- Preserved the existing page layout, styling, and application behavior.
+- No API, authorization, database, or JavaScript behavior was changed.
+
+### Verification
+- `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+- `python backend/manage.py check` - no issues.
+- `git diff --check` passed.
+
+### Status
+
+Keyboard-focus styling is completed and verified locally.
