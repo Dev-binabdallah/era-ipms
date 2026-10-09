@@ -3159,3 +3159,21 @@ M&E card styling is completed and verified locally.
 ### Status
 
 Shared summary card styling is completed and verified locally.
+
+## 2026-10-09 - Improve Dashboard Activity Status Styling
+
+### Work completed
+- Added a subtle border and hover feedback to dashboard activity status items.
+- Added a short transition for border color and shadow changes.
+- Preserved the existing activity status layout and responsive grid.
+- No dashboard calculations, API, authorization, database, or JavaScript behavior was changed.
+
+### Verification
+- `python backend/manage.py test core.tests.test_dashboard_api` - 13/13 passed.
+- `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+- `python backend/manage.py check` - no issues.
+- `git diff --check` passed.
+
+### Status
+
+Dashboard activity status styling is completed and verified locally.
