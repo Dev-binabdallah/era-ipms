@@ -718,6 +718,12 @@ button:disabled {
     border: 1px solid #d9dee3;
     border-radius: 9px;
     background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.me-card:hover {
+    border-color: #cbd2d9;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
 
 .me-card-heading {
@@ -754,6 +760,12 @@ button:disabled {
     padding: 18px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.me-record-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .me-record-card p {
@@ -763,6 +775,8 @@ button:disabled {
 }
 
 .me-record-card small {
+    display: block;
+    margin-top: 4px;
     color: #6b7280;
     font-size: 12px;
 }
