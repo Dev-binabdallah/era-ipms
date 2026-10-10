@@ -716,6 +716,17 @@ button:disabled {
     font-size: 12px;
 }
 
+.finance-card-status {
+    display: inline-block;
+    max-width: 100%;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
 @media (max-width: 640px) {
     .finance-overview {
         grid-template-columns: 1fr;

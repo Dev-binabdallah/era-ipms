@@ -3214,3 +3214,23 @@ Keyboard-focus styling is completed and verified locally.
 ### Status
 
 Mobile finance transaction styling is completed and verified locally.
+
+## 2026-10-10 - Improve Finance Transaction Status Styling
+
+### Work completed
+
+* Added a dedicated CSS class to the financial transaction status label.
+* Applied a subtle background, padding, and rounded corners to make status information easier to scan.
+* Allowed long status text to wrap within the transaction card.
+* Preserved existing transaction data, calculations, API, authorization, and database behavior.
+
+### Verification
+
+* `python backend/manage.py test core.tests.test_dashboard_api` - 13/13 passed.
+* `python backend/manage.py test core.tests.test_web_views` - 15/15 passed.
+* `python backend/manage.py check` - no issues.
+* `git diff --check` passed.
+
+### Status
+
+Finance transaction status styling is completed and verified locally.

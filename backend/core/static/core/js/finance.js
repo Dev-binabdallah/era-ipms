@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 + `${transaction.transaction_date || "Date not set"}`;
 
             const status = document.createElement("small");
+            status.className = "finance-card-status";
             status.textContent =
                 `Status: ${transaction.status || "Not set"}`;
 
